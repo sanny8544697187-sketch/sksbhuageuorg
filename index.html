@@ -97,8 +97,7 @@
       monthly:{ id:"monthly", label:"Monthly",  price:19,  period:"month", badge:"" },
       yearly: { id:"yearly",  label:"Yearly",   price:199, period:"year",  badge:"Best Value" },
     };
-
-    const SUBJECTS = [
+  const SUBJECTS = [
       { id:"s1", name:"Agronomy",                  icon:"🌾", cat:"core",    badge:"Popular",
         desc:"Crop production and soil management for optimal yield and sustainability.",
         topics:["Crop Production","Weed Management","Irrigation Systems","Tillage Systems"],        tags:["crops","soil","yield"]},
@@ -123,9 +122,21 @@
       { id:"s8", name:"Agricultural Meteorology",  icon:"🌦️",cat:"science", badge:"",
         desc:"Weather and climate effects on crop production and yield.",
         topics:["Weather Forecasting","Climate Change","Rainfall Analysis","Evapotranspiration"],  tags:["weather","climate","forecast"]},
-      { id:"s9", name:"Agricultural Economics",    icon:"📊", cat:"applied", badge:"",
+      { id:"s9",  name:"Agricultural Economics",    icon:"📊", cat:"applied", badge:"",
         desc:"Economic principles applied to farming, marketing and rural policy.",
         topics:["Farm Finance","Ag Marketing","Demand & Supply","Agribusiness"],                   tags:["economics","market","policy"]},
+      { id:"s10", name:"Extension Education",         icon:"📣", cat:"applied", badge:"New",
+        desc:"Transferring agricultural knowledge and innovations to farming communities.",
+        topics:["Extension Methods","Rural Communication","FLD & Demonstrations","Farmers Training"], tags:["extension","communication","rural"]},
+      { id:"s11", name:"Farm Management",             icon:"🏡", cat:"applied", badge:"",
+        desc:"Planning, organizing and managing farm resources for maximum profitability.",
+        topics:["Farm Planning","Cost & Returns","Farm Records","Decision Making"],                tags:["farm","management","profit"]},
+      { id:"s12", name:"Ecology & Environment",       icon:"🌍", cat:"science", badge:"Popular",
+        desc:"Study of ecosystems, biodiversity and environmental sustainability in agriculture.",
+        topics:["Agroecosystem","Biodiversity","Pollution & Remediation","Climate Adaptation"],    tags:["ecology","environment","biodiversity"]},
+      { id:"s13", name:"Value Added Courses",         icon:"🎓", cat:"core",    badge:"New",
+        desc:"Skill development, entrepreneurship and specialised short courses for agriculture graduates.",
+        topics:["Agri-Entrepreneurship","Food Processing","Organic Farming","Rural Development"],  tags:["skill","startup","processing"]},
     ];
 
     const QUIZ_BANK = {
@@ -163,6 +174,34 @@
         {q:"Which is a natural biological enemy of aphids?",opts:["Locust","Ladybird beetle","Whitefly","Mealybug"],ans:1,exp:"Ladybird beetles (Coccinellidae) are voracious predators that feed on aphids.",premium:true},
         {q:"Butterflies undergo which type of metamorphosis?",opts:["Incomplete metamorphosis","Complete metamorphosis","Hemimetabolism","No metamorphosis"],ans:1,exp:"Complete metamorphosis: egg → larva → pupa → adult.",premium:true},
         {q:"Bacillus thuringiensis (Bt) is used as:",opts:["Chemical fertilizer","Bioinsecticide","Antifungal agent","Herbicide"],ans:1,exp:"Bt produces proteins toxic to certain insect larvae.",premium:true},
+      ],
+      "Extension Education":[
+        {q:"Father of Extension Education in India:",opts:["M.S. Swaminathan","Albert Mayer","V.V.R.I. Singh","C. Subramaniam"],ans:1,exp:"Albert Mayer laid the foundations of extension education in India through the Etawah Pilot Project (1948).",premium:false},
+        {q:"FLD stands for:",opts:["Farm Land Development","Front Line Demonstration","Field Level Data","Farmer Livelihood Drive"],ans:1,exp:"Front Line Demonstrations (FLD) are conducted on farmers' fields to bridge the yield gap between research and practice.",premium:false},
+        {q:"Which extension teaching method reaches the largest audience?",opts:["Farm visit","Result demonstration","Mass media","Field day"],ans:2,exp:"Mass media (TV, radio, newspapers) reaches the largest number of farmers at once.",premium:true},
+        {q:"The 'T&V' system in extension stands for:",opts:["Training & Visits","Technology & Villages","Transfer & Verify","Teaching & Validation"],ans:0,exp:"Training & Visit (T&V) system was introduced in India in the 1970s by World Bank to improve extension services.",premium:true},
+        {q:"ATMA stands for:",opts:["Agricultural Technology Management Agency","Advanced Training for Modern Agriculture","Agri Technology Marketing Authority","Agricultural Technician Management Act"],ans:0,exp:"ATMA (Agricultural Technology Management Agency) operates at district level to integrate extension activities.",premium:true},
+      ],
+      "Farm Management":[
+        {q:"Which principle of farm management states that inputs should be applied up to the point where marginal return equals marginal cost?",opts:["Law of Diminishing Returns","Principle of Equi-marginal Returns","Principle of Opportunity Cost","Law of Substitution"],ans:0,exp:"Law of Diminishing Returns — beyond a point, each additional unit of input yields less output; stop where MC = MR.",premium:false},
+        {q:"Farm budget that considers only variable costs is called:",opts:["Complete budget","Partial budget","Enterprise budget","Cash flow budget"],ans:1,exp:"A partial budget analyses the effect of a small change in the farm plan, considering only variable costs and returns.",premium:false},
+        {q:"Break-even point in farm management is when:",opts:["Profit is maximum","Total revenue equals total cost","Fixed cost equals variable cost","Output is maximum"],ans:1,exp:"At break-even point TR = TC, meaning the farmer neither earns profit nor suffers loss.",premium:true},
+        {q:"Which is NOT a fixed cost in farming?",opts:["Land revenue","Depreciation of machinery","Hired labour wages","Interest on fixed capital"],ans:2,exp:"Hired labour wages vary with the scale of operation and are a variable cost.",premium:true},
+        {q:"Net Present Worth (NPW) method is used for:",opts:["Soil testing","Long-term investment appraisal","Crop insurance","Irrigation scheduling"],ans:1,exp:"NPW discounts future cash flows to the present to evaluate profitability of long-term farm investments.",premium:true},
+      ],
+      "Ecology & Environment":[
+        {q:"The term 'Ecology' was coined by:",opts:["Charles Darwin","Ernst Haeckel","Alexander von Humboldt","Linnaeus"],ans:1,exp:"Ernst Haeckel coined the term 'Ecology' (Ökologie) in 1866 to describe the science of organism-environment relationships.",premium:false},
+        {q:"Which gas is primarily responsible for the greenhouse effect?",opts:["Oxygen","Nitrogen","Carbon dioxide","Argon"],ans:2,exp:"CO₂ is the principal anthropogenic greenhouse gas contributing to global warming and climate change.",premium:false},
+        {q:"Biodiversity hotspot means a region:",opts:["With maximum rainfall","Rich in endemic species and facing high habitat loss","With no human activity","With maximum crop variety"],ans:1,exp:"A biodiversity hotspot must have ≥1500 endemic vascular plant species AND have lost ≥70% of its original habitat.",premium:true},
+        {q:"BOD in water quality assessment stands for:",opts:["Biological Oxygen Demand","Biochemical Oxygen Deficit","Bacterial Organic Density","Bio-Oxidation Degree"],ans:0,exp:"BOD (Biological Oxygen Demand) measures the amount of dissolved oxygen used by microorganisms in water — a key indicator of pollution.",premium:true},
+        {q:"The Paris Agreement (2015) aims to limit global temperature rise to:",opts:["1°C above pre-industrial levels","1.5–2°C above pre-industrial levels","3°C above pre-industrial levels","4°C above pre-industrial levels"],ans:1,exp:"The Paris Agreement targets limiting warming to well below 2°C, preferably 1.5°C, above pre-industrial levels.",premium:true},
+      ],
+      "Value Added Courses":[
+        {q:"Which certification is recognized for organic farming in India?",opts:["ISO 9001","NPOP (National Programme for Organic Production)","GMP certification","BIS certification"],ans:1,exp:"NPOP is India's national standard for organic farming, recognized by EU and USA for export trade.",premium:false},
+        {q:"Agri-entrepreneurship mainly aims to:",opts:["Reduce farm output","Create self-employment through agri-business ventures","Increase government subsidies","Replace traditional farming"],ans:1,exp:"Agri-entrepreneurship converts agricultural knowledge into profitable business ventures, creating self-employment.",premium:false},
+        {q:"Which food preservation technique uses minimal heat to kill pathogens without altering taste?",opts:["Sterilization","Pasteurization","Fermentation","Dehydration"],ans:1,exp:"Pasteurization uses mild heat (72°C for 15 sec) to kill pathogens while largely preserving taste and nutrients.",premium:true},
+        {q:"MUDRA scheme is related to:",opts:["Irrigation development","Micro-enterprise and agri-business financing","Seed production","Soil health cards"],ans:1,exp:"MUDRA (Micro Units Development & Refinance Agency) provides loans up to ₹10 lakh for small agri-business enterprises.",premium:true},
+        {q:"SHG stands for in rural development context:",opts:["State Horticulture Group","Soil Health Group","Self Help Group","Small Holders Guild"],ans:2,exp:"Self Help Groups (SHGs) are small voluntary associations of rural poor, especially women, for mutual savings and credit.",premium:true},
       ],
     };
 
