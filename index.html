@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║          BHU AGRICULTURE e-LEARNING PORTAL  v3.0                ║
+  ║          Multi-Device · Admin + Students · Firebase Sync        ║
+  ╠══════════════════════════════════════════════════════════════════╣
+  ║  QUICK SETUP (5 minutes):                                        ║
+  ║  1. Go to console.firebase.google.com → New Project             ║
+  ║  2. Add a Web App → Copy the firebaseConfig object              ║
+  ║  3. Paste the 6 values below where it says PASTE HERE           ║
+  ║  4. In Firebase Console:                                         ║
+  ║     • Build → Firestore → Create database → Start in test mode  ║
+  ║     • Build → Storage → Get started → Start in test mode        ║
+  ║  5. Drag this file to netlify.com/drop → DONE!                  ║
+  ║                                                                  ║
+  ║  Admin login: admin@bhu.ac.in / admin2025                       ║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="BHU Agriculture e-Learning Portal — Notes, Videos, Quizzes"/>
+  <meta name="theme-color" content="#082818"/>
+  <title>BHU Agriculture e-Learning Portal</title>
+  <style>
+    body { margin:0; padding:0; background:#eef5ef; }
+    #splash { position:fixed; inset:0; background:#eef5ef; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:16px; z-index:99999; font-family:sans-serif; }
+    #splash .bar { width:180px; height:4px; background:#cde4d4; border-radius:2px; overflow:hidden; }
+    #splash .bar div { height:100%; width:50%; background:#25a865; border-radius:2px;
+      animation:load 1.2s ease-in-out infinite alternate; }
+    @keyframes load { from{transform:translateX(-60%)} to{transform:translateX(160%)} }
+    #splash p { color:#6a9a78; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div id="splash">
+    <div style="font-size:52px">🌾</div>
+    <div style="font-family:Georgia,serif;font-size:18px;color:#0c2e18;font-weight:600">BHU Agriculture Portal</div>
+    <p>Loading resources…</p>
+    <div class="bar"><div></div></div>
+  </div>
+  <div id="root"></div>
+
+  <!-- ① Firebase Compat SDK v10 (matches firebasestorage.app bucket format) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+  <!-- ② React 18 -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- ③ Babel (transforms JSX in browser — no build step needed) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       ④  FIREBASE CONFIG  —  YOUR LIVE PROJECT CONFIG
+       ══════════════════════════════════════════════════════════════ -->
+  <script>
+    const FIREBASE_CONFIG = {
+      apiKey:            "AIzaSyCIpRs1roHzLNn-u9I3aLu8EYzS5Lybwjs",
+      authDomain:        "bhuagorg.firebaseapp.com",
+      projectId:         "bhuagorg",
+      storageBucket:     "bhuagorg.firebasestorage.app",
+      messagingSenderId: "419404326160",
+      appId:             "1:419404326160:web:888dfabcb1609f9e9ab195",
+      measurementId:     "G-32F02MQJQZ",
+    };
+
+    window._fbConfigured = false;
+    try {
+      firebase.initializeApp(FIREBASE_CONFIG);
+      window._db = firebase.firestore();
+      window._st = firebase.storage();
+      window._fbConfigured = true;
+      console.log("✅ Firebase connected — multi-device sync ON");
+    } catch(e) {
+      console.error("❌ Firebase init error:", e);
+    }
+  </script>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       ⑤  FULL APP  (JSX transformed by Babel at runtime)
+       ══════════════════════════════════════════════════════════════ -->
+  <script type="text/babel" data-presets="react">
+    "use strict";
+    const { useState, useEffect, useRef } = React;
+
+    // ─── CONSTANTS ────────────────────────────────────────────────
+    const ADMIN_EMAIL        = "admin@bhu.ac.in";
+    const ADMIN_PASS_DEFAULT = "admin2025";
+    const RAZORPAY_KEY       = "rzp_test_REPLACE_YOUR_KEY_HERE";
+
+    const PLANS = {
+      monthly:{ id:"monthly", label:"Monthly",  price:19,  period:"month", badge:"" },
+      yearly: { id:"yearly",  label:"Yearly",   price:199, period:"year",  badge:"Best Value" },
+    };
+
+    const SUBJECTS = [
+      { id:"s1", name:"Agronomy",                  icon:"🌾", cat:"core",    badge:"Popular",
+        desc:"Crop production and soil management for optimal yield and sustainability.",
+        topics:["Crop Production","Weed Management","Irrigation Systems","Tillage Systems"],        tags:["crops","soil","yield"]},
+      { id:"s2", name:"Horticulture",              icon:"🍎", cat:"applied", badge:"New",
+        desc:"Cultivating fruits, vegetables, flowers and ornamental plants.",
+        topics:["Fruit Science","Vegetable Production","Floriculture","Post-harvest Tech"],         tags:["fruits","flowers","vegetables"]},
+      { id:"s3", name:"Soil Science",              icon:"🪨", cat:"science", badge:"",
+        desc:"Physical, chemical and biological properties of soils.",
+        topics:["Soil Chemistry","Soil Fertility","Soil Physics","Soil Microbiology"],              tags:["soil","nutrients","pH"]},
+      { id:"s4", name:"Plant Physiology",          icon:"🌿", cat:"science", badge:"",
+        desc:"Plant growth, development, metabolism and physiological processes.",
+        topics:["Photosynthesis","Respiration","Transpiration","Hormonal Regulation"],              tags:["growth","metabolism","physiology"]},
+      { id:"s5", name:"Genetics & Plant Breeding", icon:"🧬", cat:"science", badge:"Popular",
+        desc:"Heredity, variation and genetic improvement of crop plants.",
+        topics:["Mendelian Genetics","Hybridization","Mutation Breeding","Molecular Markers"],     tags:["genetics","DNA","heredity"]},
+      { id:"s6", name:"Plant Pathology",           icon:"🔬", cat:"applied", badge:"",
+        desc:"Plant diseases, causative agents and integrated disease management.",
+        topics:["Fungal Diseases","Bacterial Diseases","Virus Diseases","IDM Strategies"],         tags:["disease","fungi","pathogen"]},
+      { id:"s7", name:"Entomology",                icon:"🐛", cat:"applied", badge:"",
+        desc:"Insects affecting agriculture and integrated pest management.",
+        topics:["Insect Pests","IPM","Beneficial Insects","Pesticide Management"],                 tags:["insects","IPM","biocontrol"]},
+      { id:"s8", name:"Agricultural Meteorology",  icon:"🌦️",cat:"science", badge:"",
+        desc:"Weather and climate effects on crop production and yield.",
+        topics:["Weather Forecasting","Climate Change","Rainfall Analysis","Evapotranspiration"],  tags:["weather","climate","forecast"]},
+      { id:"s9", name:"Agricultural Economics",    icon:"📊", cat:"applied", badge:"",
+        desc:"Economic principles applied to farming, marketing and rural policy.",
+        topics:["Farm Finance","Ag Marketing","Demand & Supply","Agribusiness"],                   tags:["economics","market","policy"]},
+    ];
+
+    const QUIZ_BANK = {
+      "Agronomy":[
+        {q:"Which nutrient is primarily responsible for vegetative growth?",opts:["Phosphorus","Nitrogen","Potassium","Calcium"],ans:1,exp:"Nitrogen promotes leafy growth and is essential for chlorophyll formation.",premium:false},
+        {q:"Critical period of weed competition in crops is:",opts:["At harvest time","First 20-45 days after sowing","After 60 days","At flowering stage"],ans:1,exp:"Crops are most vulnerable to weed competition in the first 20–45 days after sowing.",premium:false},
+        {q:"Which irrigation method has the highest water-use efficiency?",opts:["Flood irrigation","Furrow irrigation","Sprinkler irrigation","Drip irrigation"],ans:3,exp:"Drip irrigation delivers water directly to the root zone, minimising losses.",premium:true},
+        {q:"NPK stands for:",opts:["Nitrogen Phosphorus Potassium","Nitrogen Potash Kalium","Nutrients Phosphorus Kalium","None of the above"],ans:0,exp:"N = Nitrogen, P = Phosphorus, K = Potassium (Kalium in Latin).",premium:true},
+        {q:"Kharif crops are sown in:",opts:["March–April","October–November","June–July","January–February"],ans:2,exp:"Kharif crops are sown at the start of the rainy season (June–July) and harvested in autumn.",premium:true},
+      ],
+      "Soil Science":[
+        {q:"Ideal soil pH range for most crops:",opts:["4.0–5.0","5.5–7.5","8.0–9.0","3.0–4.0"],ans:1,exp:"Most crops grow optimally at pH 5.5–7.5.",premium:false},
+        {q:"Which soil type has the highest water holding capacity?",opts:["Sandy soil","Clay soil","Loamy soil","Silty soil"],ans:1,exp:"Clay has very fine particles with large surface area, holding more water.",premium:false},
+        {q:"Humus is formed from:",opts:["Minerals","Decomposed organic matter","Rock particles","Chemical fertilizers"],ans:1,exp:"Humus is stable organic matter resulting from decomposition of plant and animal material.",premium:true},
+        {q:"Rhizobium bacteria fix atmospheric nitrogen in:",opts:["Wheat","Maize","Legumes","Rice"],ans:2,exp:"Rhizobium fixes N₂ in root nodules of leguminous plants.",premium:true},
+        {q:"Soil salinity is primarily caused by:",opts:["Natural leaching","Waterlogging alone","Excess irrigation without drainage","Wind erosion"],ans:2,exp:"Salts accumulate when irrigation water is applied without adequate drainage.",premium:true},
+      ],
+      "Plant Pathology":[
+        {q:"Bordeaux mixture is primarily used to control:",opts:["Insect pests","Fungal diseases","Bacterial diseases","Nematodes"],ans:1,exp:"Bordeaux mixture (CuSO₄ + lime) is a classic protectant copper fungicide.",premium:false},
+        {q:"Late blight of potato is caused by:",opts:["Fusarium sp.","Phytophthora infestans","Alternaria solani","Pythium sp."],ans:1,exp:"Phytophthora infestans caused the Irish Potato Famine of the 1840s.",premium:false},
+        {q:"Wheat rust is also known as:",opts:["Cancer of wheat","Loose smut of wheat","Karnal bunt","Powdery mildew"],ans:0,exp:"Rust is called the 'cancer of wheat' due to its devastating impact.",premium:true},
+        {q:"Biological control of plant diseases uses:",opts:["Synthetic chemicals","Beneficial microorganisms","Heavy irrigation","None of these"],ans:1,exp:"Trichoderma and other beneficial organisms naturally suppress plant pathogens.",premium:true},
+        {q:"Systemic fungicides work by:",opts:["Coating only the leaf surface","Treating seeds only","Moving through vascular tissue","Remaining only in soil"],ans:2,exp:"Systemic fungicides are absorbed and translocate inside plant tissues.",premium:true},
+      ],
+      "Genetics & Plant Breeding":[
+        {q:"Who is known as the Father of Genetics?",opts:["Charles Darwin","Gregor Mendel","Hugo de Vries","Thomas Hunt Morgan"],ans:1,exp:"Gregor Mendel discovered fundamental laws of heredity through pea plant experiments.",premium:false},
+        {q:"Heterosis refers to:",opts:["Inbreeding depression","Hybrid vigour","Induced mutation","Polyploidy"],ans:1,exp:"Heterosis is superior performance of hybrids compared to their inbred parent lines.",premium:false},
+        {q:"Chromosome number (2n) of bread wheat:",opts:["14","28","42","56"],ans:2,exp:"T. aestivum is hexaploid: 2n = 6x = 42 chromosomes.",premium:true},
+        {q:"IR-8 is a semi-dwarf variety of:",opts:["Wheat","Maize","Rice","Sorghum"],ans:2,exp:"IR-8 was the first semi-dwarf high-yielding rice released during the Green Revolution.",premium:true},
+        {q:"DNA double helix structure was proposed by:",opts:["Mendel and Morgan","Watson and Crick","Avery and MacLeod","Beadle and Tatum"],ans:1,exp:"James Watson and Francis Crick published the double helix model in 1953.",premium:true},
+      ],
+      "Entomology":[
+        {q:"Malaria is transmitted by which mosquito?",opts:["Culex mosquito","Aedes mosquito","Anopheles mosquito","Housefly"],ans:2,exp:"Female Anopheles mosquitoes transmit Plasmodium, the malaria parasite.",premium:false},
+        {q:"IPM stands for:",opts:["Integrated Pest Management","International Pest Method","Insect Pest Mode","Integrated Plant Management"],ans:0,exp:"IPM combines biological, cultural, physical, and chemical tools for sustainable pest control.",premium:false},
+        {q:"Which is a natural biological enemy of aphids?",opts:["Locust","Ladybird beetle","Whitefly","Mealybug"],ans:1,exp:"Ladybird beetles (Coccinellidae) are voracious predators that feed on aphids.",premium:true},
+        {q:"Butterflies undergo which type of metamorphosis?",opts:["Incomplete metamorphosis","Complete metamorphosis","Hemimetabolism","No metamorphosis"],ans:1,exp:"Complete metamorphosis: egg → larva → pupa → adult.",premium:true},
+        {q:"Bacillus thuringiensis (Bt) is used as:",opts:["Chemical fertilizer","Bioinsecticide","Antifungal agent","Herbicide"],ans:1,exp:"Bt produces proteins toxic to certain insect larvae.",premium:true},
+      ],
+    };
+
+    // ─── STORAGE HELPERS ──────────────────────────────────────────
+    // Firebase Firestore + Storage if configured, localStorage fallback otherwise
+    const fbOK       = window._fbConfigured === true;
+    const db         = fbOK ? window._db : null;
+    const st         = fbOK ? window._st : null;
+    const LOCAL_KEYS = ["bhu:session","bhu:theme"];
+
+    async function sGet(key) {
+      try {
+        if (LOCAL_KEYS.includes(key)) {
+          const v = localStorage.getItem(key);
+          return v ? JSON.parse(v) : null;
+        }
+        if (!fbOK) {
+          const v = localStorage.getItem(key);
+          return v ? JSON.parse(v) : null;
+        }
+        if (key.startsWith("bhu:file:")) {
+          return await st.ref("files/" + key.slice(9)).getDownloadURL();
+        }
+        const snap = await db.collection("bhu_store").doc(key.replace(/:/g,"_")).get();
+        return snap.exists ? JSON.parse(snap.data().value) : null;
+      } catch { return null; }
+    }
+
+    async function sSet(key, val) {
+      try {
+        if (LOCAL_KEYS.includes(key)) { localStorage.setItem(key, JSON.stringify(val)); return; }
+        if (!fbOK) { localStorage.setItem(key, JSON.stringify(val)); return; }
+        if (key.startsWith("bhu:file:")) {
+          await st.ref("files/" + key.slice(9)).putString(val, "data_url"); return;
+        }
+        await db.collection("bhu_store").doc(key.replace(/:/g,"_")).set({
+          value: JSON.stringify(val), updatedAt: new Date().toISOString()
+        });
+      } catch(e) { console.warn("sSet:", e); }
+    }
+
+    async function sDel(key) {
+      try {
+        if (LOCAL_KEYS.includes(key)) { localStorage.removeItem(key); return; }
+        if (!fbOK) { localStorage.removeItem(key); return; }
+        if (key.startsWith("bhu:file:")) { await st.ref("files/"+key.slice(9)).delete(); return; }
+        await db.collection("bhu_store").doc(key.replace(/:/g,"_")).delete();
+      } catch {}
+    }
+
+    // ─── FILE DOWNLOAD ────────────────────────────────────────────
+    function b64Download(data, filename) {
+      if (!data) return;
+      const a = document.createElement("a");
+      a.href = data; a.download = filename || "file";
+      if (data.startsWith("http")) { a.target="_blank"; a.rel="noopener"; }
+      a.click();
+    }
+
+    // ─── RAZORPAY ────────────────────────────────────────────────
+    function loadRazorpay() {
+      return new Promise(res => {
+        if (window.Razorpay) { res(true); return; }
+        const s = document.createElement("script");
+        s.src="https://checkout.razorpay.com/v1/checkout.js";
+        s.onload=()=>res(true); s.onerror=()=>res(false);
+        document.body.appendChild(s);
+      });
+    }
+
+    // ─── SUBSCRIPTION ────────────────────────────────────────────
+    const isSubActive = u => {
+      if (!u) return false; if (u.isAdmin) return true;
+      if (!u.subExpiry) return false; return new Date(u.subExpiry) > new Date();
+    };
+    const expiryDate = plan => {
+      const d=new Date();
+      if(plan==="monthly") d.setMonth(d.getMonth()+1); else d.setFullYear(d.getFullYear()+1);
+      return d.toISOString();
+    };
+
+    // ─── GLOBAL CSS ───────────────────────────────────────────────
+    (function injectStyles() {
+      if (document.getElementById("bhu-styles")) return;
+      const s = document.createElement("style"); s.id="bhu-styles";
+      s.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap');
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        html,body,#root{height:100%;}
+        body{-webkit-font-smoothing:antialiased;}
+        ::-webkit-scrollbar{width:5px;height:5px;}
+        ::-webkit-scrollbar-thumb{background:#a0c8b0;border-radius:3px;}
+        @keyframes spin{to{transform:rotate(360deg);}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+        @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.2;}}
+        @keyframes slideIn{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+        @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+        @keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+        @keyframes barSlide{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+        .fu{animation:fadeUp .35s ease both;}
+        .fi{animation:fadeIn .25s ease both;}
+        .si{animation:slideIn .35s cubic-bezier(.17,.67,.35,1) both;}
+        .hl{transition:transform .2s,box-shadow .2s;}
+        .hl:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,.13);}
+        .bt{transition:opacity .15s,transform .15s;}
+        .bt:hover{opacity:.88;transform:translateY(-1px);}
+        .nb{transition:color .2s,border-color .2s;}
+        .psh{background:linear-gradient(90deg,#c9690a,#f59e0b,#c9690a);background-size:200%;animation:shimmer 2s infinite;}
+        .ldot::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:#4ade80;animation:pulse 1.6s infinite;margin-right:5px;vertical-align:middle;}
+        input:focus,select:focus,textarea:focus{outline:2px solid #25a865;outline-offset:1px;}
+        @media(max-width:640px){
+          .hh{font-size:22px!important;line-height:1.3!important;}
+          .ht{font-size:14px!important;}
+          .hr{padding:10px 14px!important;}
+          .nb-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+          .nb-wrap::-webkit-scrollbar{display:none;}
+          .mp{padding:0 12px 80px!important;}
+        }
+        @media(max-width:480px){
+          .pg{grid-template-columns:1fr!important;}
+        }
+      `;
+      document.head.appendChild(s);
+    })();
+
+    // ═══════════════════════════════════════════════════════════════
+    // MAIN APP
+    // ═══════════════════════════════════════════════════════════════
+    function BHUPortal() {
+      const [loading,  setLoading]  = useState(true);
+      const [notes,    setNotes]    = useState([]);
+      const [pending,  setPending]  = useState([]);
+      const [users,    setUsers]    = useState([]);
+      const [me,       setMe]       = useState(null);
+      const [ap,       setAp]       = useState(ADMIN_PASS_DEFAULT);
+      const [dark,     setDark]     = useState(false);
+      const [sec,      setSec]      = useState("home");
+      const [showLog,  setShowLog]  = useState(false);
+      const [logTab,   setLogTab]   = useState("login");
+      const [sSearch,  setSSearch]  = useState("");
+      const [catF,     setCatF]     = useState("");
+      const [aTab,     setATab]     = useState("pending");
+      const [rjItem,   setRjItem]   = useState(null);
+      const [rjReason, setRjReason] = useState("");
+      const [toast,    setToast]    = useState(null);
+      const [rSrch,    setRSrch]    = useState("");
+      const [newAP,    setNewAP]    = useState("");
+      const [showPay,  setShowPay]  = useState(false);
+      const [payBusy,  setPayBusy]  = useState(false);
+
+      // auth fields
+      const [aEmail,   setAEmail]   = useState("");
+      const [aPass,    setAPass]    = useState("");
+      const [rName,    setRName]    = useState("");
+      const [rRoll,    setRRoll]    = useState("");
+      const [rYear,    setRYear]    = useState("B.Sc. Ag. Year 1");
+      const [rEmail,   setREmail]   = useState("");
+      const [rPass,    setRPass]    = useState("");
+      const [aErr,     setAErr]     = useState("");
+      const [rErr,     setRErr]     = useState("");
+      const [aBusy,    setABusy]    = useState(false);
+
+      // upload fields
+      const [uTitle,   setUTitle]   = useState("");
+      const [uSubj,    setUSubj]    = useState("");
+      const [uType,    setUType]    = useState("PDF");
+      const [uLink,    setULink]    = useState("");
+      const [uDesc,    setUDesc]    = useState("");
+      const [uFile,    setUFile]    = useState(null);
+      const [uData,    setUData]    = useState("");
+      const [uPrem,    setUPrem]    = useState(false);
+      const [uBusy,    setUBusy]    = useState(false);
+
+      // quiz
+      const [qSubj, setQSubj] = useState("");
+      const [qQs,   setQQs]   = useState([]);
+      const [qAns,  setQAns]  = useState([]);
+      const [qIdx,  setQIdx]  = useState(0);
+      const [qDone, setQDone] = useState(false);
+
+      const syncRef = useRef(null);
+      const fileRef = useRef(null);
+
+      // ── INIT ──────────────────────────────────────────────────
+      useEffect(()=>{
+        (async()=>{
+          const [n,p,u,sess,saved_ap,theme] = await Promise.all([
+            sGet("bhu:notes"), sGet("bhu:pending"), sGet("bhu:users"),
+            sGet("bhu:session"), sGet("bhu:adminpass"), sGet("bhu:theme"),
+          ]);
+          if(n) setNotes(n); if(p) setPending(p); if(u) setUsers(u);
+          if(saved_ap) setAp(saved_ap);
+          if(theme==="dark") setDark(true);
+          if(sess) setMe(sess);
+          setLoading(false);
+          document.getElementById("splash").style.display = "none";
+
+          // Poll Firebase every 20s for changes from other devices
+          if(fbOK) {
+            syncRef.current = setInterval(async()=>{
+              const [nn,np,nu] = await Promise.all([sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users")]);
+              if(nn) setNotes(nn); if(np) setPending(np); if(nu) setUsers(nu);
+            }, 20000);
+          }
+        })();
+        return () => { if(syncRef.current) clearInterval(syncRef.current); };
+      },[]);
+
+      useEffect(()=>{ sSet("bhu:theme", dark?"dark":"light"); },[dark]);
+
+      const msg = (m,t="s")=>{ setToast({m,t}); setTimeout(()=>setToast(null),3500); };
+      const saveN = async v =>{ setNotes(v);   await sSet("bhu:notes",   v); };
+      const saveP = async v =>{ setPending(v); await sSet("bhu:pending", v); };
+      const saveU = async v =>{ setUsers(v);   await sSet("bhu:users",   v); };
+
+      // ── AUTH ──────────────────────────────────────────────────
+      async function doLogin() {
+        if(!aEmail.trim()||!aPass.trim()){setAErr("Enter email & password.");return;}
+        setABusy(true); setAErr("");
+        const em = aEmail.trim().toLowerCase();
+        if(em===ADMIN_EMAIL.toLowerCase()){
+          if(aPass!==ap){setAErr("Wrong admin password.");setABusy(false);return;}
+          const u={email:em,name:"Admin",isAdmin:true,year:"Administrator",roll:""};
+          setMe(u); await sSet("bhu:session",u);
+          setShowLog(false); setAEmail(""); setAPass(""); msg("Welcome, Admin! 🛡️");
+        } else {
+          const found = users.find(u=>u.email.toLowerCase()===em);
+          if(!found){setAErr("Account not found. Register first.");setABusy(false);return;}
+          if(found.password!==aPass){setAErr("Wrong password.");setABusy(false);return;}
+          const u={...found,isAdmin:false};
+          setMe(u); await sSet("bhu:session",u);
+          setShowLog(false); setAEmail(""); setAPass(""); msg(`Welcome back, ${found.name}! 🎓`);
+        }
+        setABusy(false);
+      }
+
+      async function doRegister() {
+        if(!rName.trim()||!rEmail.trim()||!rPass.trim()){setRErr("Fill all required fields.");return;}
+        if(rPass.length<6){setRErr("Password min 6 characters.");return;}
+        const em = rEmail.trim().toLowerCase();
+        if(em===ADMIN_EMAIL.toLowerCase()){setRErr("Email reserved.");return;}
+        if(users.find(u=>u.email.toLowerCase()===em)){setRErr("Email already registered. Login instead.");return;}
+        const newU={id:Date.now()+"",name:rName.trim(),roll:rRoll.trim(),year:rYear,
+          email:em,password:rPass,joinedAt:new Date().toISOString(),subPlan:null,subExpiry:null};
+        await saveU([...users,newU]);
+        const sess={...newU,isAdmin:false};
+        setMe(sess); await sSet("bhu:session",sess);
+        setShowLog(false); msg(`Registered! Welcome, ${newU.name}! 🎉`);
+      }
+
+      async function doLogout() {
+        setMe(null); await sDel("bhu:session"); msg("Logged out.");
+      }
+
+      // ── UPLOAD ────────────────────────────────────────────────
+      function onFileChange(e) {
+        const f=e.target.files[0]; if(!f) return;
+        if(f.size>4.5*1024*1024){msg("File > 4.5 MB. Use a Google Drive link instead.","e");return;}
+        setUFile(f);
+        const r=new FileReader(); r.onload=ev=>setUData(ev.target.result); r.readAsDataURL(f);
+      }
+
+      async function doUpload() {
+        if(!me){msg("Login first.","e");return;}
+        if(!uTitle.trim()||!uSubj){msg("Title & Subject required.","e");return;}
+        if(!uLink.trim()&&!uData){msg("Provide a link or upload a file.","e");return;}
+        setUBusy(true);
+        const id=Date.now()+"";
+        const note={id,title:uTitle.trim(),subject:uSubj,type:uType,link:uLink.trim(),desc:uDesc.trim(),
+          uploader:me.name,uploaderEmail:me.email,
+          date:new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}),
+          fileName:uFile?uFile.name:"",status:me.isAdmin?"approved":"pending",
+          hasFile:!!uData,submittedAt:new Date().toISOString(),isPremium:uPrem};
+        if(uData) await sSet("bhu:file:"+id, uData);
+        if(me.isAdmin){await saveN([note,...notes]); msg("Published! 📢");}
+        else{await saveP([note,...pending]); msg("Submitted for review! ⏳");}
+        setUTitle(""); setUSubj(""); setULink(""); setUDesc("");
+        setUFile(null); setUData(""); setUPrem(false); setUBusy(false);
+      }
+
+      async function downloadNote(note) {
+        if(!isSubActive(me)&&note.isPremium){setShowPay(true);return;}
+        if(note.hasFile){
+          const data=await sGet("bhu:file:"+note.id);
+          if(data){b64Download(data,note.fileName||"file");return;}
+        }
+        if(note.link){window.open(note.link,"_blank");return;}
+        msg("No file found.","e");
+      }
+
+      // ── ADMIN ────────────────────────────────────────────────
+      async function approveNote(id) {
+        const n=pending.find(x=>x.id===id); if(!n) return;
+        await saveP(pending.filter(x=>x.id!==id));
+        await saveN([{...n,status:"approved"},...notes]);
+        msg("Approved! ✅");
+      }
+      async function rejectNote(id,reason) {
+        const n=pending.find(x=>x.id===id); if(!n) return;
+        await saveP(pending.filter(x=>x.id!==id));
+        await saveN([{...n,status:"rejected",rejectReason:reason},...notes]);
+        setRjItem(null); setRjReason(""); msg("Rejected.","e");
+      }
+      async function deleteNote(id) {
+        if(!window.confirm("Delete permanently?")) return;
+        await saveN(notes.filter(n=>n.id!==id)); await sDel("bhu:file:"+id); msg("Deleted.");
+      }
+      async function deleteUser(id) {
+        if(!window.confirm("Remove student?")) return;
+        await saveU(users.filter(u=>u.id!==id)); msg("Removed.");
+      }
+      async function grantPremium(uid,plan) {
+        const exp=expiryDate(plan);
+        await saveU(users.map(u=>u.id===uid?{...u,subPlan:plan,subExpiry:exp}:u));
+        if(me&&me.id===uid){const ns={...me,subPlan:plan,subExpiry:exp};setMe(ns);await sSet("bhu:session",ns);}
+        msg(`Premium granted (${plan})! ✅`);
+      }
+      async function revokePremium(uid) {
+        await saveU(users.map(u=>u.id===uid?{...u,subPlan:null,subExpiry:null}:u)); msg("Revoked.");
+      }
+
+      // ── QUIZ ─────────────────────────────────────────────────
+      function startQuiz(subj) {
+        const isPrem=isSubActive(me);
+        const qs=[...(QUIZ_BANK[subj]||[])].filter(q=>!q.premium||isPrem).sort(()=>Math.random()-.5);
+        if(!qs.length){setShowPay(true);return;}
+        setQSubj(subj); setQQs(qs); setQAns(new Array(qs.length).fill(-1)); setQIdx(0); setQDone(false);
+      }
+
+      // ── PAY ───────────────────────────────────────────────────
+      async function doPay(planId) {
+        if(!me){setShowPay(false);setShowLog(true);return;}
+        setPayBusy(true);
+        const ok=await loadRazorpay();
+        if(!ok){msg("Payment gateway failed.","e");setPayBusy(false);return;}
+        const plan=PLANS[planId];
+        const rzp=new window.Razorpay({
+          key:RAZORPAY_KEY, amount:plan.price*100, currency:"INR",
+          name:"BHU Agriculture Portal", description:`${plan.label} Premium`,
+          handler:async function(res){
+            const exp=expiryDate(planId);
+            await saveU(users.map(u=>u.id===me.id?{...u,subPlan:planId,subExpiry:exp,payId:res.razorpay_payment_id}:u));
+            const ns={...me,subPlan:planId,subExpiry:exp};
+            setMe(ns); await sSet("bhu:session",ns);
+            setShowPay(false); setPayBusy(false); msg("🎉 Premium activated!");
+          },
+          prefill:{name:me.name,email:me.email},
+          theme:{color:"#1a6d43"},
+          modal:{ondismiss:()=>setPayBusy(false)},
+        });
+        rzp.open();
+      }
+
+      // ── DERIVED ───────────────────────────────────────────────
+      const isPrem   = isSubActive(me);
+      const approved = notes.filter(n=>n.status==="approved");
+      const rejected = notes.filter(n=>n.status==="rejected");
+      const premUsers= users.filter(u=>isSubActive(u));
+      const filtSubs = SUBJECTS.filter(s=>{
+        if(catF&&s.cat!==catF) return false;
+        if(!sSearch) return true;
+        return s.name.toLowerCase().includes(sSearch.toLowerCase())||s.tags.some(t=>t.includes(sSearch.toLowerCase()));
+      });
+      const filtRes  = approved.filter(n=>!rSrch||n.title.toLowerCase().includes(rSrch.toLowerCase())||n.subject.toLowerCase().includes(rSrch.toLowerCase()));
+      const subCnt   = (name,type)=>approved.filter(n=>{
+        if(n.subject!==name) return false;
+        if(type==="pdf") return n.type==="PDF";
+        if(type==="vid") return n.type==="Video"||n.type==="Link";
+        return true;
+      }).length;
+
+      // ── THEME ─────────────────────────────────────────────────
+      const C={
+        bg:       dark?"#080f0a":"#eef5ef",
+        surface:  dark?"#111d14":"#ffffff",
+        surfAlt:  dark?"#0d1910":"#f4faf5",
+        border:   dark?"#1e3826":"#cde4d4",
+        text:     dark?"#e0f0e5":"#0c2e18",
+        textM:    dark?"#8dc09a":"#2d6640",
+        textMu:   dark?"#4e7a5c":"#6a9a78",
+        acc:      "#1a6d43",
+        accB:     "#25a865",
+        accL:     dark?"#0a2215":"#e6f7ed",
+        gold:     "#c9690a",
+        goldL:    dark?"#1f1200":"#fff5e6",
+        red:      "#c82020",
+        redL:     dark?"#200808":"#fde8e8",
+        blue:     "#1860c8",
+        blueL:    dark?"#080d20":"#e0eeff",
+        navBg:    dark?"#0b1a0e":"#124e30",
+        hdr:      "linear-gradient(135deg,#082818,#1a6d43)",
+        premBg:   dark?"#1a0f00":"#fff8f0",
+        premBd:   "#f59e0b",
+      };
+      const sty={
+        card:  {background:C.surface,border:`1px solid ${C.border}`,borderRadius:14},
+        btn:   (bg,col="white")=>({background:bg,color:col,border:"none",borderRadius:8,padding:"8px 18px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}),
+        inp:   {width:"100%",padding:"9px 14px",border:`1.5px solid ${C.border}`,borderRadius:8,fontFamily:"inherit",fontSize:14,background:C.surfAlt,color:C.text,transition:".2s"},
+        lbl:   {display:"block",fontSize:13,fontWeight:500,color:C.textM,marginBottom:5},
+      };
+
+      if(loading) return(
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",background:C.bg,flexDirection:"column",gap:16}}>
+          <div style={{fontSize:52}}>🌾</div>
+          <div style={{fontFamily:"Playfair Display,serif",fontSize:18,color:C.text}}>BHU Agriculture Portal</div>
+          <div style={{color:C.textMu,fontSize:13}}>Connecting to cloud…</div>
+        </div>
+      );
+
+      return (
+        <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'DM Sans',sans-serif"}}>
+
+          {/* ── TOAST ── */}
+          {toast&&<div className="si" style={{position:"fixed",top:16,right:16,zIndex:9999,background:toast.t==="s"?"#1a6d43":"#c82020",color:"white",padding:"12px 20px",borderRadius:12,boxShadow:"0 8px 24px rgba(0,0,0,.28)",fontSize:14,fontWeight:500,maxWidth:300}}>{toast.m}</div>}
+
+          {/* ── Firebase sync status banner ── */}
+          {fbOK
+            ? <div style={{background:"#053d18",color:"#4ade80",textAlign:"center",padding:"5px 16px",fontSize:12,fontWeight:500}}>
+                🔥 Firebase connected — live multi-device sync active (project: bhuagorg)
+              </div>
+            : <div style={{background:"#c9690a",color:"white",textAlign:"center",padding:"8px 16px",fontSize:13,fontWeight:500}}>
+                ⚠️ Firebase not connected — single-device mode. Check browser console.
+              </div>
+          }
+
+          {/* ── HEADER ── */}
+          <header style={{background:C.hdr,color:"white",position:"sticky",top:0,zIndex:800,boxShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
+            <div className="hr" style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 24px",maxWidth:1200,margin:"auto",flexWrap:"wrap",gap:10}}>
+              <div style={{display:"flex",alignItems:"center",gap:12}}>
+                <div style={{width:44,height:44,borderRadius:"50%",background:"rgba(255,255,255,.14)",border:"2px solid rgba(255,255,255,.28)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🌾</div>
+                <div>
+                  <div className="ht" style={{fontFamily:"Playfair Display,serif",fontSize:18,fontWeight:700,lineHeight:1.2}}>BHU Agriculture e-Learning</div>
+                  <div style={{fontSize:11,opacity:.7,marginTop:1}}>Banaras Hindu University · Faculty of Agriculture &amp; Technology</div>
+                </div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                <span className="ldot" style={{fontSize:12,color:"rgba(255,255,255,.85)",fontWeight:600}}>{fbOK?"Live Sync":"Local"}</span>
+                {me?.isAdmin&&<span style={{background:C.gold,color:"white",fontSize:10,padding:"3px 9px",borderRadius:20,fontWeight:700}}>ADMIN</span>}
+                {isPrem&&!me?.isAdmin&&<span style={{background:"linear-gradient(90deg,#c9690a,#f59e0b)",color:"white",fontSize:10,padding:"3px 9px",borderRadius:20,fontWeight:700}}>⭐ PREMIUM</span>}
+                {!isPrem&&me&&!me.isAdmin&&<button onClick={()=>setShowPay(true)} className="psh bt" style={{color:"white",border:"none",padding:"5px 12px",borderRadius:20,fontSize:11,fontWeight:700,cursor:"pointer"}}>⭐ Go Premium</button>}
+                <button onClick={()=>setDark(d=>!d)} style={{background:"rgba(255,255,255,.12)",border:"1.5px solid rgba(255,255,255,.3)",color:"white",width:34,height:34,borderRadius:8,cursor:"pointer",fontSize:15,display:"flex",alignItems:"center",justifyContent:"center"}}>{dark?"☀️":"🌙"}</button>
+                {me?(
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <div style={{display:"flex",alignItems:"center",gap:7,background:"rgba(255,255,255,.12)",padding:"6px 12px",borderRadius:8,fontSize:13}}>
+                      <div style={{width:26,height:26,borderRadius:"50%",background:me.isAdmin?C.gold:isPrem?"#f59e0b":C.accB,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,flexShrink:0}}>
+                        {me.isAdmin?"🛡":isPrem?"⭐":me.name[0].toUpperCase()}
+                      </div>
+                      {me.name}
+                    </div>
+                    <button onClick={doLogout} style={{background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.28)",color:"white",padding:"6px 12px",borderRadius:8,cursor:"pointer",fontSize:12,fontFamily:"inherit"}}>Logout</button>
+                  </div>
+                ):(
+                  <button onClick={()=>{setShowLog(true);setLogTab("login");}} style={{background:C.accB,color:"white",border:"none",padding:"8px 18px",borderRadius:8,cursor:"pointer",fontSize:13,fontWeight:600,fontFamily:"inherit"}}>🎓 Login / Register</button>
+                )}
+              </div>
+            </div>
+            <nav className="nb-wrap" style={{background:C.navBg,paddingLeft:24,display:"flex",alignItems:"center",gap:2}}>
+              {[{id:"home",l:"🏠 Home"},{id:"subjects",l:"📚 Subjects"},{id:"resources",l:"📁 Resources"},{id:"upload",l:"⬆️ Upload"},{id:"quiz",l:"🧠 Quiz"},{id:"pricing",l:"⭐ Premium"},
+                ...(me?.isAdmin?[{id:"admin",l:"🛡️ Admin"}]:[])
+              ].map(t=>(
+                <button key={t.id} onClick={()=>t.id==="pricing"?setShowPay(true):setSec(t.id)} className="nb"
+                  style={{background:"none",border:"none",borderBottom:`3px solid ${sec===t.id?"#f59e0b":"transparent"}`,color:t.id==="pricing"?"#fbbf24":sec===t.id?"white":"rgba(255,255,255,.72)",padding:"12px 14px",fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>
+                  {t.l}
+                </button>
+              ))}
+            </nav>
+          </header>
+
+          {/* ── MAIN ── */}
+          <div className="mp" style={{maxWidth:1160,margin:"0 auto",padding:"0 18px 80px"}}>
+
+            {/* HOME */}
+            {sec==="home"&&(
+              <div className="fu">
+                <div style={{background:"linear-gradient(135deg,#082818,#145232)",color:"white",borderRadius:"0 0 24px 24px",padding:"52px 28px 44px",textAlign:"center",position:"relative",overflow:"hidden",marginBottom:24}}>
+                  <div style={{position:"absolute",inset:0,backgroundImage:"url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=1200&q=30')",backgroundSize:"cover",backgroundPosition:"center",opacity:.12}}/>
+                  <div style={{position:"relative"}}>
+                    <div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(255,255,255,.1)",border:"1px solid rgba(255,255,255,.2)",padding:"5px 14px",borderRadius:20,fontSize:12,fontWeight:600,marginBottom:18}}>🌿 BHU Faculty of Agriculture &amp; Technology</div>
+                    <h1 className="hh" style={{fontFamily:"Playfair Display,serif",fontSize:38,lineHeight:1.25,marginBottom:12,fontWeight:700}}>Your Complete Agriculture<br/>Learning Companion</h1>
+                    <p style={{fontSize:14,opacity:.85,lineHeight:1.7,maxWidth:520,margin:"0 auto 24px"}}>Notes, PDFs, videos and quizzes — all synced live across every device.</p>
+                    <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+                      <button onClick={()=>setSec("subjects")} className="bt" style={{background:C.accB,color:"white",border:"none",padding:"11px 26px",borderRadius:10,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Explore Subjects →</button>
+                      <button onClick={()=>setShowPay(true)} className="bt" style={{background:"linear-gradient(90deg,#c9690a,#f59e0b)",color:"white",border:"none",padding:"11px 26px",borderRadius:10,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>⭐ Get Premium — ₹19/mo</button>
+                    </div>
+                    <div style={{display:"flex",gap:40,justifyContent:"center",flexWrap:"wrap",marginTop:40,paddingTop:28,borderTop:"1px solid rgba(255,255,255,.14)"}}>
+                      {[{n:SUBJECTS.length,l:"Subjects"},{n:approved.length,l:"Resources"},{n:users.length,l:"Students"},{n:premUsers.length,l:"Premium"}].map((s,i)=>(
+                        <div key={i} style={{textAlign:"center"}}>
+                          <div style={{fontFamily:"Playfair Display,serif",fontSize:34,fontWeight:700,lineHeight:1}}>{s.n}</div>
+                          <div style={{fontSize:12,opacity:.7,marginTop:4}}>{s.l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {isPrem&&!me?.isAdmin&&(
+                  <div style={{background:dark?"#0a2215":"#e6f7ed",border:`1px solid ${C.accB}`,borderRadius:12,padding:"13px 18px",marginBottom:20,display:"flex",alignItems:"center",gap:12}}>
+                    <span style={{fontSize:22}}>⭐</span>
+                    <div><strong style={{color:C.acc}}>Premium Active</strong>
+                      <span style={{fontSize:13,color:C.textMu,marginLeft:10}}>{me.subPlan==="monthly"?"Monthly":"Yearly"} · Expires {new Date(me.subExpiry).toLocaleDateString("en-IN")}</span>
+                    </div>
+                  </div>
+                )}
+                {!isPrem&&me&&!me.isAdmin&&(
+                  <div style={{background:"linear-gradient(135deg,#1a0a00,#3d1f00)",border:"1px solid #f59e0b",borderRadius:14,padding:"22px 24px",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:14}}>
+                    <div>
+                      <div style={{fontFamily:"Playfair Display,serif",fontSize:19,color:"#fbbf24",fontWeight:700,marginBottom:5}}>⭐ Unlock Premium</div>
+                      <div style={{display:"flex",gap:14,flexWrap:"wrap",marginTop:6}}>
+                        {["📄 Premium PDFs","🎬 All Videos","📝 PYQ Papers","🧠 Full Quizzes"].map(f=>(
+                          <span key={f} style={{fontSize:12,color:"#fbbf24",fontWeight:600}}>✓ {f}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <button onClick={()=>setShowPay(true)} style={{background:"linear-gradient(90deg,#c9690a,#f59e0b)",color:"white",border:"none",padding:"12px 24px",borderRadius:10,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}}>Start at ₹19/month →</button>
+                  </div>
+                )}
+
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",gap:12}}>
+                  {[
+                    {icon:"📄",title:"PDF Notes",desc:"Subject-wise lecture notes & PDFs",prem:true,go:()=>setSec("resources")},
+                    {icon:"🎬",title:"Video Lectures",desc:"Curated video resources for every topic",prem:true,go:()=>setSec("resources")},
+                    {icon:"📝",title:"Previous Year Papers",desc:"Practice with past exam questions",prem:true,go:()=>setSec("resources")},
+                    {icon:"🧠",title:"Practice Quizzes",desc:"MCQs with explanations",prem:true,go:()=>setSec("quiz")},
+                    {icon:"⬆️",title:"Upload Resources",desc:"Share notes with classmates",prem:false,go:()=>setSec("upload")},
+                    {icon:"📚",title:"All Subjects",desc:"Browse 9 agriculture subjects",prem:false,go:()=>setSec("subjects")},
+                  ].map((f,i)=>(
+                    <div key={i} onClick={f.prem&&!isPrem?()=>setShowPay(true):f.go}
+                      style={{...sty.card,padding:"18px 16px",cursor:"pointer",position:"relative",overflow:"hidden"}} className="hl">
+                      {f.prem&&<div style={{position:"absolute",top:10,right:10,background:"linear-gradient(90deg,#c9690a,#f59e0b)",color:"white",fontSize:9,padding:"2px 7px",borderRadius:10,fontWeight:700}}>PREMIUM</div>}
+                      <div style={{fontSize:28,marginBottom:9}}>{f.icon}</div>
+                      <div style={{fontWeight:600,fontSize:14,color:C.text,marginBottom:3}}>{f.title}</div>
+                      <div style={{fontSize:12,color:C.textMu,lineHeight:1.5}}>{f.desc}</div>
+                      {f.prem&&!isPrem&&<div style={{fontSize:11,color:C.gold,marginTop:7,fontWeight:600}}>🔒 Premium</div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SUBJECTS */}
+            {sec==="subjects"&&(
+              <div style={{paddingTop:26}} className="fu">
+                <h2 style={{fontFamily:"Playfair Display,serif",fontSize:25,color:C.acc,marginBottom:4}}>Agriculture Subjects</h2>
+                <p style={{color:C.textMu,fontSize:14,marginBottom:18}}>{SUBJECTS.length} subjects — click to view resources</p>
+                <div style={{display:"flex",gap:10,marginBottom:18,flexWrap:"wrap"}}>
+                  <input value={sSearch} onChange={e=>setSSearch(e.target.value)} placeholder="Search subjects…" style={{...sty.inp,flex:1,minWidth:180}}/>
+                  {["","core","applied","science"].map(c=>(
+                    <button key={c} onClick={()=>setCatF(c)} style={{padding:"7px 14px",borderRadius:20,border:`1.5px solid ${catF===c?C.acc:C.border}`,background:catF===c?C.acc:C.surface,color:catF===c?"white":C.textM,fontFamily:"inherit",fontSize:13,cursor:"pointer",transition:".2s"}}>
+                      {c===""?"All":c[0].toUpperCase()+c.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(270px,1fr))",gap:14}}>
+                  {filtSubs.map(s=>(
+                    <div key={s.id} style={{...sty.card,padding:18}} className="hl">
+                      <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:10}}>
+                        <div style={{display:"flex",alignItems:"center",gap:10}}>
+                          <span style={{fontSize:26}}>{s.icon}</span>
+                          <div>
+                            <div style={{fontWeight:600,fontSize:14,color:C.text}}>{s.name}</div>
+                            <span style={{fontSize:11,color:C.textMu,textTransform:"capitalize"}}>{s.cat}</span>
+                          </div>
+                        </div>
+                        {s.badge&&<span style={{background:C.accL,color:C.acc,fontSize:10,padding:"2px 8px",borderRadius:10,fontWeight:700}}>{s.badge}</span>}
+                      </div>
+                      <p style={{fontSize:12,color:C.textMu,lineHeight:1.55,marginBottom:10}}>{s.desc}</p>
+                      <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>
+                        {s.topics.map(t=><span key={t} style={{background:C.accL,color:C.acc,fontSize:11,padding:"3px 9px",borderRadius:12,fontWeight:500}}>{t}</span>)}
+                      </div>
+                      <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:10,fontSize:12,color:C.textMu}}>
+                        <span>📄 {subCnt(s.name,"pdf")} PDFs</span><span>·</span><span>🎬 {subCnt(s.name,"vid")} Videos</span>
+                      </div>
+                      <button onClick={()=>{setRSrch(s.name);setSec("resources");}} style={{...sty.btn(C.accL,C.acc),border:`1px solid ${C.border}`,width:"100%",padding:"7px 0",textAlign:"center"}}>View Resources →</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* RESOURCES */}
+            {sec==="resources"&&(
+              <div style={{paddingTop:26}} className="fu">
+                <h2 style={{fontFamily:"Playfair Display,serif",fontSize:25,color:C.acc,marginBottom:4}}>Resources Library</h2>
+                <p style={{color:C.textMu,fontSize:14,marginBottom:14}}>{approved.length} admin-approved resources</p>
+                <input value={rSrch} onChange={e=>setRSrch(e.target.value)} placeholder="Search by title or subject…" style={{...sty.inp,marginBottom:18,maxWidth:460}}/>
+                {filtRes.length===0?(
+                  <div style={{textAlign:"center",color:C.textMu,padding:"40px 20px"}}>
+                    <div style={{fontSize:36,marginBottom:10}}>📭</div>
+                    <p>No resources yet.{me?" Be the first to upload!":""}</p>
+                  </div>
+                ):filtRes.map(n=>(
+                  <NoteCard key={n.id} note={n} C={C} me={me} isPrem={isPrem}
+                    onDownload={()=>downloadNote(n)} onDelete={()=>deleteNote(n.id)}
+                    sty={sty} onUpgrade={()=>setShowPay(true)}/>
+                ))}
+              </div>
+            )}
+
+            {/* UPLOAD */}
+            {sec==="upload"&&(
+              <div style={{paddingTop:26,maxWidth:620}} className="fu">
+                <h2 style={{fontFamily:"Playfair Display,serif",fontSize:25,color:C.acc,marginBottom:4}}>Upload Resource</h2>
+                <p style={{color:C.textMu,fontSize:14,marginBottom:20}}>{me?.isAdmin?"Admin uploads are published instantly.":"Your upload goes to admin for review."}</p>
+                {!me?(
+                  <div style={{...sty.card,padding:28,textAlign:"center"}}>
+                    <div style={{fontSize:36,marginBottom:10}}>🔒</div>
+                    <p style={{color:C.textMu,marginBottom:14}}>Login to upload resources.</p>
+                    <button onClick={()=>setShowLog(true)} style={{...sty.btn(C.acc)}}>Login / Register</button>
+                  </div>
+                ):(
+                  <div style={{...sty.card,padding:22}}>
+                    <div style={{marginBottom:14}}>
+                      <label style={sty.lbl}>Title *</label>
+                      <input value={uTitle} onChange={e=>setUTitle(e.target.value)} placeholder="e.g. Agronomy Unit 1 Notes" style={sty.inp}/>
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
+                      <div>
+                        <label style={sty.lbl}>Subject *</label>
+                        <select value={uSubj} onChange={e=>setUSubj(e.target.value)} style={sty.inp}>
+                          <option value="">Select subject…</option>
+                          {SUBJECTS.map(s=><option key={s.id} value={s.name}>{s.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label style={sty.lbl}>Type</label>
+                        <select value={uType} onChange={e=>setUType(e.target.value)} style={sty.inp}>
+                          {["PDF","Video","Link","Notes","PYQ"].map(t=><option key={t}>{t}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                    <div style={{marginBottom:14}}>
+                      <label style={sty.lbl}>Link (Google Drive / YouTube URL)</label>
+                      <input value={uLink} onChange={e=>setULink(e.target.value)} placeholder="https://drive.google.com/…" style={sty.inp}/>
+                    </div>
+                    <div style={{marginBottom:14}}>
+                      <label style={sty.lbl}>Upload File (PDF / image, max 4.5 MB)</label>
+                      <input ref={fileRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.pptx,.docx" onChange={onFileChange} style={{display:"none"}}/>
+                      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                        <button onClick={()=>fileRef.current.click()} style={{...sty.btn(C.surfAlt,C.textM),border:`1px solid ${C.border}`}}>📎 Choose File</button>
+                        {uFile&&<span style={{fontSize:12,color:C.textM}}>{uFile.name} ({(uFile.size/1024).toFixed(0)} KB)</span>}
+                      </div>
+                    </div>
+                    <div style={{marginBottom:14}}>
+                      <label style={sty.lbl}>Description (optional)</label>
+                      <textarea value={uDesc} onChange={e=>setUDesc(e.target.value)} rows={2} placeholder="Brief description…" style={{...sty.inp,resize:"vertical"}}/>
+                    </div>
+                    {me?.isAdmin&&(
+                      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14,padding:"10px 14px",background:C.goldL,borderRadius:10,border:`1px solid ${C.premBd}`}}>
+                        <input type="checkbox" id="premCk" checked={uPrem} onChange={e=>setUPrem(e.target.checked)}/>
+                        <label htmlFor="premCk" style={{fontSize:13,color:C.gold,fontWeight:600,cursor:"pointer"}}>⭐ Mark as Premium (subscribers only)</label>
+                      </div>
+                    )}
+                    <button onClick={doUpload} disabled={uBusy} style={{...sty.btn(C.acc),padding:"10px 0",width:"100%",opacity:uBusy?.6:1}}>
+                      {uBusy?"⏳ Uploading…":me?.isAdmin?"🚀 Publish Now":"📤 Submit for Review"}
+                    </button>
+                  </div>
+                )}
+
+                {me&&!me.isAdmin&&(()=>{
+                  const myPend=pending.filter(n=>n.uploaderEmail===me.email);
+                  const myAppr=approved.filter(n=>n.uploaderEmail===me.email);
+                  return(<>
+                    {myPend.length>0&&(
+                      <div style={{marginTop:24}}>
+                        <h3 style={{fontFamily:"Playfair Display,serif",fontSize:17,color:C.gold,marginBottom:12}}>⏳ Awaiting Review ({myPend.length})</h3>
+                        {myPend.map(n=>(
+                          <div key={n.id} style={{background:C.goldL,border:"1px solid #fde68a",borderRadius:10,padding:13,marginBottom:8}}>
+                            <div style={{fontWeight:600,fontSize:14,color:"#78350f"}}>{n.title}</div>
+                            <div style={{fontSize:12,color:"#92400e",marginTop:2}}>{n.subject} · {n.type} · {n.date}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {myAppr.length>0&&(
+                      <div style={{marginTop:20}}>
+                        <h3 style={{fontFamily:"Playfair Display,serif",fontSize:17,color:C.acc,marginBottom:12}}>✅ My Uploads ({myAppr.length})</h3>
+                        {myAppr.map(n=><NoteCard key={n.id} note={n} C={C} me={me} isPrem={isPrem} onDownload={()=>downloadNote(n)} onDelete={()=>deleteNote(n.id)} sty={sty} onUpgrade={()=>setShowPay(true)}/>)}
+                      </div>
+                    )}
+                  </>);
+                })()}
+              </div>
+            )}
+
+            {/* QUIZ */}
+            {sec==="quiz"&&(
+              <div style={{paddingTop:26,maxWidth:660}} className="fu">
+                <h2 style={{fontFamily:"Playfair Display,serif",fontSize:25,color:C.acc,marginBottom:4}}>Practice Quiz</h2>
+                <p style={{color:C.textMu,fontSize:14,marginBottom:20}}>{isPrem?"Full bank unlocked! ⭐":"2 free Qs per subject · Premium for all 5"}</p>
+                {!qSubj?(
+                  <div style={{...sty.card,padding:22}}>
+                    <p style={{fontSize:14,color:C.textM,marginBottom:14,fontWeight:500}}>Select a subject:</p>
+                    <div style={{display:"flex",gap:9,flexWrap:"wrap"}}>
+                      {Object.entries(QUIZ_BANK).map(([subj,qs])=>{
+                        const free=qs.filter(q=>!q.premium).length, total=qs.length;
+                        return(
+                          <button key={subj} onClick={()=>startQuiz(subj)} className="bt"
+                            style={{background:C.accL,color:C.acc,border:`1.5px solid ${C.border}`,padding:"8px 16px",borderRadius:20,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                            {subj} <span style={{opacity:.7,fontWeight:400}}>({isPrem?total:free}/{total})</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!isPrem&&(
+                      <div style={{marginTop:16,background:C.goldL,border:`1px solid ${C.premBd}`,borderRadius:10,padding:"13px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:8}}>
+                        <span style={{fontSize:13,color:C.gold,fontWeight:600}}>⭐ Premium unlocks all 5 Qs per subject</span>
+                        <button onClick={()=>setShowPay(true)} style={{...sty.btn("linear-gradient(90deg,#c9690a,#f59e0b)"),padding:"6px 14px",fontSize:12}}>Upgrade</button>
+                      </div>
+                    )}
+                  </div>
+                ):qDone?(
+                  <div style={{...sty.card,padding:26,textAlign:"center"}} className="fi">
+                    <div style={{fontFamily:"Playfair Display,serif",fontSize:54,color:C.acc,fontWeight:700,lineHeight:1}}>{qQs.filter((q,i)=>qAns[i]===q.ans).length}/{qQs.length}</div>
+                    <div style={{fontSize:20,margin:"10px 0 8px"}}>
+                      {(qQs.filter((q,i)=>qAns[i]===q.ans).length/qQs.length)>=.8?"🎉 Excellent!":(qQs.filter((q,i)=>qAns[i]===q.ans).length/qQs.length)>=.6?"👍 Good Work!":"📖 Keep Revising"}
+                    </div>
+                    <p style={{color:C.textMu,fontSize:14,marginBottom:22}}>Score: {Math.round(qQs.filter((q,i)=>qAns[i]===q.ans).length/qQs.length*100)}% in {qSubj}</p>
+                    <div style={{textAlign:"left",marginBottom:22}}>
+                      {qQs.map((q,qi)=>{
+                        const ok=qAns[qi]===q.ans;
+                        return(
+                          <div key={qi} style={{background:ok?C.accL:C.redL,border:`1px solid ${ok?C.border:"#fca5a5"}`,borderRadius:10,padding:13,marginBottom:9}}>
+                            <p style={{fontSize:14,fontWeight:500,marginBottom:7,color:C.text}}>Q{qi+1}: {q.q}</p>
+                            <p style={{fontSize:13,marginBottom:4}}>
+                              Your answer: <strong style={{color:ok?C.acc:C.red}}>{qAns[qi]===-1?"Not answered":q.opts[qAns[qi]]}</strong>
+                              {!ok&&<> · Correct: <strong style={{color:C.acc}}>{q.opts[q.ans]}</strong></>}
+                            </p>
+                            <p style={{fontSize:12,color:C.textMu}}>💡 {q.exp}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{display:"flex",gap:10,justifyContent:"center",flexWrap:"wrap"}}>
+                      <button onClick={()=>startQuiz(qSubj)} style={{...sty.btn(C.acc),padding:"9px 20px"}}>Try Again</button>
+                      <button onClick={()=>setQSubj("")} style={{...sty.btn(C.accL,C.acc),border:`1px solid ${C.border}`,padding:"9px 20px"}}>Change Subject</button>
+                    </div>
+                  </div>
+                ):(
+                  <div style={{...sty.card,padding:22}} className="fi">
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:7}}>
+                      <span style={{fontSize:13,color:C.textMu}}>{qSubj} · Q{qIdx+1}/{qQs.length}</span>
+                      <button onClick={()=>setQSubj("")} style={{background:"none",border:"none",color:C.textMu,cursor:"pointer",fontSize:13,fontFamily:"inherit"}}>✕ Exit</button>
+                    </div>
+                    <div style={{height:5,background:C.border,borderRadius:3,marginBottom:20,overflow:"hidden"}}>
+                      <div style={{height:"100%",background:C.accB,borderRadius:3,transition:"width .3s",width:`${(qIdx+1)/qQs.length*100}%`}}/>
+                    </div>
+                    <h4 style={{fontSize:15,fontWeight:600,marginBottom:14,lineHeight:1.55,color:C.text}}>{qQs[qIdx].q}</h4>
+                    <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:18}}>
+                      {qQs[qIdx].opts.map((opt,i)=>(
+                        <div key={i} onClick={()=>{const a=[...qAns];a[qIdx]=i;setQAns(a);}}
+                          style={{display:"flex",alignItems:"center",gap:10,padding:"10px 14px",border:`1.5px solid ${qAns[qIdx]===i?C.accB:C.border}`,borderRadius:10,cursor:"pointer",fontSize:14,transition:".2s",background:qAns[qIdx]===i?C.accL:C.surface,color:C.text}}>
+                          <div style={{width:17,height:17,borderRadius:"50%",border:`2px solid ${qAns[qIdx]===i?C.accB:C.border}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,background:qAns[qIdx]===i?C.accB:"transparent"}}>
+                            {qAns[qIdx]===i&&<div style={{width:7,height:7,borderRadius:"50%",background:"white"}}/>}
+                          </div>
+                          {opt}
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{display:"flex",gap:10,justifyContent:"space-between"}}>
+                      <button disabled={qIdx===0} onClick={()=>setQIdx(i=>i-1)} style={{...sty.btn(C.surfAlt,C.textM),border:`1px solid ${C.border}`,opacity:qIdx===0?.4:1}}>← Prev</button>
+                      {qIdx<qQs.length-1?<button onClick={()=>setQIdx(i=>i+1)} style={{...sty.btn(C.acc)}}>Next →</button>
+                       :<button onClick={()=>setQDone(true)} style={{...sty.btn("#16a34a"),padding:"8px 20px"}}>Submit ✓</button>}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ADMIN */}
+            {sec==="admin"&&me?.isAdmin&&(
+              <div style={{paddingTop:26}} className="fu">
+                <h2 style={{fontFamily:"Playfair Display,serif",fontSize:25,color:C.gold,marginBottom:4}}>🛡️ Admin Dashboard</h2>
+                <p style={{color:C.textMu,fontSize:14,marginBottom:18}}>Manage resources, students &amp; subscriptions</p>
+
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(120px,1fr))",gap:11,marginBottom:20}}>
+                  {[{n:notes.length+pending.length,l:"Total",c:C.acc},{n:pending.length,l:"Pending",c:C.gold},{n:approved.length,l:"Approved",c:"#16a34a"},{n:users.length,l:"Students",c:C.blue},{n:premUsers.length,l:"Premium",c:"#f59e0b"}].map((s,i)=>(
+                    <div key={i} style={{...sty.card,padding:"13px 14px",textAlign:"center"}}>
+                      <div style={{fontFamily:"Playfair Display,serif",fontSize:26,fontWeight:700,color:s.c}}>{s.n}</div>
+                      <div style={{fontSize:11,color:C.textMu,marginTop:2}}>{s.l}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{display:"flex",gap:7,marginBottom:18,flexWrap:"wrap"}}>
+                  {[{id:"pending",l:`Pending (${pending.length})`},{id:"approved",l:`Approved (${approved.length})`},{id:"rejected",l:`Rejected (${rejected.length})`},{id:"users",l:`Students (${users.length})`},{id:"subs",l:`Subscribers (${premUsers.length})`},{id:"settings",l:"Settings"}].map(t=>(
+                    <button key={t.id} onClick={()=>setATab(t.id)} style={{padding:"7px 14px",borderRadius:20,border:`1.5px solid ${aTab===t.id?C.acc:C.border}`,background:aTab===t.id?C.acc:C.surface,color:aTab===t.id?"white":C.textM,fontFamily:"inherit",fontSize:12,fontWeight:500,cursor:"pointer",transition:".2s"}}>
+                      {t.l}
+                    </button>
+                  ))}
+                </div>
+
+                {aTab==="pending"&&<div className="fi">
+                  {pending.length===0?<div style={{textAlign:"center",color:C.textMu,padding:"32px 20px"}}>✅ No pending submissions!</div>
+                  :pending.map(n=>(
+                    <div key={n.id} style={{background:C.goldL,border:"1px solid #fde68a",borderRadius:12,padding:16,marginBottom:11}}>
+                      <div style={{display:"flex",gap:11,alignItems:"flex-start"}}>
+                        <span style={{fontSize:24,flexShrink:0}}>{n.type==="Video"?"🎬":n.type==="Link"?"🔗":"📄"}</span>
+                        <div style={{flex:1}}>
+                          <div style={{fontWeight:600,fontSize:14,color:"#78350f",marginBottom:3}}>{n.title}</div>
+                          <div style={{fontSize:12,color:"#92400e",marginBottom:5}}>{n.subject} · {n.type} · {n.uploader} · {n.date}</div>
+                          {n.desc&&<p style={{fontSize:12,color:"#78350f",marginBottom:7}}>{n.desc}</p>}
+                          {n.link&&<a href={n.link} target="_blank" rel="noreferrer" style={{fontSize:12,color:C.blue,display:"block",marginBottom:6}}>🔗 Preview</a>}
+                          {n.hasFile&&<button onClick={async()=>{const d=await sGet("bhu:file:"+n.id);if(d)b64Download(d,n.fileName);}} style={{background:"none",border:"none",color:C.blue,cursor:"pointer",fontSize:12,padding:0,fontFamily:"inherit"}}>📥 Download File</button>}
+                          <div style={{display:"flex",gap:7,marginTop:10,flexWrap:"wrap"}}>
+                            <button onClick={()=>approveNote(n.id)} style={{...sty.btn("#16a34a"),padding:"7px 16px"}}>✓ Approve</button>
+                            <button onClick={()=>setRjItem(n)} style={{...sty.btn(C.red),padding:"7px 14px"}}>✕ Reject</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>}
+
+                {aTab==="approved"&&<div className="fi">
+                  {approved.length===0?<div style={{textAlign:"center",color:C.textMu,padding:"32px"}}>No approved resources.</div>
+                  :approved.map(n=><NoteCard key={n.id} note={n} C={C} me={me} isPrem={true} onDownload={()=>downloadNote(n)} onDelete={()=>deleteNote(n.id)} sty={sty} onUpgrade={()=>{}} admin/>)}
+                </div>}
+
+                {aTab==="rejected"&&<div className="fi">
+                  {rejected.length===0?<div style={{textAlign:"center",color:C.textMu,padding:"32px"}}>No rejected submissions.</div>
+                  :rejected.map(n=>(
+                    <div key={n.id} style={{background:C.redL,border:"1px solid #fca5a5",borderRadius:10,padding:13,marginBottom:9}}>
+                      <div style={{fontWeight:600,fontSize:13,color:"#991b1b"}}>{n.title}</div>
+                      <div style={{fontSize:12,color:"#b91c1c",marginTop:2}}>{n.subject} · {n.uploader} · {n.date}</div>
+                      {n.rejectReason&&<div style={{fontSize:12,color:"#b91c1c",marginTop:4}}>Reason: {n.rejectReason}</div>}
+                      <button onClick={()=>deleteNote(n.id)} style={{...sty.btn(C.red),padding:"5px 12px",fontSize:11,marginTop:8}}>🗑 Delete</button>
+                    </div>
+                  ))}
+                </div>}
+
+                {aTab==="users"&&<div className="fi">
+                  {users.length===0?<div style={{textAlign:"center",color:C.textMu,padding:"32px"}}>No students yet.</div>:(
+                    <div style={{...sty.card,overflow:"hidden"}}><div style={{overflowX:"auto"}}>
+                      <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+                        <thead><tr style={{background:C.surfAlt}}>
+                          {["Name","Roll","Year","Email","Joined",""].map(h=><th key={h} style={{padding:"9px 13px",textAlign:"left",fontWeight:600,color:C.textM,borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap",fontSize:11}}>{h}</th>)}
+                        </tr></thead>
+                        <tbody>{users.map(u=>(
+                          <tr key={u.id} style={{borderBottom:`1px solid ${C.border}`}}>
+                            <td style={{padding:"9px 13px",fontWeight:500,color:C.text}}>{u.name}</td>
+                            <td style={{padding:"9px 13px",color:C.textMu}}>{u.roll||"—"}</td>
+                            <td style={{padding:"9px 13px",color:C.textMu,whiteSpace:"nowrap"}}>{u.year}</td>
+                            <td style={{padding:"9px 13px",color:C.textMu}}>{u.email}</td>
+                            <td style={{padding:"9px 13px",color:C.textMu,whiteSpace:"nowrap"}}>{new Date(u.joinedAt).toLocaleDateString("en-IN")}</td>
+                            <td style={{padding:"9px 13px"}}><button onClick={()=>deleteUser(u.id)} style={{background:C.redL,color:C.red,border:"none",padding:"3px 9px",borderRadius:5,fontSize:10,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>Remove</button></td>
+                          </tr>
+                        ))}</tbody>
+                      </table>
+                    </div></div>
+                  )}
+                </div>}
+
+                {aTab==="subs"&&<div className="fi">
+                  {users.length===0?<div style={{textAlign:"center",color:C.textMu,padding:"32px"}}>No students yet.</div>:(
+                    <div style={{...sty.card,overflow:"hidden"}}><div style={{overflowX:"auto"}}>
+                      <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+                        <thead><tr style={{background:C.surfAlt}}>
+                          {["Name","Email","Status","Plan","Expires","Action"].map(h=><th key={h} style={{padding:"9px 13px",textAlign:"left",fontWeight:600,color:C.textM,borderBottom:`1px solid ${C.border}`,whiteSpace:"nowrap",fontSize:11}}>{h}</th>)}
+                        </tr></thead>
+                        <tbody>{users.map(u=>{
+                          const act=isSubActive(u);
+                          return(
+                            <tr key={u.id} style={{borderBottom:`1px solid ${C.border}`}}>
+                              <td style={{padding:"9px 13px",fontWeight:500,color:C.text}}>{u.name}</td>
+                              <td style={{padding:"9px 13px",color:C.textMu}}>{u.email}</td>
+                              <td style={{padding:"9px 13px"}}><span style={{background:act?C.accL:C.redL,color:act?C.acc:C.red,padding:"2px 9px",borderRadius:10,fontSize:10,fontWeight:700}}>{act?"⭐ Active":"Free"}</span></td>
+                              <td style={{padding:"9px 13px",color:C.textMu}}>{u.subPlan||"—"}</td>
+                              <td style={{padding:"9px 13px",color:C.textMu,whiteSpace:"nowrap"}}>{u.subExpiry?new Date(u.subExpiry).toLocaleDateString("en-IN"):"—"}</td>
+                              <td style={{padding:"9px 13px"}}>
+                                <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                                  {!act&&<button onClick={()=>grantPremium(u.id,"monthly")} style={{background:C.accL,color:C.acc,border:"none",padding:"3px 7px",borderRadius:5,fontSize:10,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>+Month</button>}
+                                  {!act&&<button onClick={()=>grantPremium(u.id,"yearly")} style={{background:C.goldL,color:C.gold,border:"none",padding:"3px 7px",borderRadius:5,fontSize:10,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>+Year</button>}
+                                  {act&&<button onClick={()=>revokePremium(u.id)} style={{background:C.redL,color:C.red,border:"none",padding:"3px 7px",borderRadius:5,fontSize:10,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>Revoke</button>}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}</tbody>
+                      </table>
+                    </div></div>
+                  )}
+                </div>}
+
+                {aTab==="settings"&&<div className="fi" style={{maxWidth:460}}>
+                  <div style={{...sty.card,padding:22,marginBottom:14}}>
+                    <h3 style={{fontSize:14,fontWeight:600,marginBottom:12,color:C.text}}>🔐 Change Admin Password</h3>
+                    <input type="password" value={newAP} onChange={e=>setNewAP(e.target.value)} placeholder="New password (min 6 chars)" style={{...sty.inp,marginBottom:11}}/>
+                    <button onClick={async()=>{
+                      if(!newAP.trim()||newAP.length<6){msg("Min 6 characters.","e");return;}
+                      setAp(newAP); await sSet("bhu:adminpass",newAP); setNewAP(""); msg("Password updated! ✅");
+                    }} style={{...sty.btn(C.gold),padding:"8px 18px"}}>Update Password</button>
+                  </div>
+                  <div style={{...sty.card,padding:22,marginBottom:14}}>
+                    <h3 style={{fontSize:14,fontWeight:600,marginBottom:10,color:C.text}}>ℹ️ Portal Info</h3>
+                    <p style={{fontSize:13,color:C.textMu,marginBottom:4}}>Admin: <strong style={{color:C.text}}>{ADMIN_EMAIL}</strong></p>
+                    <p style={{fontSize:13,color:C.textMu,marginBottom:4}}>Premium students: <strong style={{color:C.gold}}>{premUsers.length}</strong></p>
+                    <p style={{fontSize:13,color:C.textMu,marginBottom:4}}>Sync mode: <strong style={{color:fbOK?C.acc:C.gold}}>{fbOK?"🔥 Firebase (multi-device)":"💾 localStorage (single-device)"}</strong></p>
+                    {!fbOK&&<p style={{fontSize:12,color:C.gold,marginTop:6,lineHeight:1.5}}>💡 Add Firebase config in index.html to enable multi-device sync.</p>}
+                  </div>
+                  <div style={{background:C.redL,border:"1px solid #fca5a5",borderRadius:12,padding:18}}>
+                    <h3 style={{fontSize:13,fontWeight:600,color:C.red,marginBottom:9}}>⚠️ Danger Zone</h3>
+                    <button onClick={async()=>{
+                      if(!window.confirm("⚠️ CLEAR ALL DATA? Cannot be undone.")) return;
+                      await saveN([]); await saveP([]); await saveU([]); msg("All data cleared.","e");
+                    }} style={{...sty.btn(C.red),padding:"7px 16px",fontSize:12}}>🗑 Reset All Data</button>
+                  </div>
+                </div>}
+              </div>
+            )}
+          </div>
+
+          {/* FOOTER */}
+          <footer style={{background:"#082818",color:"rgba(255,255,255,.65)",textAlign:"center",padding:"24px 20px"}}>
+            <div style={{fontSize:20,marginBottom:7}}>🌾</div>
+            <p style={{fontSize:12,lineHeight:2}}>
+              <strong style={{color:"rgba(255,255,255,.9)"}}>BHU Agriculture e-Learning Portal</strong><br/>
+              Faculty of Agriculture &amp; Technology · Banaras Hindu University<br/>
+              <span style={{opacity:.6}}>🔥 Firebase Multi-Device Sync · Project: bhuagorg</span>
+            </p>
+          </footer>
+
+          {/* ── LOGIN MODAL ── */}
+          {showLog&&(
+            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={e=>{if(e.target===e.currentTarget)setShowLog(false);}}>
+              <div style={{background:C.surface,borderRadius:16,padding:26,maxWidth:400,width:"100%",boxShadow:"0 24px 60px rgba(0,0,0,.38)"}} className="fu">
+                <div style={{display:"flex",gap:4,marginBottom:20,background:C.surfAlt,borderRadius:10,padding:4}}>
+                  {["login","register"].map(t=>(
+                    <button key={t} onClick={()=>{setLogTab(t);setAErr("");setRErr("");}}
+                      style={{flex:1,padding:"8px 0",border:"none",borderRadius:7,background:logTab===t?C.acc:"transparent",color:logTab===t?"white":C.textM,fontFamily:"inherit",fontSize:13,fontWeight:600,cursor:"pointer",transition:".2s"}}>
+                      {t==="login"?"🔑 Login":"📝 Register"}
+                    </button>
+                  ))}
+                </div>
+                {logTab==="login"?(
+                  <>
+                    <div style={{marginBottom:12}}><label style={sty.lbl}>Email</label><input type="email" value={aEmail} onChange={e=>setAEmail(e.target.value)} placeholder="your@email.com" style={sty.inp} onKeyDown={e=>e.key==="Enter"&&doLogin()}/></div>
+                    <div style={{marginBottom:16}}><label style={sty.lbl}>Password</label><input type="password" value={aPass} onChange={e=>setAPass(e.target.value)} placeholder="••••••" style={sty.inp} onKeyDown={e=>e.key==="Enter"&&doLogin()}/></div>
+                    {aErr&&<p style={{color:C.red,fontSize:13,marginBottom:12}}>{aErr}</p>}
+                    <button onClick={doLogin} disabled={aBusy} style={{...sty.btn(C.acc),width:"100%",padding:"10px 0"}}>{aBusy?"Signing in…":"Sign In →"}</button>
+                    <p style={{fontSize:12,color:C.textMu,marginTop:12,textAlign:"center"}}>Admin: <strong style={{color:C.text}}>{ADMIN_EMAIL}</strong> / admin2025</p>
+                  </>
+                ):(
+                  <>
+                    <div style={{marginBottom:11}}><label style={sty.lbl}>Full Name *</label><input value={rName} onChange={e=>setRName(e.target.value)} placeholder="Your Name" style={sty.inp}/></div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:11}}>
+                      <div><label style={sty.lbl}>Roll Number</label><input value={rRoll} onChange={e=>setRRoll(e.target.value)} placeholder="BHU-XXXX" style={sty.inp}/></div>
+                      <div><label style={sty.lbl}>Year</label><select value={rYear} onChange={e=>setRYear(e.target.value)} style={sty.inp}>{["B.Sc. Ag. Year 1","B.Sc. Ag. Year 2","B.Sc. Ag. Year 3","B.Sc. Ag. Year 4","M.Sc. Ag.","Ph.D."].map(y=><option key={y}>{y}</option>)}</select></div>
+                    </div>
+                    <div style={{marginBottom:11}}><label style={sty.lbl}>Email *</label><input type="email" value={rEmail} onChange={e=>setREmail(e.target.value)} placeholder="your@email.com" style={sty.inp}/></div>
+                    <div style={{marginBottom:16}}><label style={sty.lbl}>Password * (min 6 chars)</label><input type="password" value={rPass} onChange={e=>setRPass(e.target.value)} placeholder="••••••" style={sty.inp} onKeyDown={e=>e.key==="Enter"&&doRegister()}/></div>
+                    {rErr&&<p style={{color:C.red,fontSize:13,marginBottom:12}}>{rErr}</p>}
+                    <button onClick={doRegister} style={{...sty.btn(C.acc),width:"100%",padding:"10px 0"}}>Create Account →</button>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── PRICING MODAL ── */}
+          {showPay&&(
+            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={e=>{if(e.target===e.currentTarget)setShowPay(false);}}>
+              <div style={{background:C.surface,borderRadius:18,padding:26,maxWidth:500,width:"100%",boxShadow:"0 24px 60px rgba(0,0,0,.38)",position:"relative"}} className="fu">
+                <button onClick={()=>setShowPay(false)} style={{position:"absolute",top:16,right:16,background:"none",border:"none",cursor:"pointer",fontSize:18,color:C.textMu}}>✕</button>
+                <div style={{textAlign:"center",marginBottom:22}}>
+                  <div style={{fontSize:38,marginBottom:7}}>⭐</div>
+                  <h2 style={{fontFamily:"Playfair Display,serif",fontSize:22,color:C.text,marginBottom:5}}>Go Premium</h2>
+                  <p style={{fontSize:13,color:C.textMu}}>Unlock all PDFs, videos, PYQs &amp; full quiz bank</p>
+                </div>
+                <div className="pg" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:18}}>
+                  {Object.values(PLANS).map(plan=>(
+                    <div key={plan.id} style={{border:`2px solid ${plan.id==="yearly"?C.gold:C.border}`,borderRadius:14,padding:18,textAlign:"center",position:"relative",background:plan.id==="yearly"?C.goldL:C.surfAlt}}>
+                      {plan.badge&&<div style={{position:"absolute",top:-9,left:"50%",transform:"translateX(-50%)",background:C.gold,color:"white",fontSize:9,padding:"2px 10px",borderRadius:8,fontWeight:700,whiteSpace:"nowrap"}}>{plan.badge}</div>}
+                      <div style={{fontWeight:700,fontSize:15,color:C.text,marginBottom:3}}>{plan.label}</div>
+                      <div style={{fontFamily:"Playfair Display,serif",fontSize:30,fontWeight:700,color:C.acc,marginBottom:3}}>₹{plan.price}</div>
+                      <div style={{fontSize:11,color:C.textMu,marginBottom:14}}>per {plan.period}</div>
+                      <button onClick={()=>doPay(plan.id)} disabled={payBusy} style={{...sty.btn(plan.id==="yearly"?C.gold:C.acc),width:"100%",padding:"9px 0"}}>{payBusy?"Processing…":`Get ${plan.label}`}</button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:5}}>
+                  {["📄 All Premium PDFs","🎬 All Video Lectures","📝 Previous Year Papers","🧠 Full Quiz Bank","⬆️ Unlimited Uploads","🔄 Multi-device Sync"].map(f=>(
+                    <div key={f} style={{fontSize:12,color:C.textM,display:"flex",gap:5,alignItems:"center"}}><span style={{color:C.accB}}>✓</span>{f}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── REJECT MODAL ── */}
+          {rjItem&&(
+            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+              <div style={{background:C.surface,borderRadius:14,padding:22,maxWidth:380,width:"100%",boxShadow:"0 24px 60px rgba(0,0,0,.38)"}} className="fu">
+                <h3 style={{fontSize:15,fontWeight:600,color:C.red,marginBottom:7}}>Reject Submission</h3>
+                <p style={{fontSize:13,color:C.textMu,marginBottom:14}}>Rejecting: <strong style={{color:C.text}}>{rjItem.title}</strong></p>
+                <textarea value={rjReason} onChange={e=>setRjReason(e.target.value)} rows={3} placeholder="Reason (optional)…" style={{...sty.inp,resize:"vertical",marginBottom:13}}/>
+                <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}>
+                  <button onClick={()=>{setRjItem(null);setRjReason("");}} style={{...sty.btn(C.surfAlt,C.textM),border:`1px solid ${C.border}`}}>Cancel</button>
+                  <button onClick={()=>rejectNote(rjItem.id,rjReason)} style={{...sty.btn(C.red)}}>Confirm</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // NOTE CARD
+    // ═══════════════════════════════════════════════════════════════
+    function NoteCard({note,C,me,isPrem,onDownload,onDelete,sty,onUpgrade,admin}) {
+      const icon  = note.type==="Video"?"🎬":note.type==="Link"?"🔗":"📄";
+      const canDel= me&&(me.isAdmin||me.email===note.uploaderEmail);
+      const locked= note.isPremium&&!isPrem;
+      return(
+        <div style={{background:note.isPremium?C.premBg:C.surface,border:`1px solid ${note.isPremium?C.premBd:C.border}`,borderRadius:10,padding:13,marginBottom:admin?0:8,display:"flex",gap:11,alignItems:"flex-start",transition:".2s"}} className={admin?"hl":""}>
+          <div style={{fontSize:20,flexShrink:0,marginTop:2}}>{icon}</div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:3,flexWrap:"wrap"}}>
+              <strong style={{fontSize:13,color:C.acc,lineHeight:1.3}}>{note.title}</strong>
+              {note.isPremium&&<span style={{background:"linear-gradient(90deg,#c9690a,#f59e0b)",color:"white",fontSize:9,padding:"2px 6px",borderRadius:7,fontWeight:700}}>⭐ PREMIUM</span>}
+            </div>
+            <div style={{fontSize:11,color:C.textMu,marginBottom:3}}>
+              <span style={{background:C.accL,color:C.acc,padding:"1px 6px",borderRadius:10,fontSize:10,fontWeight:600,marginRight:5}}>{note.subject}</span>
+              {note.type} · {note.date} · {note.uploader}
+            </div>
+            {note.desc&&<p style={{fontSize:12,color:C.textMu,marginTop:3,lineHeight:1.5}}>{note.desc}</p>}
+            <div style={{marginTop:7,display:"flex",gap:6,flexWrap:"wrap"}}>
+              {locked
+                ?<button onClick={onUpgrade} style={{background:"linear-gradient(90deg,#c9690a,#f59e0b)",color:"white",border:"none",borderRadius:7,padding:"5px 13px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>🔒 Upgrade to Access</button>
+                :<>
+                  {note.hasFile&&<button onClick={onDownload} style={{background:C.acc,color:"white",border:"none",borderRadius:7,padding:"5px 11px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>📥 Download</button>}
+                  {note.link&&<a href={note.link} target="_blank" rel="noreferrer" style={{background:C.blueL,color:C.blue,textDecoration:"none",borderRadius:7,padding:"5px 11px",fontSize:11,display:"inline-flex",fontWeight:600}}>🔗 Open Link</a>}
+                </>
+              }
+              {canDel&&<button onClick={onDelete} style={{background:C.redL,color:C.red,border:"none",borderRadius:7,padding:"5px 9px",fontSize:10,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>🗑 Delete</button>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Mount
+    ReactDOM.createRoot(document.getElementById("root")).render(<BHUPortal/>);
+  </script>
+</body>
+</html>
