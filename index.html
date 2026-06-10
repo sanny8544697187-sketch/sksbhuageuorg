@@ -352,6 +352,18 @@
       const [showPay,  setShowPay]  = useState(false);
       const [payBusy,  setPayBusy]  = useState(false);
 
+      // chat / doubts
+      const [chats,      setChats]     = useState([]);
+      const [expandD,    setExpandD]   = useState(null);
+      const [chatSrch,   setChatSrch]  = useState("");
+      const [chatSubjF,  setChatSubjF] = useState("");
+      const [showResD,   setShowResD]  = useState(false);
+      const [showNewD,   setShowNewD]  = useState(false);
+      const [ndTitle,    setNdTitle]   = useState("");
+      const [ndSubj,     setNdSubj]    = useState("");
+      const [ndBody,     setNdBody]    = useState("");
+      const [replyDraft, setReplyDraft]= useState({});
+      
       // auth fields
       const [aEmail,   setAEmail]   = useState("");
       const [aPass,    setAPass]    = useState("");
@@ -385,14 +397,16 @@
       const syncRef = useRef(null);
       const fileRef = useRef(null);
 
-      // ── INIT ──────────────────────────────────────────────────
+        // ── INIT ──────────────────────────────────────────────────
       useEffect(()=>{
         (async()=>{
-          const [n,p,u,sess,saved_ap,theme] = await Promise.all([
+          const [n,p,u,sess,saved_ap,theme,ch] = await Promise.all([
             sGet("bhu:notes"), sGet("bhu:pending"), sGet("bhu:users"),
             sGet("bhu:session"), sGet("bhu:adminpass"), sGet("bhu:theme"),
+            sGet("bhu:chats"),
           ]);
           if(n) setNotes(n); if(p) setPending(p); if(u) setUsers(u);
+          if(ch) setChats(ch);
           if(saved_ap) setAp(saved_ap);
           if(theme==="dark") setDark(true);
           if(sess) setMe(sess);
@@ -402,8 +416,8 @@
           // Poll Firebase every 20s for changes from other devices
           if(fbOK) {
             syncRef.current = setInterval(async()=>{
-              const [nn,np,nu] = await Promise.all([sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users")]);
-              if(nn) setNotes(nn); if(np) setPending(np); if(nu) setUsers(nu);
+              const [nn,np,nu,nc] = await Promise.all([sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),sGet("bhu:chats")]);
+              if(nn) setNotes(nn); if(np) setPending(np); if(nu) setUsers(nu); if(nc) setChats(nc);
             }, 20000);
           }
         })();
@@ -416,6 +430,55 @@
       const saveN = async v =>{ setNotes(v);   await sSet("bhu:notes",   v); };
       const saveP = async v =>{ setPending(v); await sSet("bhu:pending", v); };
       const saveU = async v =>{ setUsers(v);   await sSet("bhu:users",   v); };
+      const saveC = async v =>{ setChats(v);   await sSet("bhu:chats",   v); };
+
+      // ── CHAT / DOUBTS ──────────────────────────────────────────
+      async function postDoubt() {
+        if(!me){msg("Login to post a doubt.","e");return;}
+        if(!ndTitle.trim()||!ndBody.trim()){msg("Title and question are required.","e");return;}
+        const d={
+          id:Date.now()+"", title:ndTitle.trim(), subject:ndSubj||"General",
+          body:ndBody.trim(), authorName:me.name, authorEmail:me.email,
+          isAdmin:!!me.isAdmin, resolved:false,
+          date:new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}),
+          createdAt:new Date().toISOString(), replies:[],
+        };
+        await saveC([d,...chats]);
+        setNdTitle(""); setNdSubj(""); setNdBody("");
+        setShowNewD(false); setExpandD(d.id); msg("Doubt posted! 💬");
+      }
+
+      async function postReply(chatId, text) {
+        if(!me){msg("Login to reply.","e");return;}
+        if(!text.trim()){msg("Reply cannot be empty.","e");return;}
+        const reply={
+          id:Date.now()+"", text:text.trim(), authorName:me.name,
+          authorEmail:me.email, isAdmin:!!me.isAdmin,
+          date:new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}),
+          createdAt:new Date().toISOString(),
+        };
+        const updated=chats.map(c=>c.id===chatId?{...c,replies:[...c.replies,reply]}:c);
+        await saveC(updated);
+        setReplyDraft(d=>({...d,[chatId]:""}));
+        msg("Reply posted! ✅");
+      }
+
+      async function deleteDoubt(chatId) {
+        if(!window.confirm("Delete this doubt permanently?"))return;
+        await saveC(chats.filter(c=>c.id!==chatId));
+        setExpandD(null); msg("Deleted.");
+      }
+
+      async function deleteReply(chatId, replyId) {
+        const updated=chats.map(c=>c.id===chatId?{...c,replies:c.replies.filter(r=>r.id!==replyId)}:c);
+        await saveC(updated); msg("Reply removed.");
+      }
+
+      async function toggleResolved(chatId) {
+        const updated=chats.map(c=>c.id===chatId?{...c,resolved:!c.resolved}:c);
+        await saveC(updated);
+      }
+
 
       // ── AUTH ──────────────────────────────────────────────────
       async function doLogin() {
@@ -555,7 +618,7 @@
         rzp.open();
       }
 
-      // ── DERIVED ───────────────────────────────────────────────
+          // ── DERIVED ───────────────────────────────────────────────
       const isPrem   = isSubActive(me);
       const approved = notes.filter(n=>n.status==="approved");
       const rejected = notes.filter(n=>n.status==="rejected");
@@ -572,6 +635,14 @@
         if(type==="vid") return n.type==="Video"||n.type==="Link";
         return true;
       }).length;
+      const filtChats= chats.filter(c=>{
+        if(!showResD && c.resolved) return false;
+        if(chatSubjF && c.subject!==chatSubjF) return false;
+        if(!chatSrch) return true;
+        return c.title.toLowerCase().includes(chatSrch.toLowerCase())||
+               c.body.toLowerCase().includes(chatSrch.toLowerCase())||
+               c.authorName.toLowerCase().includes(chatSrch.toLowerCase());
+      });
 
       // ── THEME ─────────────────────────────────────────────────
       const C={
@@ -627,7 +698,7 @@
               </div>
           }
 
-          {/* ── HEADER ── */}
+       {/* ── HEADER ── */}
           <header style={{background:C.hdr,color:"white",position:"sticky",top:0,zIndex:800,boxShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
             <div className="hr" style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 24px",maxWidth:1200,margin:"auto",flexWrap:"wrap",gap:10}}>
               <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -659,7 +730,7 @@
               </div>
             </div>
             <nav className="nb-wrap" style={{background:C.navBg,paddingLeft:24,display:"flex",alignItems:"center",gap:2}}>
-              {[{id:"home",l:"🏠 Home"},{id:"subjects",l:"📚 Subjects"},{id:"resources",l:"📁 Resources"},{id:"upload",l:"⬆️ Upload"},{id:"quiz",l:"🧠 Quiz"},{id:"pricing",l:"⭐ Premium"},
+              {[{id:"home",l:"🏠 Home"},{id:"subjects",l:"📚 Subjects"},{id:"resources",l:"📁 Resources"},{id:"upload",l:"⬆️ Upload"},{id:"quiz",l:"🧠 Quiz"},{id:"doubts",l:"💬 Doubts"},{id:"pricing",l:"⭐ Premium"},
                 ...(me?.isAdmin?[{id:"admin",l:"🛡️ Admin"}]:[])
               ].map(t=>(
                 <button key={t.id} onClick={()=>t.id==="pricing"?setShowPay(true):setSec(t.id)} className="nb"
@@ -669,6 +740,7 @@
               ))}
             </nav>
           </header>
+
 
           {/* ── MAIN ── */}
           <div className="mp" style={{maxWidth:1160,margin:"0 auto",padding:"0 18px 80px"}}>
@@ -970,7 +1042,7 @@
               </div>
             )}
 
-            {/* ADMIN */}
+                   {/* ADMIN */}
             {sec==="admin"&&me?.isAdmin&&(
               <div style={{paddingTop:26}} className="fu">
                 <h2 style={{fontFamily:"Playfair Display,serif",fontSize:25,color:C.gold,marginBottom:4}}>🛡️ Admin Dashboard</h2>
@@ -1113,6 +1185,74 @@
             )}
           </div>
 
+          {/* DOUBTS / Q&A SECTION */}
+          {sec==="doubts"&&(
+            <div style={{paddingTop:26}} className="fu">
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18,flexWrap:"wrap",gap:12}}>
+                <div>
+                  <h2 style={{fontFamily:"Playfair Display,serif",fontSize:25,color:C.acc,marginBottom:3}}>💬 Doubts &amp; Q&amp;A</h2>
+                  <p style={{color:C.textMu,fontSize:14}}>{chats.length} questions · Ask anything, get answers from admin &amp; peers</p>
+                </div>
+                {me
+                  ? <button onClick={()=>setShowNewD(true)} style={{background:C.acc,color:"white",border:"none",padding:"10px 20px",borderRadius:10,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>+ Ask a Doubt</button>
+                  : <button onClick={()=>setShowLog(true)} style={{background:C.acc,color:"white",border:"none",padding:"10px 20px",borderRadius:10,fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>🔑 Login to Ask</button>
+                }
+              </div>
+
+              {/* filters */}
+              <div style={{display:"flex",gap:9,marginBottom:18,flexWrap:"wrap"}}>
+                <input value={chatSrch} onChange={e=>setChatSrch(e.target.value)} placeholder="Search doubts…" style={{padding:"9px 14px",border:`1.5px solid ${C.border}`,borderRadius:8,fontFamily:"inherit",fontSize:14,background:C.surfAlt,color:C.text,flex:1,minWidth:180}}/>
+                <select value={chatSubjF} onChange={e=>setChatSubjF(e.target.value)} style={{padding:"9px 14px",border:`1.5px solid ${C.border}`,borderRadius:8,fontFamily:"inherit",fontSize:13,background:C.surfAlt,color:C.text}}>
+                  <option value="">All Subjects</option>
+                  <option value="General">General</option>
+                  {SUBJECTS.map(s=><option key={s.id} value={s.name}>{s.name}</option>)}
+                </select>
+                <button onClick={()=>setShowResD(r=>!r)} style={{padding:"8px 14px",borderRadius:20,border:`1.5px solid ${showResD?C.acc:C.border}`,background:showResD?C.acc:C.surface,color:showResD?"white":C.textM,fontFamily:"inherit",fontSize:12,cursor:"pointer",transition:".2s"}}>
+                  ✅ {showResD?"Hide":"Show"} Resolved
+                </button>
+              </div>
+
+              {/* stats bar */}
+              <div style={{display:"flex",gap:16,marginBottom:20,flexWrap:"wrap"}}>
+                {[
+                  {n:chats.length,            l:"Total Doubts",   c:C.acc},
+                  {n:chats.filter(c=>!c.resolved).length, l:"Open",c:C.gold},
+                  {n:chats.filter(c=>c.resolved).length,  l:"Resolved",c:"#16a34a"},
+                  {n:chats.reduce((a,c)=>a+c.replies.length,0), l:"Total Replies",c:C.blue},
+                ].map((s,i)=>(
+                  <div key={i} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 18px",textAlign:"center",minWidth:90}}>
+                    <div style={{fontFamily:"Playfair Display,serif",fontSize:22,fontWeight:700,color:s.c,lineHeight:1}}>{s.n}</div>
+                    <div style={{fontSize:11,color:C.textMu,marginTop:3}}>{s.l}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* doubt list */}
+              {filtChats.length===0?(
+                <div style={{textAlign:"center",color:C.textMu,padding:"44px 20px"}}>
+                  <div style={{fontSize:40,marginBottom:12}}>💭</div>
+                  <p style={{fontSize:15,marginBottom:6}}>{chatSrch||chatSubjF?"No matching doubts found.":"No doubts posted yet."}</p>
+                  {me&&!chatSrch&&!chatSubjF&&<button onClick={()=>setShowNewD(true)} style={{marginTop:12,background:C.acc,color:"white",border:"none",padding:"9px 22px",borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontSize:14,fontWeight:600}}>Be the first to ask →</button>}
+                </div>
+              ):filtChats.map(chat=>(
+                <DoubtCard key={chat.id} chat={chat} C={C} me={me} sty={{
+                  card:{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14},
+                  btn:(bg,col="white")=>({background:bg,color:col,border:"none",borderRadius:8,padding:"8px 18px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}),
+                  inp:{width:"100%",padding:"9px 14px",border:`1.5px solid ${C.border}`,borderRadius:8,fontFamily:"inherit",fontSize:14,background:C.surfAlt,color:C.text,transition:".2s"},
+                }}
+                  expanded={expandD===chat.id}
+                  onExpand={()=>setExpandD(expandD===chat.id?null:chat.id)}
+                  onDelete={()=>deleteDoubt(chat.id)}
+                  onResolve={()=>toggleResolved(chat.id)}
+                  onReply={(text)=>postReply(chat.id,text)}
+                  onDeleteReply={(rid)=>deleteReply(chat.id,rid)}
+                  replyDraft={replyDraft[chat.id]||""}
+                  onDraftChange={(v)=>setReplyDraft(d=>({...d,[chat.id]:v}))}
+                />
+              ))}
+            </div>
+          )}
+
           {/* FOOTER */}
           <footer style={{background:"#082818",color:"rgba(255,255,255,.65)",textAlign:"center",padding:"24px 20px"}}>
             <div style={{fontSize:20,marginBottom:7}}>🌾</div>
@@ -1190,6 +1330,37 @@
             </div>
           )}
 
+          {/* ── NEW DOUBT MODAL ── */}
+          {showNewD&&(
+            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={e=>{if(e.target===e.currentTarget)setShowNewD(false);}}>
+              <div className="fu" style={{background:C.surface,borderRadius:16,padding:26,maxWidth:500,width:"100%",boxShadow:"0 24px 60px rgba(0,0,0,.38)"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:18}}>
+                  <h3 style={{fontFamily:"Playfair Display,serif",fontSize:19,color:"#1a6d43",fontWeight:700}}>💬 Post a Doubt</h3>
+                  <button onClick={()=>setShowNewD(false)} style={{background:"none",border:"none",cursor:"pointer",fontSize:18,color:"#6a9a78"}}>✕</button>
+                </div>
+                <div style={{marginBottom:13}}>
+                  <label style={{display:"block",fontSize:13,fontWeight:500,color:"#2d6640",marginBottom:5}}>Your Question / Doubt Title *</label>
+                  <input value={ndTitle} onChange={e=>setNdTitle(e.target.value)} placeholder="e.g. What is the difference between Kharif and Rabi crops?" style={{width:"100%",padding:"9px 14px",border:"1.5px solid #cde4d4",borderRadius:8,fontFamily:"inherit",fontSize:14,background:"#f4faf5",color:"#0c2e18"}}/>
+                </div>
+                <div style={{marginBottom:13}}>
+                  <label style={{display:"block",fontSize:13,fontWeight:500,color:"#2d6640",marginBottom:5}}>Subject</label>
+                  <select value={ndSubj} onChange={e=>setNdSubj(e.target.value)} style={{width:"100%",padding:"9px 14px",border:"1.5px solid #cde4d4",borderRadius:8,fontFamily:"inherit",fontSize:14,background:"#f4faf5",color:"#0c2e18"}}>
+                    <option value="General">General</option>
+                    {SUBJECTS.map(s=><option key={s.id} value={s.name}>{s.name}</option>)}
+                  </select>
+                </div>
+                <div style={{marginBottom:18}}>
+                  <label style={{display:"block",fontSize:13,fontWeight:500,color:"#2d6640",marginBottom:5}}>Describe your doubt in detail *</label>
+                  <textarea value={ndBody} onChange={e=>setNdBody(e.target.value)} rows={4} placeholder="Write your full question here. More detail = better answer…" style={{width:"100%",padding:"9px 14px",border:"1.5px solid #cde4d4",borderRadius:8,fontFamily:"inherit",fontSize:14,background:"#f4faf5",color:"#0c2e18",resize:"vertical"}}/>
+                </div>
+                <div style={{display:"flex",gap:9,justifyContent:"flex-end"}}>
+                  <button onClick={()=>setShowNewD(false)} style={{background:"#f4faf5",color:"#2d6640",border:"1px solid #cde4d4",borderRadius:8,padding:"9px 18px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Cancel</button>
+                  <button onClick={postDoubt} style={{background:"#1a6d43",color:"white",border:"none",borderRadius:8,padding:"9px 22px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Post Doubt →</button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── REJECT MODAL ── */}
           {rjItem&&(
             <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:3000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
@@ -1239,6 +1410,94 @@
               {canDel&&<button onClick={onDelete} style={{background:C.redL,color:C.red,border:"none",borderRadius:7,padding:"5px 9px",fontSize:10,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>🗑 Delete</button>}
             </div>
           </div>
+        </div>
+      );
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // DOUBT CARD COMPONENT
+    // ═══════════════════════════════════════════════════════════════
+    function DoubtCard({chat,C,me,sty,expanded,onExpand,onDelete,onResolve,onReply,onDeleteReply,replyDraft,onDraftChange}) {
+      const canDel = me&&(me.isAdmin||me.email===chat.authorEmail);
+      return(
+        <div style={{background:chat.resolved?"#f0faf4":C.surface,border:`1.5px solid ${chat.resolved?"#86efac":C.border}`,borderRadius:14,marginBottom:14,overflow:"hidden",transition:"border-color .2s"}}>
+          {/* Header row — always visible, click to expand */}
+          <div onClick={onExpand} style={{padding:"16px 18px",cursor:"pointer",display:"flex",gap:14,alignItems:"flex-start"}}>
+            {/* avatar */}
+            <div style={{width:38,height:38,borderRadius:"50%",background:chat.isAdmin?"#c9690a":C.accB,display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:14,flexShrink:0,marginTop:1}}>
+              {chat.isAdmin?"🛡":chat.authorName[0].toUpperCase()}
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginBottom:5}}>
+                <span style={{fontWeight:600,fontSize:15,color:C.text,lineHeight:1.35}}>{chat.title}</span>
+                {chat.resolved&&<span style={{background:"#dcfce7",color:"#16a34a",fontSize:10,padding:"2px 8px",borderRadius:10,fontWeight:700,flexShrink:0}}>✅ RESOLVED</span>}
+                {chat.isAdmin&&<span style={{background:"#fef3c7",color:"#c9690a",fontSize:10,padding:"2px 8px",borderRadius:10,fontWeight:700,flexShrink:0}}>ADMIN</span>}
+              </div>
+              <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",fontSize:12,color:C.textMu}}>
+                <span style={{background:C.accL,color:C.acc,padding:"2px 9px",borderRadius:10,fontSize:11,fontWeight:600}}>{chat.subject}</span>
+                <span>by <strong style={{color:C.textM}}>{chat.authorName}</strong></span>
+                <span>{chat.date}</span>
+                <span style={{background:C.surfAlt,padding:"2px 8px",borderRadius:8,fontSize:11}}>💬 {chat.replies.length} {chat.replies.length===1?"reply":"replies"}</span>
+              </div>
+            </div>
+            <div style={{fontSize:18,color:C.textMu,flexShrink:0,transition:"transform .25s",transform:expanded?"rotate(180deg)":"rotate(0deg)"}}>▾</div>
+          </div>
+
+          {/* Expanded content */}
+          {expanded&&(
+            <div className="fi" style={{borderTop:`1px solid ${C.border}`}}>
+              {/* Question body */}
+              <div style={{padding:"14px 18px 12px",background:C.surfAlt,borderBottom:`1px solid ${C.border}`}}>
+                <p style={{fontSize:14,color:C.text,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{chat.body}</p>
+                <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
+                  {me?.isAdmin&&<button onClick={e=>{e.stopPropagation();onResolve();}} style={{background:chat.resolved?"#fde8e8":"#dcfce7",color:chat.resolved?"#c82020":"#16a34a",border:"none",borderRadius:7,padding:"5px 12px",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>{chat.resolved?"↩ Reopen":"✅ Mark Resolved"}</button>}
+                  {canDel&&<button onClick={e=>{e.stopPropagation();onDelete();}} style={{background:"#fde8e8",color:"#c82020",border:"none",borderRadius:7,padding:"5px 10px",fontSize:11,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>🗑 Delete</button>}
+                </div>
+              </div>
+
+              {/* Replies */}
+              {chat.replies.length>0&&(
+                <div style={{padding:"12px 18px",borderBottom:`1px solid ${C.border}`}}>
+                  <p style={{fontSize:12,fontWeight:600,color:C.textM,marginBottom:10}}>💬 Replies ({chat.replies.length})</p>
+                  {chat.replies.map(r=>(
+                    <div key={r.id} style={{display:"flex",gap:10,marginBottom:12,alignItems:"flex-start"}}>
+                      <div style={{width:30,height:30,borderRadius:"50%",background:r.isAdmin?"#c9690a":C.border,display:"flex",alignItems:"center",justifyContent:"center",color:r.isAdmin?"white":C.textM,fontWeight:700,fontSize:11,flexShrink:0}}>
+                        {r.isAdmin?"🛡":r.authorName[0].toUpperCase()}
+                      </div>
+                      <div style={{flex:1,background:r.isAdmin?"#fff8f0":C.surfAlt,border:`1px solid ${r.isAdmin?"#f59e0b":C.border}`,borderRadius:"4px 12px 12px 12px",padding:"9px 13px"}}>
+                        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:5,flexWrap:"wrap"}}>
+                          <span style={{fontWeight:600,fontSize:13,color:r.isAdmin?"#c9690a":C.acc}}>{r.authorName}</span>
+                          {r.isAdmin&&<span style={{background:"#fef3c7",color:"#c9690a",fontSize:9,padding:"1px 7px",borderRadius:8,fontWeight:700}}>ADMIN</span>}
+                          <span style={{fontSize:11,color:C.textMu}}>{r.date}</span>
+                        </div>
+                        <p style={{fontSize:13,color:C.text,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{r.text}</p>
+                        {me&&(me.isAdmin||me.email===r.authorEmail)&&(
+                          <button onClick={()=>onDeleteReply(r.id)} style={{background:"none",border:"none",color:C.textMu,fontSize:11,cursor:"pointer",padding:0,marginTop:5,fontFamily:"inherit"}}>🗑 delete</button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Reply input */}
+              {me?(
+                <div style={{padding:"14px 18px"}}>
+                  <p style={{fontSize:12,fontWeight:600,color:C.textM,marginBottom:8}}>Write a reply</p>
+                  <textarea value={replyDraft} onChange={e=>onDraftChange(e.target.value)} rows={3}
+                    placeholder={me.isAdmin?"Answer this student's doubt…":"Add your reply or share what you know…"}
+                    style={{width:"100%",padding:"9px 14px",border:`1.5px solid ${C.border}`,borderRadius:8,fontFamily:"inherit",fontSize:13,background:C.surfAlt,color:C.text,resize:"vertical",marginBottom:9}}/>
+                  <button onClick={()=>onReply(replyDraft)} style={{background:C.acc,color:"white",border:"none",borderRadius:8,padding:"8px 20px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                    {me.isAdmin?"📢 Post Answer":"💬 Post Reply"}
+                  </button>
+                </div>
+              ):(
+                <div style={{padding:"14px 18px",textAlign:"center"}}>
+                  <p style={{fontSize:13,color:C.textMu,marginBottom:8}}>Login to reply to this doubt</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       );
     }
