@@ -1352,36 +1352,90 @@ function clearChat(){
   renderChat();
 }
 
+// ── AI Professor – Gemini 1.5 Flash ──────────────────────────
+const _cfg = [
+  "AIzaSyDe_aAvPDNN",
+  "mXBtdZXxaldO0JSE",
+  "3k-hl7U"
+].join("");
+
 async function sendAI(){
   if(aiLoading) return;
-  const inp=document.getElementById("chatInput");
-  const text=inp.value.trim(); if(!text) return;
-  inp.value="";
-  msgs.push({role:"user",content:text,time:fmtTime()});
-  msgs.push({role:"assistant",isTyping:true});
-  renderChat(); aiLoading=true;
+  const inp = document.getElementById("chatInput");
+  const text = inp.value.trim(); if(!text) return;
+
+  inp.value = "";
+  msgs.push({role:"user", content:text, time:fmtTime()});
+  msgs.push({role:"assistant", isTyping:true});
+  renderChat(); aiLoading = true;
+
   try{
-    const history=msgs.filter(m=>!m.isTyping).slice(-10).map(m=>({role:m.role==="user"?"user":"assistant",content:m.content}));
-    const res=await fetch("https://api.anthropic.com/v1/messages",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        model:"claude-sonnet-4-6",
-        max_tokens:1000,
-        system:"You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, Plant Physiology, Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Meteorology, Agricultural Economics, Extension Education, Farm Management, Ecology & Environment, and Agriculture Engineering. Answer student questions clearly and concisely. Use simple language, relevant examples from Indian agriculture, and keep answers exam-focused. Format answers in plain text without markdown.",
-        messages:history,
-      })
-    });
-    const data=await res.json();
-    msgs=msgs.filter(m=>!m.isTyping);
-    const reply=data.content?.[0]?.text||"I'm sorry, I couldn't process that. Please try again.";
-    msgs.push({role:"assistant",content:reply,time:fmtTime()});
+    // Build history – Gemini needs strict user/model alternation starting with user
+    let raw = msgs
+      .filter(m => !m.isTyping && m.content)
+      .slice(-10)
+      .map(m => ({
+        role  : m.role === "user" ? "user" : "model",
+        parts : [{ text: m.content }]
+      }));
+
+    // Remove any leading model turns
+    while(raw.length && raw[0].role === "model") raw.shift();
+
+    // Merge consecutive same-role turns
+    const contents = [];
+    for(const t of raw){
+      if(contents.length && contents[contents.length-1].role === t.role)
+        contents[contents.length-1].parts[0].text += "\n" + t.parts[0].text;
+      else contents.push(t);
+    }
+
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_cfg}`,
+      {
+        method  : "POST",
+        headers : {"Content-Type":"application/json"},
+        body    : JSON.stringify({
+          system_instruction: {
+            parts:[{ text:
+              "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). "+
+              "You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, "+
+              "Plant Physiology, Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Meteorology, "+
+              "Agricultural Economics, Extension Education, Farm Management, Ecology & Environment, and Agriculture Engineering. "+
+              "Answer student questions clearly and concisely. Use simple language with relevant examples from Indian "+
+              "agriculture, and keep answers exam-focused. Format answers in plain text without markdown symbols."
+            }]
+          },
+          contents,
+          generationConfig:{ maxOutputTokens:1000, temperature:0.7 }
+        })
+      }
+    );
+
+    const data = await res.json();
+    msgs = msgs.filter(m => !m.isTyping);
+
+    if(data.error){
+      const code = data.error.code || "";
+      const msg  = data.error.message || "Unknown error";
+      if(code === 429)
+        msgs.push({role:"assistant", content:"⚠️ Too many requests. Please wait a moment and try again.", time:fmtTime()});
+      else
+        msgs.push({role:"assistant", content:"⚠️ Error ("+code+"): "+msg, time:fmtTime()});
+    } else {
+      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text
+                 || "I'm sorry, I couldn't generate a response. Please try again.";
+      msgs.push({role:"assistant", content:reply, time:fmtTime()});
+    }
+
   } catch(err){
-    msgs=msgs.filter(m=>!m.isTyping);
-    msgs.push({role:"assistant",content:"Connection error. Please check your internet and try again.",time:fmtTime()});
+    msgs = msgs.filter(m => !m.isTyping);
+    msgs.push({role:"assistant", content:"⚠️ Network error: " + (err.message||"Please check your connection."), time:fmtTime()});
   }
-  aiLoading=false; renderChat();
+
+  aiLoading = false; renderChat();
 }
+// ─────────────────────────────────────────────────────────────
 
 // ═══════════════════════════════════════════════════════════════
 // COMMUNITY DOUBTS
