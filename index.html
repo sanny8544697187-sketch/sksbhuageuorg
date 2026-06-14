@@ -829,7 +829,55 @@ const CATS = ["All","Core","Science","Applied"];
 const RES_TYPES = ["All","PDF","Video","Link","Notes","PYQ","PPT"];
 
 // ═══════════════════════════════════════════════════════════════
-// FIREBASE STORAGE LAYER (with localStorage fallback)
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+// AI endpoint — your Netlify function. Leave as-is if deployed on Netlify.
+// Set to "" to skip OpenRouter and use Gemini fallback only.
+const AI_ENDPOINT = "/.netlify/functions/chat";
+
+// ═══════════════════════════════════════════════════════════════
+// INDEXEDDB — large file storage (replaces localStorage for files)
+// ═══════════════════════════════════════════════════════════════
+const IDB_NAME="bhu_portal", IDB_STORE="files";
+let _idb=null;
+function openIDB(){
+  if(_idb) return Promise.resolve(_idb);
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(IDB_NAME,1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore(IDB_STORE);
+    req.onsuccess=e=>{_idb=e.target.result;res(_idb);};
+    req.onerror=e=>rej(e);
+  });
+}
+async function idbSet(key,val){
+  const d=await openIDB();
+  return new Promise((res,rej)=>{
+    const tx=d.transaction(IDB_STORE,"readwrite");
+    tx.objectStore(IDB_STORE).put(val,key);
+    tx.oncomplete=res; tx.onerror=rej;
+  });
+}
+async function idbGet(key){
+  const d=await openIDB();
+  return new Promise((res,rej)=>{
+    const tx=d.transaction(IDB_STORE,"readonly");
+    const req=tx.objectStore(IDB_STORE).get(key);
+    req.onsuccess=()=>res(req.result||null); req.onerror=rej;
+  });
+}
+async function idbDel(key){
+  const d=await openIDB();
+  return new Promise((res,rej)=>{
+    const tx=d.transaction(IDB_STORE,"readwrite");
+    tx.objectStore(IDB_STORE).delete(key);
+    tx.oncomplete=res; tx.onerror=rej;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE STORAGE LAYER
+// Files → Firebase Storage (if configured) OR IndexedDB (fallback)
+// Metadata/Data → Firestore (if configured) OR localStorage (fallback)
 // ═══════════════════════════════════════════════════════════════
 const fbOK = window._fbConfigured === true;
 const db   = fbOK ? window._db : null;
@@ -839,8 +887,11 @@ const LOCAL_KEYS = ["bhu:session","bhu:theme","bhu:adminpass"];
 async function sGet(key) {
   try {
     if (LOCAL_KEYS.includes(key)) { const v=localStorage.getItem(key); return v?JSON.parse(v):null; }
+    if (key.startsWith("bhu:file:")) {
+      if(fbOK) return await st.ref("files/"+key.slice(9)).getDownloadURL();
+      return await idbGet(key); // ← IndexedDB: no size limit
+    }
     if (!fbOK) { const v=localStorage.getItem(key); return v?JSON.parse(v):null; }
-    if (key.startsWith("bhu:file:")) { return await st.ref("files/"+key.slice(9)).getDownloadURL(); }
     const snap = await db.collection("bhu_store").doc(key.replace(/:/g,"_")).get();
     return snap.exists ? JSON.parse(snap.data().value) : null;
   } catch { return null; }
@@ -848,16 +899,22 @@ async function sGet(key) {
 async function sSet(key, val) {
   try {
     if (LOCAL_KEYS.includes(key)) { localStorage.setItem(key,JSON.stringify(val)); return; }
+    if (key.startsWith("bhu:file:")) {
+      if(fbOK){ await st.ref("files/"+key.slice(9)).putString(val,"data_url"); return; }
+      await idbSet(key,val); return; // ← IndexedDB: handles large base64 files
+    }
     if (!fbOK) { localStorage.setItem(key,JSON.stringify(val)); return; }
-    if (key.startsWith("bhu:file:")) { await st.ref("files/"+key.slice(9)).putString(val,"data_url"); return; }
     await db.collection("bhu_store").doc(key.replace(/:/g,"_")).set({value:JSON.stringify(val),updatedAt:new Date().toISOString()});
   } catch(e) { console.warn("sSet:",e); }
 }
 async function sDel(key) {
   try {
     if (LOCAL_KEYS.includes(key)) { localStorage.removeItem(key); return; }
+    if (key.startsWith("bhu:file:")) {
+      if(fbOK){ await st.ref("files/"+key.slice(9)).delete(); return; }
+      await idbDel(key); return;
+    }
     if (!fbOK) { localStorage.removeItem(key); return; }
-    if (key.startsWith("bhu:file:")) { await st.ref("files/"+key.slice(9)).delete(); return; }
     await db.collection("bhu_store").doc(key.replace(/:/g,"_")).delete();
   } catch {}
 }
@@ -1340,36 +1397,39 @@ async function doFolderUpload(){
   const title=document.getElementById("uTitle").value.trim();
   const subj=document.getElementById("uSubject").value;
   const type=document.getElementById("uType").value;
-  const link=document.getElementById("uLink").value.trim();
   const desc=document.getElementById("uDesc").value.trim();
   const isPrem=u.isAdmin&&document.getElementById("uPrem").checked;
-  if(!title||!subj){toast("Title & Subject required.","e");return;}
-  if(!folderFiles.length){toast("No folder selected. Choose a folder first.","e");return;}
+  if(!title){toast("Resource Title is required.","e");return;}
+  if(!subj){toast("Please select a Subject.","e");return;}
+  if(!folderFiles.length){toast("No folder selected — click '📂 Entire Folder' and pick a folder.","e");return;}
   if(uploading) return; uploading=true;
   const btn=document.getElementById("uploadBtn"); btn.disabled=true;
-  let uploaded=0;
+  let uploaded=0, failed=0;
   const newEntries=[];
+
   for(const file of folderFiles){
-    btn.textContent=`⏳ Uploading ${uploaded+1} / ${folderFiles.length}…`;
+    btn.innerHTML=`⏳ Uploading ${uploaded+1} / ${folderFiles.length} — <span style="font-weight:400;opacity:.8;">${file.name}</span>`;
     try{
       const fileData=await readFileAsBase64(file);
       const id=Date.now()+"_"+Math.random().toString(36).slice(2,7);
       const fileTitle=`${title} — ${file.name}`;
-      // Auto-detect type from extension
       const ext=file.name.split(".").pop().toLowerCase();
       const autoType={"pdf":"PDF","doc":"Notes","docx":"Notes","ppt":"PPT","pptx":"PPT",
-        "jpg":"Image","jpeg":"Image","png":"Image","mp4":"Video","webm":"Video"}[ext]||type;
+        "jpg":"Image","jpeg":"Image","png":"Image","gif":"Image",
+        "mp4":"Video","webm":"Video","mov":"Video"}[ext]||type;
       const note={id,title:fileTitle,subject:subj,type:autoType,link:"",desc,
         uploader:u.name,uploaderEmail:u.email,date:fmtDate(),fileName:file.name,
         status:u.isAdmin?"approved":"pending",hasFile:true,
         submittedAt:new Date().toISOString(),isPremium:isPrem};
       await sSet("bhu:file:"+id,fileData);
-      newEntries.push(note);
-      uploaded++;
-    } catch(e){ console.warn("Skipped:",file.name,e); }
+      newEntries.push(note); uploaded++;
+    } catch(e){ console.warn("Skipped:",file.name,e); failed++; }
   }
-  if(u.isAdmin){ notes=[...newEntries,...notes]; await sSet("bhu:notes",notes); toast(`📢 ${uploaded} file(s) published!`); }
-  else{ pending=[...newEntries,...pending]; await sSet("bhu:pending",pending); toast(`⏳ ${uploaded} file(s) submitted for review!`); }
+
+  if(u.isAdmin){ notes=[...newEntries,...notes]; await sSet("bhu:notes",notes);
+    toast(`📢 ${uploaded} file(s) published!${failed?` (${failed} skipped)`:""}`);}
+  else{ pending=[...newEntries,...pending]; await sSet("bhu:pending",pending);
+    toast(`⏳ ${uploaded} file(s) submitted for review!${failed?` (${failed} skipped)`:""}`);}
   document.getElementById("uTitle").value=""; document.getElementById("uSubject").value="";
   document.getElementById("uLink").value=""; document.getElementById("uDesc").value="";
   clearFolder();
@@ -1527,90 +1587,78 @@ function clearChat(){
   renderChat();
 }
 
-// ── AI Professor – Gemini 1.5 Flash ──────────────────────────
-const _cfg = [
-  "AIzaSyDe_aAvPDNN",
-  "mXBtdZXxaldO0JSE",
-  "3k-hl7U"
-].join("");
+// ── AI Professor — OpenRouter (Netlify) → Gemini fallback ──────
+const _cfg = ["AIzaSyDe_aAvPDNN","mXBtdZXxaldO0JSE","3k-hl7U"].join("");
+const AI_SYS = "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). "+
+  "You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, "+
+  "Plant Physiology, Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Meteorology, "+
+  "Agricultural Economics, Extension Education, Farm Management, Ecology & Environment, and Agriculture Engineering. "+
+  "Answer student questions clearly and concisely. Use simple language with relevant examples from Indian "+
+  "agriculture, and keep answers exam-focused. Format answers in plain text without markdown symbols.";
 
 async function sendAI(){
   if(aiLoading) return;
   const inp = document.getElementById("chatInput");
   const text = inp.value.trim(); if(!text) return;
-
   inp.value = "";
   msgs.push({role:"user", content:text, time:fmtTime()});
   msgs.push({role:"assistant", isTyping:true});
   renderChat(); aiLoading = true;
 
-  try{
-    // Build history – Gemini needs strict user/model alternation starting with user
-    let raw = msgs
-      .filter(m => !m.isTyping && m.content)
-      .slice(-10)
-      .map(m => ({
-        role  : m.role === "user" ? "user" : "model",
-        parts : [{ text: m.content }]
-      }));
-
-    // Remove any leading model turns
-    while(raw.length && raw[0].role === "model") raw.shift();
-
-    // Merge consecutive same-role turns
-    const contents = [];
-    for(const t of raw){
-      if(contents.length && contents[contents.length-1].role === t.role)
-        contents[contents.length-1].parts[0].text += "\n" + t.parts[0].text;
-      else contents.push(t);
-    }
-
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_cfg}`,
-      {
-        method  : "POST",
-        headers : {"Content-Type":"application/json"},
-        body    : JSON.stringify({
-          system_instruction: {
-            parts:[{ text:
-              "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). "+
-              "You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, "+
-              "Plant Physiology, Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Meteorology, "+
-              "Agricultural Economics, Extension Education, Farm Management, Ecology & Environment, and Agriculture Engineering. "+
-              "Answer student questions clearly and concisely. Use simple language with relevant examples from Indian "+
-              "agriculture, and keep answers exam-focused. Format answers in plain text without markdown symbols."
-            }]
-          },
-          contents,
-          generationConfig:{ maxOutputTokens:1000, temperature:0.7 }
-        })
-      }
-    );
-
-    const data = await res.json();
-    msgs = msgs.filter(m => !m.isTyping);
-
-    if(data.error){
-      const code = data.error.code || "";
-      const msg  = data.error.message || "Unknown error";
-      if(code === 429)
-        msgs.push({role:"assistant", content:"⚠️ Too many requests. Please wait a moment and try again.", time:fmtTime()});
-      else
-        msgs.push({role:"assistant", content:"⚠️ Error ("+code+"): "+msg, time:fmtTime()});
-    } else {
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text
-                 || "I'm sorry, I couldn't generate a response. Please try again.";
-      msgs.push({role:"assistant", content:reply, time:fmtTime()});
-    }
-
-  } catch(err){
-    msgs = msgs.filter(m => !m.isTyping);
-    msgs.push({role:"assistant", content:"⚠️ Network error: " + (err.message||"Please check your connection."), time:fmtTime()});
+  // Build message history (Gemini-style contents)
+  let raw = msgs.filter(m=>!m.isTyping&&m.content).slice(-10)
+    .map(m=>({role:m.role==="user"?"user":"model", parts:[{text:m.content}]}));
+  while(raw.length && raw[0].role==="model") raw.shift();
+  const contents=[];
+  for(const t of raw){
+    if(contents.length && contents[contents.length-1].role===t.role)
+      contents[contents.length-1].parts[0].text+="\n"+t.parts[0].text;
+    else contents.push(t);
   }
 
-  aiLoading = false; renderChat();
+  let reply=null;
+
+  // ── 1. Try OpenRouter via Netlify function ─────────────────────
+  if(AI_ENDPOINT){
+    try{
+      const r=await fetch(AI_ENDPOINT,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({contents})
+      });
+      if(r.ok){
+        const d=await r.json();
+        if(!d.error) reply=d.candidates?.[0]?.content?.parts?.[0]?.text||null;
+        else console.warn("OpenRouter err:",d.error);
+      }
+    } catch(e){ console.warn("Netlify AI unreachable:",e.message); }
+  }
+
+  // ── 2. Fallback → Gemini 1.5 Flash (direct) ───────────────────
+  if(!reply){
+    try{
+      const res=await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_cfg}`,
+        {method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            system_instruction:{parts:[{text:AI_SYS}]},
+            contents,
+            generationConfig:{maxOutputTokens:1000,temperature:0.7}
+          })
+        }
+      );
+      const data=await res.json();
+      if(!data.error) reply=data.candidates?.[0]?.content?.parts?.[0]?.text||null;
+      else console.warn("Gemini err:",data.error);
+    } catch(e){ console.warn("Gemini failed:",e.message); }
+  }
+
+  msgs=msgs.filter(m=>!m.isTyping);
+  msgs.push({role:"assistant",
+    content:reply||"⚠️ Couldn't get a response right now. Check your internet connection and try again.",
+    time:fmtTime()});
+  aiLoading=false; renderChat();
 }
-// ─────────────────────────────────────────────────────────────
 
 // ═══════════════════════════════════════════════════════════════
 // COMMUNITY DOUBTS
