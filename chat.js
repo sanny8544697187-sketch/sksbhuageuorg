@@ -17,7 +17,7 @@ exports.handler = async (event) => {
   try{
     const { contents } = JSON.parse(event.body);
 
-    const OPENROUTER_API_KEY = "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";
+    const OPENROUTER_API_KEY = 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";
     if(!OPENROUTER_API_KEY){
       return {
         statusCode: 500,
