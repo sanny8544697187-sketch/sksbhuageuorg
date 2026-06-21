@@ -444,15 +444,15 @@ try {
         <div style="font-weight:700;font-size:13px;">Resources</div>
         <div style="font-size:11px;color:#777;margin-top:2px;" id="quickResCount">0 files</div>
       </div>
-      <div class="card quick-card hov-card" onclick="setSection('quiz')">
-        <div class="quick-icon" style="background:#7B1FA215;">🧠</div>
-        <div style="font-weight:700;font-size:13px;">Quiz</div>
-        <div style="font-size:11px;color:#777;margin-top:2px;">MCQs + explanations</div>
-      </div>
       <div class="card quick-card hov-card" onclick="setSection('chat')">
         <div class="quick-icon" style="background:#00B05015;">💬</div>
         <div style="font-weight:700;font-size:13px;">Ask Doubts</div>
         <div style="font-size:11px;color:#777;margin-top:2px;">AI + Community</div>
+      </div>
+      <div class="card quick-card hov-card" onclick="setSection('quiz')">
+        <div class="quick-icon" style="background:#7B1FA215;">🧠</div>
+        <div style="font-weight:700;font-size:13px;">Quiz</div>
+        <div style="font-size:11px;color:#777;margin-top:2px;">MCQs + explanations</div>
       </div>
     </div>
 
@@ -597,12 +597,12 @@ try {
     <div class="section-title">Chat & Doubts</div>
     <div class="section-subtitle">AI-powered instant answers + community Q&A board</div>
     <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <button id="aiTabBtn" class="btn btn-primary" onclick="setChatTab('ai')">🤖 AI Professor</button>
-      <button id="communityTabBtn" class="btn btn-light" onclick="setChatTab('community')">🙋 Community Doubts</button>
+      <button id="communityTabBtn" class="btn btn-primary" onclick="setChatTab('community')">🙋 Community Doubts</button>
+      <button id="aiTabBtn" class="btn btn-light" onclick="setChatTab('ai')">🤖 AI Professor</button>
     </div>
 
     <!-- AI Chat -->
-    <div id="aiChat" class="chat-layout">
+    <div id="aiChat" class="chat-layout" style="display:none;">
       <div class="chat-sidebar">
         <div class="card" style="padding:14px;">
           <div style="font-size:11px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Quick Questions</div>
@@ -632,13 +632,30 @@ try {
     </div>
 
     <!-- Community Doubts -->
-    <div id="communityChat" style="display:none;">
+    <div id="communityChat">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <div class="stat-box"><strong id="totalQ">0</strong><div style="font-size:11px;color:#777;">Questions</div></div>
           <div class="stat-box"><strong id="totalA">0</strong><div style="font-size:11px;color:#777;">Answers</div></div>
         </div>
-        <button class="btn btn-primary" style="font-size:13px;" onclick="openAskDoubt()">+ Ask a Doubt</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-light" style="font-size:13px;border:1.5px solid #00B050;color:#00B050;" onclick="openCommunityAI()">🤖 Ask AI Professor</button>
+          <button class="btn btn-primary" style="font-size:13px;" onclick="openAskDoubt()">+ Ask a Doubt</button>
+        </div>
+      </div>
+
+      <!-- AI Professor in Community -->
+      <div id="communityAIBox" class="card" style="padding:18px;margin-bottom:16px;display:none;border-left:4px solid #00B050;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#0F3D23,#00B050);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🌾</div>
+          <div style="flex:1;"><div style="font-weight:700;font-size:14px;">AI Agriculture Professor</div><div style="font-size:11px;color:#00B050;font-weight:600;">Ask anything — instant answer</div></div>
+          <button onclick="document.getElementById('communityAIBox').style.display='none'" style="border:none;background:#F2F5F2;border-radius:50%;width:30px;height:30px;font-size:14px;cursor:pointer;color:#777;">✕</button>
+        </div>
+        <div id="communityAIMessages" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <textarea id="communityAIInput" class="inp" rows="2" placeholder="Type your agriculture question here…" style="resize:none;flex:1;border-radius:10px;font-size:13px;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCommunityAI();}"></textarea>
+          <button class="btn btn-primary" style="width:42px;height:42px;padding:0;border-radius:10px;flex-shrink:0;font-size:16px;" onclick="sendCommunityAI()">➤</button>
+        </div>
       </div>
 
       <!-- Ask doubt form -->
@@ -650,6 +667,29 @@ try {
             <select id="qSubject" class="inp"><option value="General">General</option></select>
           </div>
           <div><label class="lbl">Details (optional)</label><textarea id="qBody" class="inp" rows="3" placeholder="Elaborate your question…" style="resize:vertical;"></textarea></div>
+
+          <!-- MCQ Toggle -->
+          <div style="background:#E8F5E9;border-radius:12px;padding:12px 14px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="checkbox" id="makeMCQ" onchange="toggleMCQFields()" style="width:16px;height:16px;cursor:pointer;">
+              <label for="makeMCQ" style="font-size:13px;font-weight:700;cursor:pointer;color:#0F3D23;">🗳️ Make this an MCQ Poll (add options for classmates to vote)</label>
+            </div>
+            <div id="mcqFields" style="display:none;margin-top:12px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+                <div><label class="lbl" style="font-size:10px;">Option A *</label><input id="mcqOptA" class="inp" placeholder="Option A" style="font-size:13px;"></div>
+                <div><label class="lbl" style="font-size:10px;">Option B *</label><input id="mcqOptB" class="inp" placeholder="Option B" style="font-size:13px;"></div>
+                <div><label class="lbl" style="font-size:10px;">Option C</label><input id="mcqOptC" class="inp" placeholder="Option C (optional)" style="font-size:13px;"></div>
+                <div><label class="lbl" style="font-size:10px;">Option D</label><input id="mcqOptD" class="inp" placeholder="Option D (optional)" style="font-size:13px;"></div>
+              </div>
+              <div><label class="lbl" style="font-size:10px;">Correct Answer (optional)</label>
+                <select id="mcqCorrect" class="inp" style="font-size:13px;">
+                  <option value="">— Don't reveal yet —</option>
+                  <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
           <div style="display:flex;gap:8px;">
             <button class="btn btn-primary" onclick="postDoubt()">Post Question</button>
             <button class="btn btn-light" onclick="document.getElementById('askDoubtForm').style.display='none'">Cancel</button>
@@ -687,6 +727,7 @@ try {
       <button id="atRejected" class="btn btn-light"   onclick="setAdminTab('rejected')">❌ Rejected</button>
       <button id="atUsers"    class="btn btn-light"   onclick="setAdminTab('users')">👥 Students</button>
       <button id="atSubs"     class="btn btn-light"   onclick="setAdminTab('subs')">⭐ Premium</button>
+      <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
     </div>
     <div id="adminContent"></div>
@@ -761,7 +802,7 @@ const SUBJECTS = [
     topics:["Agri-Entrepreneurship","Food Processing","Organic Farming","Rural Development"], tags:["skill","startup","processing"]},
 ];
 
-const QUIZ_BANK = {
+let QUIZ_BANK = {
   "Agronomy":[
     {q:"Which nutrient is primarily responsible for vegetative growth?",opts:["Phosphorus","Nitrogen","Potassium","Calcium"],ans:1,exp:"Nitrogen promotes leafy growth and is essential for chlorophyll formation.",premium:false},
     {q:"Critical period of weed competition in crops is:",opts:["At harvest time","First 20-45 days after sowing","After 60 days","At flowering stage"],ans:1,exp:"Crops are most vulnerable to weed competition in the first 20–45 days after sowing.",premium:false},
@@ -819,6 +860,9 @@ const QUIZ_BANK = {
     {q:"The Paris Agreement (2015) aims to limit global temperature rise to:",opts:["1°C above pre-industrial","1.5–2°C above pre-industrial","3°C above pre-industrial","4°C above pre-industrial"],ans:1,exp:"The Paris Agreement targets limiting warming to well below 2°C, preferably 1.5°C.",premium:true},
   ],
 };
+// Immutable snapshot of the built-in bank — admin-added (custom/PDF/OCR/bulk) questions are
+// always re-merged on top of this snapshot, so edits/deletes never corrupt or duplicate data.
+const BUILTIN_QUIZ_BANK = JSON.parse(JSON.stringify(QUIZ_BANK));
 
 const QUICK_QS = [
   "What is NPK?","Explain photosynthesis","Types of soil in India",
@@ -942,14 +986,40 @@ let notes=[],pending=[],usersDB=[],questions=[],currentUser=null,adminPass=ADMIN
 let section="home",dark=false,loginTab="login",catFilter="All",resType="All",resSubject="All";
 let uFileData="",uploading=false,folderFiles=[],uploadMode="file";
 let quizSubj="",quizQs=[],quizAns=[],quizIdx=0,quizDone=false;
-let chatTab="ai";
+let customQuizBank={};
+// Quiz-section upgrade state
+let quizMode="test"; // "test" (reveal at end) | "practice" (instant feedback)
+let quizFlagged={}, quizStartTime=null;
+let quizTimerEnabled=false, quizTimerMinutes=10, quizTimerInterval=null, quizTimeLeft=0;
+// Manual-entry upgrade state
+let editingCustomQ=null;          // {subject, idx} when editing an existing custom question
+let customQSearch="";             // search box value for the admin custom-question list
+let _parsedPdfQuestions=[];       // preview buffer for Document/OCR upload
+let _bulkParsedQuestions=[];      // preview buffer for bulk-paste entry
+let _tesseractLoaded=false;
+let chatTab="community";
 let msgs=[{role:"assistant",content:"Namaste! 🌾 I'm your BHU AI Agriculture Professor. Ask me anything — Agronomy, Genetics, Pathology, Horticulture, Soil Science… I'm here to help you ace your exams!",time:fmtTime()}];
 let aiLoading=false;
-let expandedQ=null,replyTarget=null,upvoted={};
+let expandedQ=null,replyTarget=null,upvoted={},mcqVotes={};
+let aiDoubtLoading={},aiDoubtAnswers={};
 let adminTab="pending",rejectItem=null,rejectReason="",syncInterval=null;
+let quizPdfParsing=false;
 
 function fmtTime(){ return new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}); }
 function fmtDate(){ return new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}); }
+
+// Rebuild the live QUIZ_BANK from the immutable built-in snapshot + current custom bank.
+// Always deriving fresh (instead of mutating in place) means add/edit/delete from the
+// admin panel can never leave stale or duplicate questions behind.
+function rebuildQuizBank(){
+  const merged={};
+  Object.entries(BUILTIN_QUIZ_BANK).forEach(([subj,qs])=>{ merged[subj]=qs.map(q=>({...q})); });
+  Object.entries(customQuizBank).forEach(([subj,qs])=>{
+    if(!merged[subj]) merged[subj]=[];
+    qs.forEach(q=>merged[subj].push({...q}));
+  });
+  QUIZ_BANK=merged;
+}
 
 function toast(msg,type="s"){
   const el=document.getElementById("toast");
@@ -972,6 +1042,15 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(saved_ap) adminPass=saved_ap;
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
   if(sess){ currentUser=sess; }
+
+  // Load custom quiz questions added by admin
+  const cqb = await sGet("bhu:customquizbank");
+  if(cqb){ customQuizBank=cqb; }
+  rebuildQuizBank();
+
+  // Load MCQ votes
+  const mv = await sGet("bhu:mcqvotes");
+  if(mv) mcqVotes=mv;
 
   document.getElementById("splash").style.display="none";
 
@@ -1009,6 +1088,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   renderAll();
   renderChat();
+  renderDoubts();
 
   // Firebase live sync every 20s
   if(fbOK){
@@ -1468,10 +1548,36 @@ async function doUpload(){
 // ═══════════════════════════════════════════════════════════════
 // QUIZ
 // ═══════════════════════════════════════════════════════════════
+function setQuizMode(m){ quizMode=m; renderQuizStart(); }
+
 function renderQuizStart(){
   const isPrem=isSubActive(currentUser);
   const subEl=document.getElementById("quizSubtitle");
   if(subEl) subEl.textContent=isPrem?"Full quiz bank unlocked! ⭐":"2 free Qs per subject · Premium for all 5";
+
+  const totalAvail=Object.values(QUIZ_BANK).reduce((s,qs)=>s+qs.filter(q=>!q.premium||isPrem).length,0);
+  const mixedCount=Math.min(20,totalAvail);
+
+  const startEl=document.getElementById("quizStart");
+  startEl.innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <span style="font-size:11px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.4px;margin-right:2px;">Mode:</span>
+      <button class="btn hchip ${quizMode==='test'?'btn-primary':'btn-light'}" style="font-size:12px;padding:7px 14px;" onclick="setQuizMode('test')">📝 Test</button>
+      <button class="btn hchip ${quizMode==='practice'?'btn-primary':'btn-light'}" style="font-size:12px;padding:7px 14px;" onclick="setQuizMode('practice')">🎯 Practice</button>
+      <div style="flex:1;min-width:8px;"></div>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;font-weight:600;cursor:pointer;">
+        <input type="checkbox" id="quizTimerToggle" ${quizTimerEnabled?"checked":""} onchange="quizTimerEnabled=this.checked;renderQuizStart();"> ⏱ Timed
+      </label>
+      ${quizTimerEnabled?`<input id="quizTimerMins" type="number" min="1" max="60" value="${quizTimerMinutes}" class="inp" style="width:60px;padding:6px 8px;font-size:12px;" onchange="quizTimerMinutes=parseInt(this.value)||10;">`:''}
+    </div>
+    <div style="font-size:11px;color:#777;margin-bottom:16px;">${quizMode==='practice'?'💡 Practice Mode reveals the correct answer right after each question.':'📝 Test Mode reveals all answers together at the end, with a subject-wise score breakdown.'}</div>
+
+    <button class="btn btn-gold hov-btn" style="width:100%;padding:13px;font-size:14px;margin-bottom:18px;" onclick="startQuiz('__mixed__')" ${mixedCount===0?"disabled":""}>🎲 Mixed Quiz — All Subjects (${mixedCount} random Qs)</button>
+
+    <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px;">Or Choose a Subject</div>
+    <div id="quizSubjects" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+    <div id="quizPremHint"></div>`;
+
   const qsEl=document.getElementById("quizSubjects");
   qsEl.innerHTML=Object.entries(QUIZ_BANK).map(([subj,qs])=>{
     const free=qs.filter(q=>!q.premium).length,total=qs.length;
@@ -1485,66 +1591,154 @@ function renderQuizStart(){
 
 function startQuiz(subj){
   const isPrem=isSubActive(currentUser);
-  const qs=[...(QUIZ_BANK[subj]||[])].filter(q=>!q.premium||isPrem).sort(()=>Math.random()-.5);
+  let qs;
+  if(subj==="__mixed__"){
+    let all=[];
+    Object.entries(QUIZ_BANK).forEach(([s,arr])=>{ arr.filter(q=>!q.premium||isPrem).forEach(q=>all.push({...q,subj:s})); });
+    qs=all.sort(()=>Math.random()-.5).slice(0,20);
+    quizSubj="Mixed — All Subjects";
+  } else {
+    qs=[...(QUIZ_BANK[subj]||[])].filter(q=>!q.premium||isPrem).map(q=>({...q,subj})).sort(()=>Math.random()-.5);
+    quizSubj=subj;
+  }
   if(!qs.length){openPay();return;}
-  quizSubj=subj; quizQs=qs; quizAns=new Array(qs.length).fill(-1); quizIdx=0; quizDone=false;
+  quizQs=qs; quizAns=new Array(qs.length).fill(-1); quizIdx=0; quizDone=false;
+  quizFlagged={}; quizStartTime=Date.now();
   document.getElementById("quizStart").style.display="none";
   document.getElementById("quizResult").style.display="none";
+  if(quizTimerEnabled) startQuizTimer();
   renderQuizQuestion();
 }
+
+function startQuizTimer(){
+  stopQuizTimer();
+  quizTimeLeft=quizTimerMinutes*60;
+  quizTimerInterval=setInterval(()=>{
+    quizTimeLeft--;
+    const el=document.getElementById("quizTimerDisplay");
+    if(el){ el.textContent=fmtTimer(quizTimeLeft); el.style.color=quizTimeLeft<30?"#E53935":"#0F3D23"; }
+    if(quizTimeLeft<=0){ stopQuizTimer(); toast("⏰ Time's up! Auto-submitting…","e"); finishQuiz(); }
+  },1000);
+}
+function stopQuizTimer(){ if(quizTimerInterval){ clearInterval(quizTimerInterval); quizTimerInterval=null; } }
+function fmtTimer(sec){ sec=Math.max(0,sec); const m=Math.floor(sec/60),s=sec%60; return `${m}:${s<10?"0":""}${s}`; }
 
 function renderQuizQuestion(){
   const q=quizQs[quizIdx]; if(!q) return;
   const el=document.getElementById("quizQuestion"); el.style.display="block";
+  const answered=quizAns[quizIdx]!==-1;
+  const showFeedback=quizMode==="practice"&&answered;
+  const diffBadge=q.difficulty?`<span style="background:#F3E5F5;color:#7B1FA2;font-size:9px;padding:2px 8px;border-radius:50px;font-weight:700;text-transform:capitalize;margin-left:6px;">${escapeHTML(q.difficulty)}</span>`:'';
+  const isMixed=quizSubj.startsWith("Mixed");
+
   el.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-      <div style="font-size:13px;font-weight:600;color:#777;">${escapeHTML(quizSubj)} · Q${quizIdx+1} of ${quizQs.length}</div>
-      <div style="background:#E8F5E9;border-radius:50px;overflow:hidden;height:8px;flex:1;max-width:200px;"><div style="height:100%;background:#00B050;width:${((quizIdx)/quizQs.length)*100}%;transition:width .3s;"></div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+      <div style="font-size:13px;font-weight:600;color:#777;">${escapeHTML(quizSubj)}${isMixed&&q.subj?` · <span style="color:#0F3D23;">${escapeHTML(q.subj)}</span>`:''} · Q${quizIdx+1} of ${quizQs.length}${diffBadge}</div>
+      ${quizTimerEnabled?`<div id="quizTimerDisplay" style="font-weight:800;font-size:14px;color:${quizTimeLeft<30?"#E53935":"#0F3D23"};background:#F2F5F2;padding:4px 12px;border-radius:50px;">${fmtTimer(quizTimeLeft)}</div>`:''}
     </div>
-    <div style="font-weight:700;font-size:16px;line-height:1.55;margin-bottom:20px;">${escapeHTML(q.q)}</div>
+    <div style="background:#E8F5E9;border-radius:50px;overflow:hidden;height:8px;margin-bottom:14px;"><div style="height:100%;background:#00B050;width:${((quizIdx)/quizQs.length)*100}%;transition:width .3s;"></div></div>
+    <div id="quizNav" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;"></div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:20px;">
+      <div style="font-weight:700;font-size:16px;line-height:1.55;">${escapeHTML(q.q)}</div>
+      <button onclick="toggleFlag()" title="Flag for review" style="background:none;border:none;cursor:pointer;font-size:20px;flex-shrink:0;opacity:${quizFlagged[quizIdx]?"1":".3"};">🚩</button>
+    </div>
     <div class="quiz-options">
-      ${q.opts.map((o,i)=>`
-        <button class="quiz-option ${quizAns[quizIdx]===i?"selected":""}" onclick="selectOpt(${i})">
-          <div class="circle"></div>
-          ${escapeHTML(o)}
-        </button>`).join("")}
+      ${q.opts.map((o,i)=>{
+        let extraStyle="",icon="";
+        if(showFeedback){
+          if(i===q.ans){ extraStyle="border-color:#00B050;background:#E8F5E9;"; icon=" ✅"; }
+          else if(i===quizAns[quizIdx]){ extraStyle="border-color:#E53935;background:#FFEBEE;"; icon=" ❌"; }
+        }
+        return `<button class="quiz-option ${quizAns[quizIdx]===i?"selected":""}" style="${extraStyle}" onclick="selectOpt(${i})" ${showFeedback?"disabled":""}>
+          <div class="circle"></div>${escapeHTML(o)}${icon}
+        </button>`;
+      }).join("")}
     </div>
+    ${showFeedback?`<div style="background:#F8FBF8;border:1px solid #E0EAE0;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:#555;line-height:1.6;">💡 ${escapeHTML(q.exp)}</div>`:''}
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
       ${quizIdx>0?`<button class="btn btn-light" onclick="prevQ()">← Back</button>`:''}
       <button class="btn btn-primary" onclick="${quizIdx<quizQs.length-1?"nextQ()":"finishQuiz()"}" ${quizAns[quizIdx]===-1?"disabled":""}>
         ${quizIdx<quizQs.length-1?"Next →":"Finish Quiz 🎉"}
       </button>
-      <button class="btn btn-light" style="margin-left:auto;" onclick="document.getElementById('quizStart').style.display='block';document.getElementById('quizQuestion').style.display='none';">✕ Exit</button>
+      <button class="btn btn-light" style="margin-left:auto;" onclick="exitQuiz()">✕ Exit</button>
     </div>`;
+  renderQuizNav();
 }
 
+function renderQuizNav(){
+  const nav=document.getElementById("quizNav"); if(!nav) return;
+  nav.innerHTML=quizQs.map((q,i)=>{
+    const isCur=i===quizIdx, isAns=quizAns[i]!==-1, isFlag=quizFlagged[i];
+    let bg="#F2F5F2",color="#777",border="2px solid transparent";
+    if(isAns){ bg="#E8F5E9"; color="#00B050"; }
+    if(isFlag) border="2px solid #f59e0b";
+    if(isCur){ bg="#00B050"; color="#fff"; }
+    return `<button onclick="quizIdx=${i};renderQuizQuestion();" style="width:28px;height:28px;border-radius:8px;background:${bg};color:${color};border:${border};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${i+1}</button>`;
+  }).join("");
+}
+
+function toggleFlag(){ quizFlagged[quizIdx]=!quizFlagged[quizIdx]; renderQuizQuestion(); }
 function selectOpt(i){ quizAns[quizIdx]=i; renderQuizQuestion(); }
 function nextQ(){ if(quizIdx<quizQs.length-1){quizIdx++;renderQuizQuestion();} }
 function prevQ(){ if(quizIdx>0){quizIdx--;renderQuizQuestion();} }
+function exitQuiz(){
+  stopQuizTimer();
+  document.getElementById('quizStart').style.display='block';
+  document.getElementById('quizQuestion').style.display='none';
+  document.getElementById('quizResult').style.display='none';
+  renderQuizStart();
+}
 
 function finishQuiz(){
   quizDone=true;
+  stopQuizTimer();
   document.getElementById("quizQuestion").style.display="none";
   const score=quizQs.filter((q,i)=>quizAns[i]===q.ans).length;
   const pct=Math.round(score/quizQs.length*100);
   const msg=pct>=80?"🎉 Excellent! Outstanding performance!":pct>=60?"👍 Good Work! Keep revising!":"📖 Keep Studying! You'll ace it!";
+  const timeTakenSec=quizStartTime?Math.round((Date.now()-quizStartTime)/1000):0;
+  const timeStr=`${Math.floor(timeTakenSec/60)}m ${timeTakenSec%60}s`;
+  const flaggedCount=Object.values(quizFlagged).filter(Boolean).length;
+
+  const bySubj={};
+  quizQs.forEach((q,i)=>{
+    const s=q.subj||quizSubj;
+    if(!bySubj[s]) bySubj[s]={correct:0,total:0};
+    bySubj[s].total++; if(quizAns[i]===q.ans) bySubj[s].correct++;
+  });
+  const showBreakdown=Object.keys(bySubj).length>1;
+
   const el=document.getElementById("quizResult"); el.style.display="block";
   el.innerHTML=`
     <div style="font-size:56px;font-weight:800;color:#00B050;line-height:1;margin-bottom:10px;">${score}/${quizQs.length}</div>
     <div style="font-size:20px;margin:10px 0 8px;">${msg}</div>
-    <div style="color:#777;font-size:14px;margin-bottom:24px;">Score: ${pct}% in ${escapeHTML(quizSubj)}</div>
+    <div style="color:#777;font-size:14px;margin-bottom:6px;">Score: ${pct}% in ${escapeHTML(quizSubj)}</div>
+    <div style="display:flex;justify-content:center;gap:18px;flex-wrap:wrap;color:#777;font-size:12px;margin-bottom:20px;">
+      <span>⏱ Time: <strong style="color:#111;">${timeStr}</strong></span>
+      ${flaggedCount?`<span>🚩 Flagged: <strong style="color:#f59e0b;">${flaggedCount}</strong></span>`:''}
+      <span>🧠 Mode: <strong style="color:#111;text-transform:capitalize;">${quizMode}</strong></span>
+    </div>
+    ${showBreakdown?`
+      <div style="text-align:left;background:#F8FBF8;border:1px solid #E0EAE0;border-radius:12px;padding:14px 16px;margin-bottom:20px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px;">📊 Subject-wise Breakdown</div>
+        ${Object.entries(bySubj).map(([s,r])=>`
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:12px;">
+            <span>${escapeHTML(s)}</span>
+            <span style="font-weight:700;color:${r.correct/r.total>=.6?"#00B050":"#E53935"};">${r.correct}/${r.total}</span>
+          </div>`).join("")}
+      </div>`:''}
     <div style="text-align:left;margin-bottom:24px;">
-      ${quizQs.map((q,qi)=>{const ok=quizAns[qi]===q.ans;return`
+      ${quizQs.map((q,qi)=>{const ok=quizAns[qi]===q.ans;const flagged=quizFlagged[qi];return`
         <div style="background:${ok?"#E8F5E9":"#FFEBEE"};border:1px solid ${ok?"#E0EAE0":"#FFCDD2"};border-radius:10px;padding:13px;margin-bottom:9px;">
-          <div style="font-size:14px;font-weight:600;margin-bottom:6px;color:#111;">Q${qi+1}: ${escapeHTML(q.q)}</div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:6px;color:#111;">Q${qi+1}: ${escapeHTML(q.q)} ${flagged?'🚩':''}</div>
           <div style="font-size:12px;margin-bottom:4px;">Your: <strong style="color:${ok?"#00B050":"#E53935"}">${escapeHTML(q.opts[quizAns[qi]]||"Not answered")}</strong></div>
           ${!ok?`<div style="font-size:12px;margin-bottom:4px;">Correct: <strong style="color:#00B050">${escapeHTML(q.opts[q.ans])}</strong></div>`:''}
           <div style="font-size:12px;color:#555;margin-top:6px;padding-top:6px;border-top:1px solid rgba(0,0,0,.08);">💡 ${escapeHTML(q.exp)}</div>
         </div>`}).join("")}
     </div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="startQuiz('${escapeHTML(quizSubj)}')">Retry Quiz</button>
-      <button class="btn btn-light" onclick="document.getElementById('quizStart').style.display='block';document.getElementById('quizResult').style.display='none';">Choose Subject</button>
+      <button class="btn btn-primary" onclick="startQuiz('${quizSubj.startsWith("Mixed")?"__mixed__":escapeHTML(quizSubj)}')">Retry Quiz</button>
+      <button class="btn btn-light" onclick="exitQuiz()">Choose Subject</button>
     </div>`;
 }
 
@@ -1669,18 +1863,129 @@ function openAskDoubt(){
   f.style.display=f.style.display==="none"||!f.style.display?"block":"none";
 }
 
+function toggleMCQFields(){
+  const checked=document.getElementById("makeMCQ").checked;
+  document.getElementById("mcqFields").style.display=checked?"block":"none";
+}
+
 async function postDoubt(){
   const u=currentUser; if(!u){openLogin();return;}
   const title=document.getElementById("qTitle").value.trim();
   const subj=document.getElementById("qSubject").value;
   const body=document.getElementById("qBody").value.trim();
   if(!title){toast("Question title is required.","e");return;}
+
+  const isMCQ=document.getElementById("makeMCQ").checked;
+  let mcq=null;
+  if(isMCQ){
+    const a=document.getElementById("mcqOptA").value.trim();
+    const b=document.getElementById("mcqOptB").value.trim();
+    const c=document.getElementById("mcqOptC").value.trim();
+    const d=document.getElementById("mcqOptD").value.trim();
+    const correct=document.getElementById("mcqCorrect").value;
+    if(!a||!b){toast("MCQ poll needs at least Option A and B.","e");return;}
+    const opts=[a,b]; if(c) opts.push(c); if(d) opts.push(d);
+    mcq={opts,correct:correct===""?-1:parseInt(correct),votes:new Array(opts.length).fill(0)};
+  }
+
   const d={id:Date.now()+"",title,subject:subj||"General",body,author:u.name,authorEmail:u.email,
-    isAdmin:!!u.isAdmin,time:fmtDate(),createdAt:new Date().toISOString(),replies:[],upvotes:0,solved:false};
+    isAdmin:!!u.isAdmin,time:fmtDate(),createdAt:new Date().toISOString(),replies:[],upvotes:0,solved:false,mcq};
   questions=[d,...questions]; await sSet("bhu:questions",questions);
   document.getElementById("qTitle").value=""; document.getElementById("qBody").value="";
+  document.getElementById("makeMCQ").checked=false; toggleMCQFields();
+  ["mcqOptA","mcqOptB","mcqOptC","mcqOptD"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("mcqCorrect").value="";
   document.getElementById("askDoubtForm").style.display="none";
-  toast("Question posted! 💬"); renderDoubts(); renderHome();
+  toast(isMCQ?"MCQ poll posted! 🗳️":"Question posted! 💬"); renderDoubts(); renderHome();
+}
+
+// ── MCQ poll voting ──
+async function voteMCQ(qId,optIdx){
+  if(!currentUser){openLogin();return;}
+  const voteKey=qId+"_"+currentUser.email;
+  if(mcqVotes[voteKey]!==undefined){ toast("You've already voted on this poll.","e"); return; }
+  mcqVotes[voteKey]=optIdx;
+  await sSet("bhu:mcqvotes",mcqVotes);
+  questions=questions.map(q=>{
+    if(q.id!==qId||!q.mcq) return q;
+    const votes=[...q.mcq.votes]; votes[optIdx]=(votes[optIdx]||0)+1;
+    return {...q,mcq:{...q.mcq,votes}};
+  });
+  await sSet("bhu:questions",questions);
+  toast("Vote recorded! ✅"); renderDoubts();
+}
+
+// ── AI Professor answer for a specific community doubt ──
+async function askAIForDoubt(qId){
+  const q=questions.find(x=>x.id===qId); if(!q) return;
+  aiDoubtLoading[qId]=true; renderDoubts();
+  const prompt=q.title+(q.body?("\n\nDetails: "+q.body):"");
+  const answer=await callAIProfessor(prompt);
+  aiDoubtLoading[qId]=false;
+  aiDoubtAnswers[qId]=answer||"⚠️ Couldn't get an AI answer right now. Try again in a moment.";
+  renderDoubts();
+}
+
+// ── Shared AI Professor caller (used by both main chat & community) ──
+async function callAIProfessor(userText){
+  const contents=[{role:"user",parts:[{text:userText}]}];
+  let reply=null;
+  if(AI_ENDPOINT){
+    try{
+      const r=await fetch(AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents})});
+      if(r.ok){ const d=await r.json(); if(!d.error) reply=d.candidates?.[0]?.content?.parts?.[0]?.text||null; }
+    } catch(e){ console.warn("Netlify AI unreachable:",e.message); }
+  }
+  if(!reply){
+    try{
+      const res=await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_cfg}`,
+        {method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({system_instruction:{parts:[{text:AI_SYS}]},contents,generationConfig:{maxOutputTokens:1000,temperature:0.7}})}
+      );
+      const data=await res.json();
+      if(!data.error) reply=data.candidates?.[0]?.content?.parts?.[0]?.text||null;
+    } catch(e){ console.warn("Gemini failed:",e.message); }
+  }
+  return reply;
+}
+
+// ── Community AI Professor chat box ──
+let communityAIMsgs=[];
+function openCommunityAI(){
+  if(!currentUser){openLogin();return;}
+  const box=document.getElementById("communityAIBox");
+  const show=box.style.display==="none"||!box.style.display;
+  box.style.display=show?"block":"none";
+  if(show&&communityAIMsgs.length===0){
+    communityAIMsgs.push({role:"assistant",content:"Hi! 🌾 Ask me any agriculture question right here in the community section.",time:fmtTime()});
+    renderCommunityAIMessages();
+  }
+}
+function renderCommunityAIMessages(){
+  const el=document.getElementById("communityAIMessages"); if(!el) return;
+  el.innerHTML=communityAIMsgs.map(m=>{
+    const isUser=m.role==="user";
+    if(m.isTyping) return `<div class="message bot msg"><div class="avatar" style="background:linear-gradient(135deg,#0F3D23,#00B050);">🌾</div><div class="bubble"><div class="bubble-text"><div class="typing"><span></span><span></span><span></span></div></div></div></div>`;
+    return `<div class="message ${isUser?"user":"bot"} msg">
+      ${!isUser?'<div class="avatar" style="background:linear-gradient(135deg,#0F3D23,#00B050);">🌾</div>':''}
+      ${isUser?`<div class="avatar" style="background:linear-gradient(135deg,#1565C0,#42A5F5);">${currentUser?currentUser.name[0].toUpperCase():"U"}</div>`:''}
+      <div class="bubble"><div class="bubble-text">${escapeHTML(m.content)}</div><div class="bubble-time">${escapeHTML(m.time||"")}</div></div>
+    </div>`;
+  }).join("");
+  el.scrollTop=el.scrollHeight;
+}
+async function sendCommunityAI(){
+  const inp=document.getElementById("communityAIInput");
+  const text=inp.value.trim(); if(!text) return;
+  inp.value="";
+  communityAIMsgs.push({role:"user",content:text,time:fmtTime()});
+  communityAIMsgs.push({role:"assistant",isTyping:true});
+  renderCommunityAIMessages();
+  const reply=await callAIProfessor(text);
+  communityAIMsgs=communityAIMsgs.filter(m=>!m.isTyping);
+  communityAIMsgs.push({role:"assistant",content:reply||"⚠️ Couldn't get a response right now. Try again.",time:fmtTime()});
+  renderCommunityAIMessages();
 }
 
 async function postReply(qId){
@@ -1715,6 +2020,38 @@ async function delReply(qId,rId){
   await sSet("bhu:questions",questions); renderDoubts();
 }
 
+function renderMCQPoll(q){
+  const mcq=q.mcq;
+  const letters=["A","B","C","D"];
+  const voteKey=q.id+"_"+(currentUser?.email||"");
+  const myVote=currentUser?mcqVotes[voteKey]:undefined;
+  const hasVoted=myVote!==undefined;
+  const totalVotes=mcq.votes.reduce((s,v)=>s+v,0);
+  return `
+    <div style="padding:14px 18px;border-bottom:1px solid #E0EAE0;">
+      <div style="font-size:11px;font-weight:700;color:#5E35B1;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;">🗳️ Poll · ${totalVotes} vote${totalVotes===1?"":"s"}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${mcq.opts.map((opt,i)=>{
+          const count=mcq.votes[i]||0;
+          const pct=totalVotes?Math.round(count/totalVotes*100):0;
+          const isMine=myVote===i;
+          const isCorrect=mcq.correct===i;
+          const showResult=hasVoted;
+          return `
+          <div onclick="${hasVoted?'':`voteMCQ('${q.id}',${i})`}" style="position:relative;border:2px solid ${isMine?"#5E35B1":"#E0EAE0"};border-radius:10px;padding:10px 14px;cursor:${hasVoted?"default":"pointer"};overflow:hidden;background:#fff;">
+            ${showResult?`<div style="position:absolute;inset:0;background:${isCorrect&&mcq.correct>=0?"#E8F5E9":"#F3F0FA"};width:${pct}%;transition:width .4s;z-index:0;"></div>`:''}
+            <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <span style="font-size:13px;font-weight:${isMine?"700":"500"};color:#111;">${letters[i]}. ${escapeHTML(opt)} ${showResult&&isCorrect&&mcq.correct>=0?"✅":""}</span>
+              ${showResult?`<span style="font-size:12px;font-weight:700;color:#5E35B1;flex-shrink:0;">${pct}% (${count})</span>`:''}
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+      ${!currentUser?`<div style="font-size:12px;color:#777;margin-top:8px;">🔑 <a href="#" onclick="event.preventDefault();openLogin();" style="color:#00B050;font-weight:600;">Login</a> to vote</div>`:
+        hasVoted?`<div style="font-size:12px;color:#777;margin-top:8px;">✓ You voted for ${letters[myVote]}</div>`:''}
+    </div>`;
+}
+
 function renderDoubts(){
   const totalQEl=document.getElementById("totalQ"); const totalAEl=document.getElementById("totalA");
   if(totalQEl) totalQEl.textContent=questions.length;
@@ -1741,6 +2078,7 @@ function renderDoubts(){
             <div style="flex:1;min-width:0;">
               <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
                 <span style="background:#E8F5E9;color:#0F3D23;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:600;">${escapeHTML(q.subject)}</span>
+                ${q.mcq?'<span style="background:#EDE7F6;color:#5E35B1;font-size:9px;padding:1px 8px;border-radius:50px;font-weight:700;">🗳️ MCQ POLL</span>':''}
                 ${q.solved?'<span style="background:#dcfce7;color:#16a34a;font-size:9px;padding:1px 8px;border-radius:50px;font-weight:700;">✅ SOLVED</span>':''}
                 ${q.isAdmin?'<span style="background:#FFF3E0;color:#FF7B00;font-size:9px;padding:1px 7px;border-radius:50px;font-weight:700;">ADMIN</span>':''}
               </div>
@@ -1754,12 +2092,24 @@ function renderDoubts(){
           <button class="btn ${isUpv?"btn-light":""}" style="background:${isUpv?"#E8F5E9":"#F8FBF8"};color:${isUpv?"#00B050":"#777"};padding:5px 12px;font-size:12px;border:1px solid ${isUpv?"#00B050":"#E0EAE0"};" onclick="toggleUpvote('${q.id}')">👍 ${q.upvotes||0}</button>
           <button class="btn" style="background:#F8FBF8;color:#777;padding:5px 12px;font-size:12px;border:1px solid #E0EAE0;" onclick="expandedQ=expandedQ==='${q.id}'?null:'${q.id}';renderDoubts();">💬 ${q.replies.length}</button>
           <button class="btn btn-light" style="padding:5px 12px;font-size:12px;" onclick="expandedQ='${q.id}';renderDoubts();setTimeout(()=>document.getElementById('replyInput_${q.id}')?.focus(),100)">↩️ Reply</button>
+          <button class="btn" style="background:#EDE7F6;color:#5E35B1;padding:5px 12px;font-size:12px;border:1px solid #D1C4E9;" onclick="expandedQ='${q.id}';if(!aiDoubtAnswers['${q.id}']&&!aiDoubtLoading['${q.id}'])askAIForDoubt('${q.id}');else renderDoubts();">🤖 Ask AI</button>
           ${u?.isAdmin?`<button class="btn ${q.solved?"btn-light":""}" style="padding:5px 12px;font-size:12px;" onclick="markSolved('${q.id}')">${q.solved?"↩ Reopen":"✓ Solve"}</button>`:''}
           ${canDel?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="delQuestion('${q.id}')">🗑</button>`:''}
         </div>
         ${isExp?`
           <div style="border-top:1px solid #E0EAE0;background:#F8FBF8;">
             ${q.body?`<div style="padding:14px 18px;font-size:13px;color:#555;line-height:1.7;white-space:pre-wrap;border-bottom:1px solid #E0EAE0;">${escapeHTML(q.body)}</div>`:''}
+            ${q.mcq?renderMCQPoll(q):''}
+            ${(aiDoubtLoading[q.id]||aiDoubtAnswers[q.id])?`
+              <div style="padding:14px 18px;border-bottom:1px solid #E0EAE0;background:#F5F2FC;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                  <div style="width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#0F3D23,#00B050);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">🌾</div>
+                  <span style="font-weight:700;font-size:12px;color:#5E35B1;">AI Professor</span>
+                </div>
+                ${aiDoubtLoading[q.id]?
+                  `<div class="typing" style="padding-left:4px;"><span></span><span></span><span></span></div>`:
+                  `<div style="font-size:13px;color:#333;line-height:1.7;white-space:pre-wrap;">${escapeHTML(aiDoubtAnswers[q.id])}</div>`}
+              </div>`:''}
             ${q.replies.length>0?`
               <div style="padding:14px 18px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid #E0EAE0;">
                 <div style="font-size:11px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.4px;">Replies (${q.replies.length})</div>
@@ -1797,7 +2147,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["pending","rejected","users","subs","settings"].forEach(k=>{
+  ["pending","rejected","users","subs","quiz","settings"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -1880,6 +2230,123 @@ async function renderAdmin(){
           </tr>`;}).join("")}
         </tbody>
       </table></div></div>`;
+  } else if(adminTab==="quiz"){
+    // Count all questions in QUIZ_BANK (builtin + custom)
+    const totalQ=Object.values(QUIZ_BANK).reduce((s,a)=>s+a.length,0);
+    const customQ=Object.values(customQuizBank).reduce((s,a)=>s+a.length,0);
+    el.innerHTML=`
+      <div class="card" style="padding:20px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">📊 Quiz Bank Summary</div>
+        <div style="font-size:13px;color:#777;margin-bottom:12px;">Built-in questions: <strong style="color:#0F3D23;">${totalQ-customQ}</strong> &nbsp;·&nbsp; Admin-added: <strong style="color:#00B050;">${customQ}</strong> &nbsp;·&nbsp; Total: <strong style="color:#1565C0;">${totalQ}</strong></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${Object.entries(QUIZ_BANK).map(([s,q])=>`<span style="background:#E8F5E9;color:#0F3D23;font-size:11px;padding:4px 10px;border-radius:50px;font-weight:600;">${escapeHTML(s)}: ${q.length}Q</span>`).join("")}
+        </div>
+      </div>
+
+      <!-- Document Intelligence: PDF / Scanned PDF / Image OCR Upload -->
+      <div class="card" style="padding:22px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">🧠 Document Intelligence — Upload Question Paper</div>
+        <div style="font-size:12px;color:#777;margin-bottom:14px;line-height:1.7;">
+          Upload a <strong>text PDF</strong>, a <strong>scanned PDF</strong> (photocopied paper), or a <strong>photo/screenshot (JPG/PNG)</strong> of a question paper.
+          We automatically detect whether the PDF has a real text layer — if not, every page is run through on-device OCR.<br>
+          Expected question format:<br>
+          <code style="background:#F8FBF8;padding:2px 6px;border-radius:5px;font-size:11px;">Q. Your question here?<br>A. Option 1<br>B. Option 2<br>C. Option 3<br>D. Option 4<br>ANS: B<br>EXP: Explanation here.</code><br>
+          <span style="margin-top:4px;display:block;">Leave a blank line between questions.</span>
+          <span style="margin-top:4px;display:block;">🤖 <strong>Subject is auto-detected per question</strong> — add a heading like <strong>Subject: Agronomy</strong> anywhere in the document to tag everything below it, or leave it out and each question is auto-classified by keyword matching against the subject's topics. Review/override any question's subject before adding it.</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <label class="lbl">Fallback subject <span style="font-weight:400;color:#777;">(if auto-detect fails)</span></label>
+            <select id="pdfQuizSubject" class="inp">
+              ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+            </select>
+          </div>
+          <div>
+            <label class="lbl">OCR language <span style="font-weight:400;color:#777;">(for scanned docs/images)</span></label>
+            <select id="ocrLang" class="inp">
+              <option value="eng">English</option>
+              <option value="hin">Hindi</option>
+              <option value="eng+hin">English + Hindi</option>
+            </select>
+          </div>
+        </div>
+        <div class="drop-zone" id="pdfDropZone" onclick="document.getElementById('pdfQuizFile').click()" style="margin-bottom:12px;">
+          <input id="pdfQuizFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none;" onchange="handleQuizDocument(this)">
+          <div style="font-size:28px;margin-bottom:6px;">📄🖼️</div>
+          <div id="pdfDropLabel" style="font-size:13px;color:#333;font-weight:500;">Click to upload a PDF or photo of the question paper</div>
+          <div style="font-size:11px;color:#777;margin-top:4px;">PDF, JPG or PNG · max 15 MB · scanned pages run through automatic OCR</div>
+        </div>
+        <div id="pdfParseStatus" style="display:none;margin-bottom:12px;"></div>
+        <button class="btn btn-primary" id="pdfUploadBtn" onclick="uploadQuizPdf()" disabled>📤 Parse & Add to Quiz Bank</button>
+      </div>
+
+      <!-- Bulk Paste Entry -->
+      <div class="card" style="padding:22px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📋 Bulk Paste Questions</div>
+        <div style="font-size:12px;color:#777;margin-bottom:10px;line-height:1.6;">Already have questions typed up somewhere? Paste them directly using the same <strong>Q./A./B./C./D./ANS:/EXP:</strong> format — no file or OCR needed.</div>
+        <textarea id="bulkPasteText" class="inp" rows="6" placeholder="Q. What is NPK?&#10;A. Nitrogen Phosphorus Potassium&#10;B. ...&#10;C. ...&#10;D. ...&#10;ANS: A&#10;EXP: ..." style="resize:vertical;font-family:monospace;font-size:12px;margin-bottom:10px;"></textarea>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px;">
+          <div style="flex:1;min-width:160px;">
+            <label class="lbl">Fallback subject</label>
+            <select id="bulkFallbackSubject" class="inp">
+              ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+            </select>
+          </div>
+          <button class="btn btn-light" style="border:1.5px solid #00B050;color:#00B050;padding:9px 16px;" onclick="parseBulkPaste()">🔎 Parse Text</button>
+        </div>
+        <div id="bulkParseStatus" style="display:none;margin-bottom:12px;"></div>
+        <button class="btn btn-primary" id="bulkAddBtn" onclick="addBulkQuestions()" disabled>➕ Add Parsed Questions</button>
+      </div>
+
+      <!-- Manual Add / Edit Section -->
+      <div class="card" style="padding:22px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✏️ Add / Edit Question Manually</div>
+        <div style="display:flex;flex-direction:column;gap:11px;">
+          <div><label class="lbl">Subject *</label>
+            <select id="mQuizSubj" class="inp">
+              ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+            </select>
+          </div>
+          <div><label class="lbl">Question *</label><input id="mQuizQ" class="inp" placeholder="Enter the question text"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><label class="lbl">Option A *</label><input id="mOptA" class="inp" placeholder="Option A"></div>
+            <div><label class="lbl">Option B *</label><input id="mOptB" class="inp" placeholder="Option B"></div>
+            <div><label class="lbl">Option C *</label><input id="mOptC" class="inp" placeholder="Option C"></div>
+            <div><label class="lbl">Option D *</label><input id="mOptD" class="inp" placeholder="Option D"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><label class="lbl">Correct Answer *</label>
+              <select id="mQuizAns" class="inp">
+                <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
+              </select>
+            </div>
+            <div><label class="lbl">Difficulty</label>
+              <select id="mQuizDiff" class="inp">
+                <option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+          <div><label class="lbl">Explanation</label><input id="mQuizExp" class="inp" placeholder="Explain the correct answer…"></div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="mQuizPrem"><label for="mQuizPrem" style="font-size:13px;font-weight:600;cursor:pointer;">⭐ Premium only</label>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" id="mQuizSubmitBtn" onclick="addManualQuestion()">➕ Add Question</button>
+            <button class="btn btn-light" id="mQuizCancelBtn" style="display:none;" onclick="cancelEditQuestion()">Cancel Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Questions List -->
+      ${customQ>0?`
+      <div class="card" style="padding:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+          <div style="font-weight:700;font-size:15px;">📋 Admin-Added Questions (${customQ})</div>
+          <input id="cqSearchInput" class="inp" placeholder="🔍 Search questions…" style="width:auto;flex:1;max-width:240px;font-size:12px;padding:7px 12px;" value="${escapeHTML(customQSearch||"")}" oninput="customQSearch=this.value;renderCustomQList();">
+        </div>
+        <div id="customQListContainer"></div>
+      </div>`:''}`;
+    renderCustomQList();
   } else if(adminTab==="settings"){
     el.innerHTML=`
       <div class="card" style="padding:22px;margin-bottom:14px;max-width:460px;">
@@ -1901,6 +2368,35 @@ async function renderAdmin(){
         <button class="btn" style="background:#FFEBEE;color:#E53935;font-size:12px;padding:7px 16px;" onclick="clearAllData()">🗑 Reset All Portal Data</button>
       </div>`;
   }
+}
+
+// Renders only the admin-added question list into its own container, so typing in
+// the search box never wipes/re-creates the input itself (no focus loss per keystroke).
+function renderCustomQList(){
+  const container=document.getElementById("customQListContainer"); if(!container) return;
+  const cqSearch=(customQSearch||"").toLowerCase();
+  container.innerHTML=Object.entries(customQuizBank).map(([subj,qs])=>{
+    const filtered=qs.map((q,i)=>({q,i})).filter(({q})=>!cqSearch||q.q.toLowerCase().includes(cqSearch));
+    if(!filtered.length) return '';
+    return `
+      <div style="margin-bottom:14px;">
+        <div style="font-weight:700;font-size:12px;color:#0F3D23;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">${escapeHTML(subj)}</div>
+        ${filtered.map(({q,i})=>`
+          <div style="background:#F8FBF8;border-radius:10px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;font-size:13px;">
+            <div style="flex:1;">
+              <strong>Q${i+1}:</strong> ${escapeHTML(q.q)}
+              ${q.difficulty?`<span style="background:#F3E5F5;color:#7B1FA2;font-size:9px;padding:1px 7px;border-radius:50px;font-weight:700;text-transform:capitalize;margin-left:6px;">${escapeHTML(q.difficulty)}</span>`:''}
+              ${q.premium?`<span style="background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:9px;padding:1px 7px;border-radius:50px;font-weight:700;margin-left:4px;">⭐</span>`:''}
+              <br><span style="color:#00B050;font-size:11px;">✓ ${escapeHTML(q.opts[q.ans])}</span>
+            </div>
+            <div style="display:flex;gap:4px;flex-shrink:0;">
+              <button onclick="editCustomQuestion('${escapeHTML(subj)}',${i})" style="background:#E3F2FD;color:#1565C0;border:none;padding:3px 8px;border-radius:6px;cursor:pointer;font-size:11px;">✏️</button>
+              <button onclick="deleteCustomQuestion('${escapeHTML(subj)}',${i})" style="background:#FFEBEE;color:#E53935;border:none;padding:3px 8px;border-radius:6px;cursor:pointer;font-size:11px;">🗑</button>
+            </div>
+          </div>`).join("")}
+      </div>`;
+  }).join("");
+  if(!container.innerHTML.trim()) container.innerHTML=`<div style="text-align:center;color:#777;font-size:13px;padding:16px;">No matching questions.</div>`;
 }
 
 async function approveNote(id){
@@ -1941,6 +2437,385 @@ async function clearAllData(){
   notes=[]; pending=[]; usersDB=[]; questions=[];
   await Promise.all([sSet("bhu:notes",[]),sSet("bhu:pending",[]),sSet("bhu:users",[]),sSet("bhu:questions",[])]);
   toast("All data cleared.","e"); renderAll(); renderAdmin();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUIZ BANK ADMIN — DOCUMENT INTELLIGENCE (PDF/IMAGE + OCR) + MANUAL ADD
+// ═══════════════════════════════════════════════════════════════
+
+// ── OCR engine loader (Tesseract.js, loaded on-demand) ──────────
+async function loadTesseract(){
+  if(_tesseractLoaded && window.Tesseract) return true;
+  await new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js";
+    s.onload=res; s.onerror=rej; document.head.appendChild(s);
+  });
+  _tesseractLoaded=!!window.Tesseract;
+  return _tesseractLoaded;
+}
+
+// Renders one PDF page onto an offscreen canvas at high scale for sharper OCR
+async function renderPdfPageToCanvas(page, scale=2.2){
+  const viewport=page.getViewport({scale});
+  const canvas=document.createElement("canvas");
+  canvas.width=viewport.width; canvas.height=viewport.height;
+  await page.render({canvasContext:canvas.getContext("2d"), viewport}).promise;
+  return canvas;
+}
+
+// Runs Tesseract OCR on a canvas/image/file source, reporting % progress via cb
+async function ocrRecognize(source, lang, cb){
+  const ok=await loadTesseract();
+  if(!ok) throw new Error("OCR engine failed to load — check your internet connection");
+  const { data } = await window.Tesseract.recognize(source, lang||"eng", {
+    logger: m=>{ if(m.status==="recognizing text" && cb) cb(Math.round((m.progress||0)*100)); }
+  });
+  return data.text||"";
+}
+
+async function ensurePdfJs(){
+  if(window.pdfjsLib) return;
+  await new Promise((res,rej)=>{
+    const s=document.createElement("script");
+    s.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+    s.onload=res; s.onerror=rej; document.head.appendChild(s);
+  });
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+}
+
+// Unified document-intelligence entry point: accepts a text PDF, a *scanned* PDF
+// (auto-detected by a near-empty text layer → falls back to page-by-page OCR),
+// or a plain image (JPG/PNG) of a question paper run straight through OCR.
+async function handleQuizDocument(input){
+  const file=input.files[0]; if(!file) return;
+  const label=document.getElementById("pdfDropLabel");
+  const status=document.getElementById("pdfParseStatus");
+  const btn=document.getElementById("pdfUploadBtn");
+  const langSel=document.getElementById("ocrLang");
+  const lang=langSel?langSel.value:"eng";
+  label.textContent="📄 "+file.name;
+  status.style.display="block";
+  btn.disabled=true; _parsedPdfQuestions=[];
+
+  const isImage=file.type.startsWith("image/")||/\.(jpe?g|png|webp|bmp)$/i.test(file.name);
+  if(file.size>15*1024*1024){
+    status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ File too large (max 15 MB). Split it into smaller files or compress the scan first.</div>`;
+    return;
+  }
+  if(file.size>5*1024*1024) toast("⏳ Large file — OCR may take a minute. Please wait…");
+  const isPdf=file.type==="application/pdf"||/\.pdf$/i.test(file.name);
+
+  if(!isImage&&!isPdf){
+    status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ Unsupported file type. Upload a PDF or an image (JPG/PNG) of the question paper.</div>`;
+    return;
+  }
+
+  try{
+    let fullText="";
+
+    if(isImage){
+      status.innerHTML=`<div style="color:#c9690a;font-size:13px;">🔎 Running OCR on image… <span id="ocrPct">0%</span></div>`;
+      fullText=await ocrRecognize(file, lang, pct=>{ const e=document.getElementById("ocrPct"); if(e) e.textContent=pct+"%"; });
+    } else {
+      status.innerHTML=`<div style="color:#c9690a;font-size:13px;">⏳ Loading PDF engine…</div>`;
+      await ensurePdfJs();
+      status.innerHTML=`<div style="color:#c9690a;font-size:13px;">⏳ Reading PDF pages…</div>`;
+      const ab=await file.arrayBuffer();
+      const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+      let nativeText=""; const pageLens=[];
+      for(let i=1;i<=pdf.numPages;i++){
+        const page=await pdf.getPage(i);
+        const tc=await page.getTextContent();
+        const pageText=tc.items.map(it=>it.str).join(" ");
+        nativeText+=pageText+"\n"; pageLens.push(pageText.trim().length);
+      }
+      const avgLen=pageLens.reduce((a,b)=>a+b,0)/Math.max(1,pageLens.length);
+      const looksScanned=avgLen<40; // near-empty text layer ⇒ scanned/image-based PDF
+
+      if(!looksScanned){
+        fullText=nativeText;
+        status.innerHTML=`<div style="color:#00B050;font-size:12px;">✅ Native text layer found — extracted directly (no OCR needed)</div>`;
+      } else {
+        status.innerHTML=`<div style="color:#c9690a;font-size:13px;">🔎 No text layer detected — this looks like a scanned document. Running OCR page by page… <span id="ocrPct">Page 1/${pdf.numPages}</span></div>`;
+        let ocrText="";
+        for(let i=1;i<=pdf.numPages;i++){
+          const page=await pdf.getPage(i);
+          const canvas=await renderPdfPageToCanvas(page);
+          const pageOcr=await ocrRecognize(canvas, lang, pct=>{
+            const e=document.getElementById("ocrPct"); if(e) e.textContent=`Page ${i}/${pdf.numPages} — ${pct}%`;
+          });
+          ocrText+=pageOcr+"\n";
+        }
+        fullText=ocrText;
+      }
+    }
+
+    _parsedPdfQuestions=parsePdfQuizText(fullText);
+    renderParsedDocPreview(status, btn);
+  } catch(e){
+    status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ Failed to process document: ${escapeHTML(e.message)}</div>`;
+  }
+}
+
+function renderParsedDocPreview(status, btn){
+  if(_parsedPdfQuestions.length===0){
+    status.innerHTML+=`<div style="color:#E53935;font-size:13px;margin-top:8px;">⚠️ No questions found. Check the format — each question must start with <strong>Q.</strong> and options with <strong>A. B. C. D.</strong> and answer as <strong>ANS: A</strong>. (For OCR results, double-check the source image is clear and well-lit.)</div>`;
+    return;
+  }
+  const fallbackSubj=document.getElementById("pdfQuizSubject").value;
+  const detectedCount=_parsedPdfQuestions.filter(q=>q.subject).length;
+  status.innerHTML+=`<div style="color:#00B050;font-size:13px;font-weight:600;margin-top:8px;">✅ Found ${_parsedPdfQuestions.length} question(s) · 🤖 ${detectedCount}/${_parsedPdfQuestions.length} subject(s) auto-detected</div>
+    <div style="background:#E8F5E9;border-radius:10px;padding:12px;margin-top:8px;max-height:280px;overflow-y:auto;">
+      ${_parsedPdfQuestions.map((q,i)=>{
+        const tagColor=q.subjectSource==="heading"?"#00B050":q.subjectSource==="auto"?"#1565C0":"#c9690a";
+        const tagLabel=q.subjectSource==="heading"?"📌 From document heading":q.subjectSource==="auto"?"🤖 Auto-detected":"❓ Not detected — using fallback";
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
+          <div style="flex:1;font-size:12px;">
+            <strong>Q${i+1}:</strong> ${escapeHTML(q.q.slice(0,80))}${q.q.length>80?"…":""}
+            <div style="margin-top:3px;font-size:10px;color:${tagColor};font-weight:600;">${tagLabel}</div>
+          </div>
+          <select class="inp" style="width:auto;font-size:11px;padding:4px 6px;flex-shrink:0;" onchange="_parsedPdfQuestions[${i}].subject=this.value;_parsedPdfQuestions[${i}].subjectSource='manual';">
+            ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
+          </select>
+        </div>`;
+      }).join("")}
+    </div>
+    <div style="font-size:11px;color:#777;margin-top:8px;">Double-check the subject tag next to each question — change the dropdown if a question was misclassified, then add to the Quiz Bank.</div>`;
+  btn.disabled=false;
+}
+
+// ── Automatic subject detection ─────────────────────────────────
+// Resolves any free-text subject label (e.g. from a "Subject: ..." heading)
+// to one of the portal's canonical SUBJECTS names, if possible.
+function normalizeSubjectName(raw){
+  if(!raw) return null;
+  const norm=raw.trim().toLowerCase().replace(/[:\-–—]+$/,"").trim();
+  if(!norm) return null;
+  let found=SUBJECTS.find(s=>s.name.toLowerCase()===norm);
+  if(found) return found.name;
+  found=SUBJECTS.find(s=>norm.includes(s.name.toLowerCase())||s.name.toLowerCase().includes(norm));
+  return found?found.name:null;
+}
+
+// Scores each subject by how many of its name/topic/tag keywords appear in the
+// question + options text, and returns the best match (or null if no match at all).
+function autoDetectSubject(qText, opts){
+  const text=(qText+" "+(opts||[]).join(" ")).toLowerCase();
+  let bestSubj=null, bestScore=0;
+  SUBJECTS.forEach(s=>{
+    let score=0;
+    const keywords=[s.name, ...(s.topics||[]), ...(s.tags||[])];
+    keywords.forEach(k=>{
+      const kw=k.toLowerCase();
+      if(kw.length>2 && text.includes(kw)) score += kw.split(/\s+/).length; // multi-word matches weigh more
+    });
+    if(score>bestScore){ bestScore=score; bestSubj=s.name; }
+  });
+  return bestScore>0 ? bestSubj : null;
+}
+
+// Parses raw text (from native PDF extraction, OCR, or a hand-pasted block) into
+// structured questions. Tolerant of common OCR noise: stray spaces around punctuation,
+// "(A)"/"a)"/"A:" option markers, and "Answer:"/"Ans:" variants.
+function parsePdfQuizText(text){
+  const questions=[];
+  // Normalise line breaks + collapse repeated whitespace that OCR often introduces
+  const lines=text.replace(/\r/g,"").split("\n").map(l=>l.replace(/\s+/g," ").trim()).filter(Boolean);
+  let i=0;
+  let headingSubject=null; // set whenever a "Subject: X" heading line is seen; applies to everything below it
+  while(i<lines.length){
+    const line=lines[i];
+
+    // Detect a subject heading line, e.g. "Subject: Agronomy"
+    const subjHeadMatch=line.match(/^Subject\s*[:\-]\s*(.+)/i);
+    if(subjHeadMatch){
+      headingSubject=normalizeSubjectName(subjHeadMatch[1])||subjHeadMatch[1].trim();
+      i++; continue;
+    }
+
+    // Detect question line: starts with Q. / Q1. / 1. / Question 1: etc
+    const qMatch=line.match(/^(?:Q(?:uestion)?\.?\s*\d*\.?[:.)]?\s*|\d+[.)]\s*)(.+)/i);
+    if(!qMatch){ i++; continue; }
+    const qText=qMatch[1].trim(); i++;
+    if(qText.length<4){ continue; } // skip noise lines OCR sometimes mistakes for a question
+    const opts=[]; let ansIdx=-1; let exp="";
+    // Read options A-D — tolerant of "A.", "A)", "(A)", "A:" markers
+    const optLetters=["A","B","C","D"];
+    while(i<lines.length&&opts.length<4){
+      const ol=lines[i];
+      const optM=ol.match(/^\(?([A-Da-d])\)?[.):]\s*(.+)/);
+      if(optM){ opts.push(optM[2].trim()); i++; }
+      else break;
+    }
+    if(opts.length<2){ continue; } // not enough options — skip
+    // Read ANS / ANSWER / EXP line(s)
+    while(i<lines.length){
+      const al=lines[i];
+      const ansM=al.match(/^(?:ANS(?:WER)?)[:\s]+\(?([A-Da-d])\)?/i);
+      const expM=al.match(/^(?:EXP(?:LANATION)?)[:\s]+(.+)/i);
+      if(ansM){ ansIdx=optLetters.indexOf(ansM[1].toUpperCase()); i++; }
+      else if(expM){ exp=expM[1].trim(); i++; }
+      else break;
+    }
+    if(ansIdx===-1) ansIdx=0;
+
+    // Resolve subject: explicit heading wins, otherwise auto-classify by keywords
+    const autoSubj=headingSubject||autoDetectSubject(qText,opts);
+    questions.push({
+      q:qText, opts, ans:ansIdx, exp:exp||"", premium:false,
+      subject:autoSubj,
+      subjectSource:headingSubject?"heading":(autoSubj?"auto":"none")
+    });
+  }
+  return questions;
+}
+
+async function uploadQuizPdf(){
+  if(!_parsedPdfQuestions.length){toast("No parsed questions. Upload a valid document first.","e");return;}
+  const fallbackSubj=document.getElementById("pdfQuizSubject").value;
+  if(!fallbackSubj){toast("Select a fallback subject.","e");return;}
+  const counts={};
+  _parsedPdfQuestions.forEach(q=>{
+    const subj=q.subject||fallbackSubj;
+    if(!customQuizBank[subj]) customQuizBank[subj]=[];
+    customQuizBank[subj].push({q:q.q,opts:q.opts,ans:q.ans,exp:q.exp,premium:q.premium,difficulty:"medium"});
+    counts[subj]=(counts[subj]||0)+1;
+  });
+  await sSet("bhu:customquizbank",customQuizBank);
+  rebuildQuizBank();
+  const summary=Object.entries(counts).map(([s,n])=>`${s}: ${n}`).join(" · ");
+  toast(`✅ ${_parsedPdfQuestions.length} question(s) added → ${summary}`);
+  _parsedPdfQuestions=[]; renderAdmin(); renderQuizStart();
+}
+
+// ── Bulk paste entry (same parser, no file/OCR needed) ───────────
+function parseBulkPaste(){
+  const text=document.getElementById("bulkPasteText").value;
+  const status=document.getElementById("bulkParseStatus");
+  if(!text.trim()){toast("Paste some questions first.","e");return;}
+  _bulkParsedQuestions=parsePdfQuizText(text);
+  status.style.display="block";
+  renderBulkPreview();
+}
+function renderBulkPreview(){
+  const status=document.getElementById("bulkParseStatus");
+  const btn=document.getElementById("bulkAddBtn");
+  if(_bulkParsedQuestions.length===0){
+    status.innerHTML=`<div style="color:#E53935;font-size:13px;">⚠️ No questions detected. Make sure each question starts with <strong>Q.</strong>, options with <strong>A./B./C./D.</strong>, and answer as <strong>ANS: A</strong>.</div>`;
+    btn.disabled=true; return;
+  }
+  const fallbackSubj=document.getElementById("bulkFallbackSubject").value;
+  const detectedCount=_bulkParsedQuestions.filter(q=>q.subject).length;
+  status.innerHTML=`<div style="color:#00B050;font-size:13px;font-weight:600;">✅ Found ${_bulkParsedQuestions.length} question(s) · 🤖 ${detectedCount}/${_bulkParsedQuestions.length} subject(s) auto-detected</div>
+    <div style="background:#E8F5E9;border-radius:10px;padding:12px;margin-top:8px;max-height:240px;overflow-y:auto;">
+      ${_bulkParsedQuestions.map((q,i)=>`
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
+          <div style="flex:1;font-size:12px;"><strong>Q${i+1}:</strong> ${escapeHTML(q.q.slice(0,80))}${q.q.length>80?"…":""}</div>
+          <select class="inp" style="width:auto;font-size:11px;padding:4px 6px;flex-shrink:0;" onchange="_bulkParsedQuestions[${i}].subject=this.value;">
+            ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
+          </select>
+        </div>`).join("")}
+    </div>`;
+  btn.disabled=false;
+}
+async function addBulkQuestions(){
+  if(!_bulkParsedQuestions.length){toast("Nothing to add — parse some text first.","e");return;}
+  const fallbackSubj=document.getElementById("bulkFallbackSubject").value;
+  const counts={};
+  _bulkParsedQuestions.forEach(q=>{
+    const subj=q.subject||fallbackSubj;
+    if(!customQuizBank[subj]) customQuizBank[subj]=[];
+    customQuizBank[subj].push({q:q.q,opts:q.opts,ans:q.ans,exp:q.exp,premium:false,difficulty:"medium"});
+    counts[subj]=(counts[subj]||0)+1;
+  });
+  await sSet("bhu:customquizbank",customQuizBank);
+  rebuildQuizBank();
+  const summary=Object.entries(counts).map(([s,n])=>`${s}: ${n}`).join(" · ");
+  toast(`✅ ${_bulkParsedQuestions.length} question(s) added → ${summary}`);
+  document.getElementById("bulkPasteText").value="";
+  _bulkParsedQuestions=[];
+  const st=document.getElementById("bulkParseStatus"); if(st) st.style.display="none";
+  renderAdmin(); renderQuizStart();
+}
+
+// ── Manual entry — add or edit a single question ─────────────────
+function editCustomQuestion(subj, idx){
+  const q=customQuizBank[subj]?.[idx]; if(!q) return;
+  editingCustomQ={subject:subj, idx};
+  document.getElementById("mQuizSubj").value=subj;
+  document.getElementById("mQuizQ").value=q.q;
+  document.getElementById("mOptA").value=q.opts[0]||"";
+  document.getElementById("mOptB").value=q.opts[1]||"";
+  document.getElementById("mOptC").value=q.opts[2]||"";
+  document.getElementById("mOptD").value=q.opts[3]||"";
+  document.getElementById("mQuizAns").value=q.ans;
+  document.getElementById("mQuizExp").value=q.exp||"";
+  document.getElementById("mQuizPrem").checked=!!q.premium;
+  const diffEl=document.getElementById("mQuizDiff"); if(diffEl) diffEl.value=q.difficulty||"medium";
+  document.getElementById("mQuizSubmitBtn").textContent="💾 Update Question";
+  document.getElementById("mQuizCancelBtn").style.display="inline-block";
+  document.getElementById("mQuizQ").scrollIntoView({behavior:"smooth",block:"center"});
+}
+function cancelEditQuestion(){
+  editingCustomQ=null;
+  ["mQuizQ","mOptA","mOptB","mOptC","mOptD","mQuizExp"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  const premEl=document.getElementById("mQuizPrem"); if(premEl) premEl.checked=false;
+  const diffEl=document.getElementById("mQuizDiff"); if(diffEl) diffEl.value="medium";
+  document.getElementById("mQuizSubmitBtn").textContent="➕ Add Question";
+  document.getElementById("mQuizCancelBtn").style.display="none";
+}
+
+async function addManualQuestion(){
+  const subj=document.getElementById("mQuizSubj").value;
+  const q=document.getElementById("mQuizQ").value.trim();
+  const a=document.getElementById("mOptA").value.trim();
+  const b=document.getElementById("mOptB").value.trim();
+  const c=document.getElementById("mOptC").value.trim();
+  const d=document.getElementById("mOptD").value.trim();
+  const ans=parseInt(document.getElementById("mQuizAns").value);
+  const exp=document.getElementById("mQuizExp").value.trim();
+  const prem=document.getElementById("mQuizPrem").checked;
+  const diffEl=document.getElementById("mQuizDiff");
+  const diff=diffEl?diffEl.value:"medium";
+  if(!q||!a||!b||!c||!d){toast("Fill all question fields.","e");return;}
+  const entry={q,opts:[a,b,c,d],ans,exp:exp||"",premium:prem,difficulty:diff};
+
+  if(editingCustomQ){
+    const {subject:oldSubj, idx}=editingCustomQ;
+    if(customQuizBank[oldSubj]&&customQuizBank[oldSubj][idx]){
+      if(oldSubj===subj){
+        customQuizBank[oldSubj][idx]=entry;
+      } else {
+        customQuizBank[oldSubj].splice(idx,1);
+        if(customQuizBank[oldSubj].length===0) delete customQuizBank[oldSubj];
+        if(!customQuizBank[subj]) customQuizBank[subj]=[];
+        customQuizBank[subj].push(entry);
+      }
+      toast("✅ Question updated!");
+    }
+    cancelEditQuestion();
+  } else {
+    if(!customQuizBank[subj]) customQuizBank[subj]=[];
+    customQuizBank[subj].push(entry);
+    toast("✅ Question added to "+subj+"!");
+    ["mQuizQ","mOptA","mOptB","mOptC","mOptD","mQuizExp"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  }
+
+  await sSet("bhu:customquizbank",customQuizBank);
+  rebuildQuizBank();
+  renderAdmin(); renderQuizStart();
+}
+
+async function deleteCustomQuestion(subj,idx){
+  if(!customQuizBank[subj]) return;
+  if(!window.confirm("Delete this question?")) return;
+  customQuizBank[subj].splice(idx,1);
+  if(customQuizBank[subj].length===0) delete customQuizBank[subj];
+  await sSet("bhu:customquizbank",customQuizBank);
+  if(editingCustomQ&&editingCustomQ.subject===subj) cancelEditQuestion();
+  rebuildQuizBank();
+  toast("Question deleted."); renderAdmin(); renderQuizStart();
 }
 
 // ═══════════════════════════════════════════════════════════════
