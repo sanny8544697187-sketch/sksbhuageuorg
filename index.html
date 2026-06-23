@@ -20,7 +20,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="description" content="BHU Agriculture e-Learning Portal — Notes, Videos, Quizzes, AI Professor"/>
   <meta name="theme-color" content="#0F3D23"/>
-  <title>BHU Agriculture e-Learning Portal</title>
+  <title>BHU Agriculture e-Learning Portal v5</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
@@ -231,6 +231,75 @@
     body.dark .drop-zone{background:#0d2e1a;border-color:#00B050;}
     body.dark .chat-messages{background:#0a1810;}
 
+    /* ══ NEW FEATURES CSS ══════════════════════════════════════ */
+
+    /* Streak / Daily */
+    .streak-fire{font-size:32px;line-height:1;}
+    .streak-count{font-size:36px;font-weight:800;color:#f59e0b;letter-spacing:-1px;}
+    .streak-label{font-size:12px;color:#777;font-weight:600;}
+    .daily-done-banner{background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;border-radius:16px;padding:22px 24px;text-align:center;margin-bottom:16px;}
+
+    /* Flashcards */
+    @keyframes flipIn{from{opacity:0;transform:rotateY(-90deg);}to{opacity:1;transform:rotateY(0deg);}}
+    .fc-wrap{perspective:1200px;width:100%;max-width:560px;margin:0 auto 20px;}
+    .fc-card{width:100%;min-height:200px;position:relative;cursor:pointer;transform-style:preserve-3d;transition:transform .5s ease;}
+    .fc-card.flipped{transform:rotateY(180deg);}
+    .fc-face{position:absolute;inset:0;border-radius:20px;padding:28px 24px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;backface-visibility:hidden;-webkit-backface-visibility:hidden;min-height:200px;box-shadow:0 4px 24px rgba(0,0,0,.12);}
+    .fc-front{background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;}
+    .fc-back{background:#FFFFFF;color:#111;transform:rotateY(180deg);}
+    .fc-hint{font-size:11px;opacity:.55;margin-top:8px;}
+    body.dark .fc-back{background:#111814;color:#E8F0E8;}
+
+    /* Analytics */
+    .bar-track{background:#E8F5E9;border-radius:50px;height:10px;overflow:hidden;flex:1;}
+    .bar-fill{height:100%;border-radius:50px;background:#00B050;transition:width .6s ease;}
+    .stat-pill{background:#F2F5F2;border-radius:12px;padding:12px 16px;text-align:center;flex:1;}
+    .stat-pill strong{font-size:22px;font-weight:800;display:block;}
+    .stat-pill span{font-size:11px;color:#777;font-weight:600;}
+    body.dark .stat-pill{background:#111814;}
+
+    /* Leaderboard */
+    .lb-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;margin-bottom:6px;background:#F8FBF8;}
+    .lb-row.me{background:#E8F5E9;border:1.5px solid #00B050;}
+    .lb-rank{font-size:16px;font-weight:800;width:30px;text-align:center;flex-shrink:0;}
+    .lb-avatar{width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:white;flex-shrink:0;}
+    .lb-info{flex:1;min-width:0;}
+    .lb-score{font-size:14px;font-weight:800;color:#00B050;flex-shrink:0;}
+    body.dark .lb-row{background:#111814;}
+    body.dark .lb-row.me{background:#0d2e1a;}
+
+    /* Planner */
+    .plan-day{display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border-radius:12px;background:#F8FBF8;margin-bottom:8px;cursor:pointer;}
+    .plan-day.done{background:#E8F5E9;opacity:.7;}
+    .plan-day.today{background:#0F3D23;color:white;box-shadow:0 4px 16px rgba(0,176,80,.25);}
+    .plan-num{width:36px;height:36px;border-radius:10px;background:#00B050;color:white;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+    .plan-day.today .plan-num{background:rgba(255,255,255,.22);}
+    body.dark .plan-day{background:#111814;}
+
+    /* PYQ */
+    .pyq-card{background:#FFFFFF;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:18px;margin-bottom:10px;}
+    .pyq-year-tag{background:#F3E5F5;color:#7B1FA2;font-size:10px;font-weight:700;padding:2px 8px;border-radius:50px;}
+    .pyq-ans{background:#E8F5E9;border-radius:10px;padding:12px 14px;margin-top:10px;font-size:13px;color:#0F3D23;display:none;}
+    .pyq-ans.show{display:block;}
+    body.dark .pyq-card{background:#111814;}
+
+
+    /* ── PROFILE / DASHBOARD ── */
+    .profile-avatar-lg{width:72px;height:72px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:32px;color:white;font-weight:800;flex-shrink:0;}
+    .profile-stat-card{background:#FFFFFF;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:16px;text-align:center;flex:1;min-width:0;}
+    .profile-stat-card strong{font-size:24px;font-weight:800;display:block;margin-bottom:2px;}
+    .profile-stat-card span{font-size:11px;color:#777;font-weight:600;}
+    .badge-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;}
+    body.dark .profile-stat-card{background:#111814;}
+
+    /* ── SUB-TABS (for merged sections) ── */
+    .sub-tabs{display:flex;gap:8px;margin-bottom:20px;background:#FFFFFF;border-radius:16px;padding:6px;box-shadow:0 2px 12px rgba(0,0,0,.08);flex-wrap:wrap;}
+    .sub-tab-btn{flex:1;border:none;padding:10px 16px;border-radius:12px;background:transparent;font-weight:600;cursor:pointer;font-family:inherit;font-size:13px;color:#777;transition:.15s;white-space:nowrap;}
+    .sub-tab-btn.active{background:#0F3D23;color:white;box-shadow:0 2px 8px rgba(15,61,35,.3);}
+    body.dark .sub-tabs{background:#111814;}
+    body.dark .sub-tab-btn{color:#8aaa8a;}
+    body.dark .sub-tab-btn.active{background:#1B6B3A;}
+
     /* ── RESPONSIVE ── */
     @media(max-width:600px){
       .subject-grid{grid-template-columns:1fr 1fr!important;}
@@ -398,13 +467,14 @@ try {
     <div id="headerUser" style="flex-shrink:0;"></div>
   </div>
   <div class="nav-chips chips-row">
-    <button id="navHome"     class="btn btn-ghost active" onclick="setSection('home')">🏠 Home</button>
-    <button id="navSubjects" class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
-    <button id="navResources"class="btn btn-ghost" onclick="setSection('resources')">📁 Resources</button>
-    <button id="navQuiz"     class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
-    <button id="navChat"     class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
-    <button id="navUpload"   class="btn btn-ghost" onclick="setSection('upload')">⬆️ Upload</button>
-    <button id="navAdmin"    class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
+    <button id="navHome"       class="btn btn-ghost active" onclick="setSection('home')">🏠 Home</button>
+    <button id="navSubjects"   class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
+    <button id="navQuiz"       class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
+    <button id="navPyq"        class="btn btn-ghost" onclick="setSection('pyq')">📋 PYQ</button>
+    <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
+    <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
+    <button id="navUpload"     class="btn btn-ghost hidden admin-only" onclick="setSection('upload')">⬆️ Upload</button>
+    <button id="navAdmin"      class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
   </div>
 </header>
 
@@ -433,16 +503,34 @@ try {
     <div id="userBar"></div>
     <div id="premBannerHome"></div>
 
+    <div class="quick-grid" id="quickFeatureGrid">
+      <div class="card quick-card hov-card" onclick="setSection('quiz');setTimeout(()=>setQuizTab('daily'),60)">
+        <div class="quick-icon" style="background:#FFF8E1;">🔥</div>
+        <div style="font-weight:700;font-size:13px;">Daily Quiz</div>
+        <div style="font-size:11px;color:#777;margin-top:2px;">Today's challenge</div>
+      </div>
+      <div class="card quick-card hov-card" onclick="setSection('quiz');setTimeout(()=>setQuizTab('leaderboard'),60)">
+        <div class="quick-icon" style="background:#FFF3E0;">🏆</div>
+        <div style="font-weight:700;font-size:13px;">Leaderboard</div>
+        <div style="font-size:11px;color:#777;margin-top:2px;">See rankings</div>
+      </div>
+      <div class="card quick-card hov-card" onclick="setSection('quiz');setTimeout(()=>setQuizTab('analytics'),60)">
+        <div class="quick-icon" style="background:#E3F2FD;">📊</div>
+        <div style="font-weight:700;font-size:13px;">Analytics</div>
+        <div style="font-size:11px;color:#777;margin-top:2px;">My performance</div>
+      </div>
+      <div class="card quick-card hov-card" onclick="setSection('subjects');setTimeout(()=>setSubjectsTab('resources'),60)">
+        <div class="quick-icon" style="background:#F3E5F5;">📁</div>
+        <div style="font-weight:700;font-size:13px;">Resources</div>
+        <div style="font-size:11px;color:#777;margin-top:2px;">PDFs & notes</div>
+      </div>
+    </div>
+
     <div class="quick-grid">
       <div class="card quick-card hov-card" onclick="setSection('subjects')">
         <div class="quick-icon" style="background:#0F3D2315;">📚</div>
         <div style="font-weight:700;font-size:13px;">Subjects</div>
         <div style="font-size:11px;color:#777;margin-top:2px;">13 topics</div>
-      </div>
-      <div class="card quick-card hov-card" onclick="setSection('resources')">
-        <div class="quick-icon" style="background:#1565C015;">📁</div>
-        <div style="font-weight:700;font-size:13px;">Resources</div>
-        <div style="font-size:11px;color:#777;margin-top:2px;" id="quickResCount">0 files</div>
       </div>
       <div class="card quick-card hov-card" onclick="setSection('chat')">
         <div class="quick-icon" style="background:#00B05015;">💬</div>
@@ -454,6 +542,11 @@ try {
         <div style="font-weight:700;font-size:13px;">Quiz</div>
         <div style="font-size:11px;color:#777;margin-top:2px;">MCQs + explanations</div>
       </div>
+      <div class="card quick-card hov-card" onclick="setSection('profile')">
+        <div class="quick-icon" style="background:#1565C015;">👤</div>
+        <div style="font-weight:700;font-size:13px;">My Profile</div>
+        <div style="font-size:11px;color:#777;margin-top:2px;">Stats & progress</div>
+      </div>
     </div>
 
     <div style="margin-bottom:22px;">
@@ -464,59 +557,93 @@ try {
       <div id="quickSubjects" class="chips-row" style="gap:10px;"></div>
     </div>
 
-    <div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="font-weight:800;font-size:17px;">Recent Resources</div>
-        <button class="btn" style="background:none;border:none;color:#00B050;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="setSection('resources')">View all →</button>
-      </div>
-      <div id="recentResources"></div>
-      <div id="noResources" class="card" style="padding:40px;text-align:center;display:none;">
-        <div style="font-size:48px;margin-bottom:12px;">📭</div>
-        <div style="font-weight:700;font-size:16px;margin-bottom:6px;">No resources yet</div>
-        <div style="color:#777;font-size:14px;margin-bottom:16px;">Admin will upload study materials soon.</div>
-        <button class="btn btn-primary" onclick="openLogin()">Login to Stay Updated</button>
-      </div>
-    </div>
+
   </section>
 
-  <!-- SUBJECTS -->
+  <!-- SUBJECTS (merged with Resources & Planner) -->
   <section id="subjects" class="section fu">
-    <div class="section-title">Academic Subjects</div>
-    <div class="section-subtitle">Browse all 13 subjects and their learning resources</div>
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-      <div class="search-box" style="flex:1;min-width:180px;">
-        <span style="font-size:14px;color:#777;">🔍</span>
-        <input id="subSearch" type="text" placeholder="Search subjects…" oninput="renderSubjects()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;">
-      </div>
-      <div id="catFilters" class="chips-row" style="gap:8px;"></div>
+    <div class="section-title">Study Hub</div>
+    <div class="section-subtitle">Subjects · Resources · Study Planner — all in one place</div>
+    <div class="sub-tabs">
+      <button class="sub-tab-btn active" id="stab_subjects" onclick="setSubjectsTab('subjects')">📚 Subjects</button>
+      <button class="sub-tab-btn" id="stab_resources" onclick="setSubjectsTab('resources')">📁 Resources</button>
+      <button class="sub-tab-btn" id="stab_planner" onclick="setSubjectsTab('planner')">🗓️ Planner</button>
     </div>
-    <div id="subjectGrid" class="subject-grid"></div>
-    <div id="noSubjects" style="text-align:center;color:#777;padding:40px 20px;font-size:14px;display:none;">No subjects found.</div>
+
+    <!-- ── SUBJECTS TAB ── -->
+    <div id="stab_subjects_content">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <div class="search-box" style="flex:1;min-width:180px;">
+          <span style="font-size:14px;color:#777;">🔍</span>
+          <input id="subSearch" type="text" placeholder="Search subjects…" oninput="renderSubjects()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;">
+        </div>
+        <div id="catFilters" class="chips-row" style="gap:8px;"></div>
+      </div>
+      <div id="subjectGrid" class="subject-grid"></div>
+      <div id="noSubjects" style="text-align:center;color:#777;padding:40px 20px;font-size:14px;display:none;">No subjects found.</div>
+    </div>
+
+    <!-- ── RESOURCES TAB ── -->
+    <div id="stab_resources_content" style="display:none;">
+      <div class="section-subtitle" id="resCount">Loading resources…</div>
+      <div class="card" style="padding:14px 16px;margin-bottom:16px;">
+        <div class="search-box" style="margin-bottom:12px;">
+          <span style="font-size:14px;color:#777;">🔍</span>
+          <input id="resSearch" type="text" placeholder="Search by title or subject…" oninput="renderResources()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;width:100%;">
+        </div>
+        <div class="chips-row" style="margin-bottom:10px;">
+          <span style="font-size:11px;font-weight:600;color:#777;flex-shrink:0;align-self:center;margin-right:4px;">Type:</span>
+          <div id="typeFilters"></div>
+        </div>
+        <div class="chips-row">
+          <span style="font-size:11px;font-weight:600;color:#777;flex-shrink:0;align-self:center;margin-right:4px;">Subject:</span>
+          <div id="subjectFilters"></div>
+        </div>
+      </div>
+      <div id="resourceList"></div>
+      <div id="noResourceResults" class="card" style="padding:40px;text-align:center;display:none;">
+        <div style="font-size:40px;margin-bottom:10px;">📭</div>
+        <div id="noResText" style="font-weight:700;font-size:15px;"></div>
+      </div>
+    </div>
+
+    <!-- ── PLANNER TAB ── -->
+    <div id="stab_planner_content" style="display:none;">
+      <div class="card" style="padding:22px;margin-bottom:20px;" id="plannerSetup2">
+        <div style="display:flex;flex-direction:column;gap:14px;max-width:460px;">
+          <div><label class="lbl">Select Exam</label>
+            <select id="planExam2" class="inp">
+              <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD Grade A</option>
+              <option>State PSC Agriculture</option><option>BHU Semester Exam</option><option>Other</option>
+            </select>
+          </div>
+          <div><label class="lbl">Exam Date *</label><input id="planDate2" class="inp" type="date"></div>
+          <div><label class="lbl">Daily Study Hours</label>
+            <select id="planHours2" class="inp">
+              <option value="2">2 hours / day</option>
+              <option value="4" selected>4 hours / day</option>
+              <option value="6">6 hours / day</option>
+              <option value="8">8 hours / day</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" style="padding:12px;" onclick="generatePlan2()">🗓️ Generate My Plan</button>
+        </div>
+      </div>
+      <div id="plannerOutput2" style="display:none;">
+        <div class="card" style="padding:18px 20px;margin-bottom:16px;background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;">
+          <div style="font-size:11px;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Days to Exam</div>
+          <div style="font-size:44px;font-weight:800;line-height:1;" id="planCountdown2">—</div>
+          <div style="font-size:13px;opacity:.75;margin-top:4px;" id="planExamLabel2"></div>
+        </div>
+        <div id="planDaysList2"></div>
+        <button class="btn btn-light" style="margin-top:12px;" onclick="resetPlan2()">↩ Change Plan</button>
+      </div>
+    </div>
   </section>
 
-  <!-- RESOURCES -->
+  <!-- RESOURCES (merged into subjects; this redirect is a fallback) -->
   <section id="resources" class="section fu">
-    <div class="section-title">Resource Library</div>
-    <div class="section-subtitle" id="resCount">Loading resources…</div>
-    <div class="card" style="padding:14px 16px;margin-bottom:16px;">
-      <div class="search-box" style="margin-bottom:12px;">
-        <span style="font-size:14px;color:#777;">🔍</span>
-        <input id="resSearch" type="text" placeholder="Search by title or subject…" oninput="renderResources()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;width:100%;">
-      </div>
-      <div class="chips-row" style="margin-bottom:10px;">
-        <span style="font-size:11px;font-weight:600;color:#777;flex-shrink:0;align-self:center;margin-right:4px;">Type:</span>
-        <div id="typeFilters"></div>
-      </div>
-      <div class="chips-row">
-        <span style="font-size:11px;font-weight:600;color:#777;flex-shrink:0;align-self:center;margin-right:4px;">Subject:</span>
-        <div id="subjectFilters"></div>
-      </div>
-    </div>
-    <div id="resourceList"></div>
-    <div id="noResourceResults" class="card" style="padding:40px;text-align:center;display:none;">
-      <div style="font-size:40px;margin-bottom:10px;">📭</div>
-      <div id="noResText" style="font-weight:700;font-size:15px;"></div>
-    </div>
+    <script>if(document.getElementById('resources')&&document.getElementById('resources').classList.contains('active')){setSection('subjects');setSubjectsTab('resources');}</script>
   </section>
 
   <!-- UPLOAD -->
@@ -525,9 +652,9 @@ try {
     <div class="section-subtitle" id="uploadHint">Your upload goes to admin review first.</div>
     <div id="uploadLock" class="card" style="padding:44px;text-align:center;">
       <div style="font-size:44px;margin-bottom:12px;">🔒</div>
-      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Login required</div>
-      <div style="color:#777;font-size:14px;margin-bottom:16px;">Please log in to upload study resources.</div>
-      <button class="btn btn-primary" onclick="openLogin()">Login / Register</button>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Admin Only</div>
+      <div style="color:#777;font-size:14px;margin-bottom:16px;">This section is restricted to administrators.</div>
+      <button class="btn btn-primary" onclick="setSection('home')">← Back to Home</button>
     </div>
     <div id="uploadForm" class="hidden">
       <div class="card" style="padding:22px;">
@@ -579,10 +706,19 @@ try {
     </div>
   </section>
 
-  <!-- QUIZ -->
-  <section id="quiz" class="section fu quiz-container">
-    <div class="section-title">Practice Quiz</div>
-    <div class="section-subtitle" id="quizSubtitle">Subject-wise MCQs with detailed explanations</div>
+  <!-- QUIZ (merged with Daily, Leaderboard, Analytics) -->
+  <section id="quiz" class="section fu quiz-container" style="max-width:100%;">
+    <div class="section-title">Quiz & Progress</div>
+    <div class="section-subtitle" id="quizSubtitle">Quiz · Daily Challenge · Rankings · Analytics</div>
+    <div class="sub-tabs">
+      <button class="sub-tab-btn active" id="qtab_quiz" onclick="setQuizTab('quiz')">🧠 Practice</button>
+      <button class="sub-tab-btn" id="qtab_daily" onclick="setQuizTab('daily')">🔥 Daily</button>
+      <button class="sub-tab-btn" id="qtab_leaderboard" onclick="setQuizTab('leaderboard')">🏆 Rank</button>
+      <button class="sub-tab-btn" id="qtab_analytics" onclick="setQuizTab('analytics')">📊 Analytics</button>
+    </div>
+
+    <!-- ── PRACTICE QUIZ TAB ── -->
+    <div id="qtab_quiz_content" class="quiz-container" style="max-width:660px;">
     <div id="quizStart" class="card" style="padding:24px;">
       <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px;">Choose a Subject</div>
       <div id="quizSubjects" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
@@ -590,6 +726,98 @@ try {
     </div>
     <div id="quizQuestion" class="card" style="padding:24px;display:none;"></div>
     <div id="quizResult" class="card" style="padding:32px;text-align:center;display:none;"></div>
+    </div><!-- end qtab_quiz_content -->
+
+    <!-- ── DAILY QUIZ TAB (inline) ── -->
+    <div id="qtab_daily_content" style="display:none;">
+      <div class="section-subtitle" id="dailySubtitleInline">Complete today's 10 questions to keep your streak alive</div>
+      <div class="card" style="padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div class="streak-fire">🔥</div>
+          <div class="streak-count" id="streakCountQ">0</div>
+          <div class="streak-label">Day Streak</div>
+        </div>
+        <div style="width:1px;height:60px;background:#E0EAE0;flex-shrink:0;"></div>
+        <div style="flex:1;display:flex;gap:20px;flex-wrap:wrap;">
+          <div class="stat-pill"><strong id="dailyTotalDoneQ" style="color:#00B050;">0</strong><span>Days Done</span></div>
+          <div class="stat-pill"><strong id="dailyBestQ" style="color:#f59e0b;">0</strong><span>Best Streak</span></div>
+          <div class="stat-pill"><strong id="dailyAvgPctQ" style="color:#1565C0;">0%</strong><span>Avg Score</span></div>
+        </div>
+      </div>
+      <div id="dailyTodayBlockQ"></div>
+      <div id="dailyQuizBlockQ" style="display:none;max-width:660px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div style="font-size:13px;font-weight:600;color:#777;">Q <span id="dqIdxQ">1</span> of <span id="dqTotalQ">10</span></div>
+          <div style="font-size:13px;font-weight:700;color:#f59e0b;" id="dqSubjLabelQ"></div>
+        </div>
+        <div style="background:#E8F5E9;border-radius:50px;height:8px;margin-bottom:16px;"><div id="dqBarQ" style="height:100%;background:#00B050;border-radius:50px;transition:width .3s;width:0%;"></div></div>
+        <div id="dqQuestionQ" style="font-weight:700;font-size:16px;line-height:1.6;margin-bottom:18px;"></div>
+        <div id="dqOptionsQ" class="quiz-options"></div>
+        <div id="dqFeedbackQ" style="display:none;background:#F8FBF8;border:1px solid #E0EAE0;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#555;line-height:1.6;"></div>
+        <button id="dqNextQ" class="btn btn-primary" style="width:100%;padding:13px;" onclick="dailyNextQ()" disabled>Next →</button>
+      </div>
+      <div id="dailyResultQ" style="display:none;max-width:500px;text-align:center;">
+        <div style="font-size:64px;margin-bottom:10px;">🎉</div>
+        <div id="dqScoreQ" style="font-size:48px;font-weight:800;color:#00B050;"></div>
+        <div id="dqMsgQ" style="font-size:16px;margin:10px 0 20px;"></div>
+        <button class="btn btn-primary" style="padding:12px 28px;" onclick="setQuizTab('quiz')">Practice More →</button>
+      </div>
+      <div id="dailyHistoryQ" style="margin-top:24px;"></div>
+    </div><!-- end qtab_daily_content -->
+
+    <!-- ── LEADERBOARD TAB (inline) ── -->
+    <div id="qtab_leaderboard_content" style="display:none;">
+      <div class="card" style="padding:18px 20px;margin-bottom:20px;display:none;" id="myRankCardQ">
+        <div style="font-size:11px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Your Rank</div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:32px;font-weight:800;color:#00B050;" id="myRankNumQ">#—</div>
+          <div style="flex:1;"><div style="font-weight:700;font-size:15px;" id="myRankNameQ"></div><div style="font-size:12px;color:#777;" id="myRankStatsQ"></div></div>
+          <div style="font-size:11px;color:#777;text-align:right;" id="myRankStreakQ"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button id="lbTabAllQ" class="btn btn-primary" style="font-size:12px;padding:8px 16px;" onclick="setLbTabQ('all')">🏆 Overall</button>
+        <button id="lbTabDailyQ" class="btn btn-light" style="font-size:12px;padding:8px 16px;" onclick="setLbTabQ('daily')">🔥 Streak</button>
+      </div>
+      <div id="leaderboardListQ"></div>
+      <div id="leaderboardEmptyQ" style="text-align:center;color:#777;padding:60px 20px;display:none;">
+        <div style="font-size:48px;margin-bottom:12px;">🏆</div>
+        <div style="font-weight:700;font-size:16px;margin-bottom:6px;">No rankings yet</div>
+        <div style="font-size:14px;margin-bottom:16px;">Complete quizzes to appear on the leaderboard.</div>
+        <button class="btn btn-primary" onclick="setQuizTab('quiz')">Take a Quiz →</button>
+      </div>
+    </div><!-- end qtab_leaderboard_content -->
+
+    <!-- ── ANALYTICS TAB (inline) ── -->
+    <div id="qtab_analytics_content" style="display:none;">
+      <div id="analyticsLockQ" class="card" style="padding:44px;text-align:center;">
+        <div style="font-size:44px;margin-bottom:12px;">📊</div>
+        <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Login to track your progress</div>
+        <div style="color:#777;font-size:14px;margin-bottom:16px;">Your quiz scores are saved per account.</div>
+        <button class="btn btn-primary" onclick="openLogin()">Login / Register</button>
+      </div>
+      <div id="analyticsContentQ" style="display:none;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+          <div class="stat-pill"><strong id="anTotalQQ" style="color:#00B050;">0</strong><span>Qs Attempted</span></div>
+          <div class="stat-pill"><strong id="anTotalCorrectQ" style="color:#1565C0;">0</strong><span>Correct</span></div>
+          <div class="stat-pill"><strong id="anOverallPctQ" style="color:#f59e0b;">0%</strong><span>Accuracy</span></div>
+          <div class="stat-pill"><strong id="anQuizCountQ" style="color:#7B1FA2;">0</strong><span>Quizzes Done</span></div>
+        </div>
+        <div class="card" style="padding:20px;margin-bottom:16px;">
+          <div style="font-weight:700;font-size:15px;margin-bottom:16px;">Subject-wise Accuracy</div>
+          <div id="anSubjectBarsQ"></div>
+        </div>
+        <div class="card" style="padding:20px;margin-bottom:16px;">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">⚠️ Weak Areas (below 60%)</div>
+          <div id="anWeakAreasQ"></div>
+        </div>
+        <div class="card" style="padding:20px;">
+          <div style="font-weight:700;font-size:15px;margin-bottom:12px;">Recent Quiz History</div>
+          <div id="anHistoryQ"></div>
+        </div>
+      </div>
+    </div><!-- end qtab_analytics_content -->
+
   </section>
 
   <!-- CHAT / DOUBTS -->
@@ -718,6 +946,66 @@ try {
     </div>
   </section>
 
+
+  <!-- PROFILE / DASHBOARD -->
+  <section id="profile" class="section fu">
+    <div id="profileLock" class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">👤</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Login to view your profile</div>
+      <div style="color:#777;font-size:14px;margin-bottom:16px;">Track your progress, manage your account and view your achievements.</div>
+      <button class="btn btn-primary" onclick="openLogin()">Login / Register</button>
+    </div>
+    <div id="profileContent" style="display:none;">
+      <!-- Profile header card -->
+      <div class="card" style="padding:24px;margin-bottom:18px;background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;border-radius:20px;">
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+          <div id="profileAvatarLg" class="profile-avatar-lg" style="background:rgba(255,255,255,.2);"></div>
+          <div style="flex:1;min-width:0;">
+            <div id="profileName" style="font-size:22px;font-weight:800;margin-bottom:4px;"></div>
+            <div id="profileYear" style="font-size:13px;opacity:.75;margin-bottom:6px;"></div>
+            <div id="profileEmail" style="font-size:12px;opacity:.6;margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="profileBadges"></div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;align-self:flex-start;" onclick="doLogout()">Logout</button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+        <div class="profile-stat-card"><strong id="pStatQuizzes" style="color:#00B050;">0</strong><span>Quizzes Done</span></div>
+        <div class="profile-stat-card"><strong id="pStatAccuracy" style="color:#1565C0;">0%</strong><span>Accuracy</span></div>
+        <div class="profile-stat-card"><strong id="pStatStreak" style="color:#f59e0b;">0</strong><span>Day Streak</span></div>
+        <div class="profile-stat-card"><strong id="pStatRank" style="color:#7B1FA2;">#—</strong><span>Rank</span></div>
+      </div>
+
+      <!-- Subscription card -->
+      <div class="card" style="padding:20px;margin-bottom:18px;" id="profileSubCard">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">📦 Subscription</div>
+        <div id="profileSubDetails"></div>
+      </div>
+
+      <!-- Subject accuracy -->
+      <div class="card" style="padding:20px;margin-bottom:18px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">📊 Subject Performance</div>
+        <div id="profileSubjectBars">
+          <div style="text-align:center;color:#777;font-size:13px;padding:20px;">Complete quizzes to see your subject-wise performance.</div>
+        </div>
+      </div>
+
+      <!-- Account details -->
+      <div class="card" style="padding:20px;margin-bottom:18px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">🎓 Account Details</div>
+        <div style="display:flex;flex-direction:column;gap:10px;" id="profileDetails"></div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="card" style="padding:20px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">🏅 Achievements</div>
+        <div id="profileAchievements" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ADMIN -->
   <section id="admin" class="section fu admin-panel">
     <div class="section-title">Admin Panel 🛡️</div>
@@ -733,16 +1021,229 @@ try {
     <div id="adminContent"></div>
   </section>
 
+  <!-- ── DAILY QUIZ ────────────────────────────────── -->
+  <section id="daily" class="section fu" data-redirect="quiz:daily">
+    <div class="section-title">Daily Quiz 🔥</div>
+    <div class="section-subtitle" id="dailySubtitle">Complete today's 10 questions to keep your streak alive</div>
+
+    <!-- Streak banner -->
+    <div class="card" style="padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <div style="text-align:center;">
+        <div class="streak-fire">🔥</div>
+        <div class="streak-count" id="streakCount">0</div>
+        <div class="streak-label">Day Streak</div>
+      </div>
+      <div style="width:1px;height:60px;background:#E0EAE0;flex-shrink:0;"></div>
+      <div style="flex:1;display:flex;gap:20px;flex-wrap:wrap;">
+        <div class="stat-pill"><strong id="dailyTotalDone" style="color:#00B050;">0</strong><span>Days Done</span></div>
+        <div class="stat-pill"><strong id="dailyBest" style="color:#f59e0b;">0</strong><span>Best Streak</span></div>
+        <div class="stat-pill"><strong id="dailyAvgPct" style="color:#1565C0;">0%</strong><span>Avg Score</span></div>
+      </div>
+    </div>
+
+    <!-- Today's state (quiz or done) -->
+    <div id="dailyTodayBlock"></div>
+
+    <!-- Quiz questions -->
+    <div id="dailyQuizBlock" style="display:none;max-width:660px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:13px;font-weight:600;color:#777;">Q <span id="dqIdx">1</span> of <span id="dqTotal">10</span></div>
+        <div style="font-size:13px;font-weight:700;color:#f59e0b;" id="dqSubjLabel"></div>
+      </div>
+      <div style="background:#E8F5E9;border-radius:50px;height:8px;margin-bottom:16px;"><div id="dqBar" style="height:100%;background:#00B050;border-radius:50px;transition:width .3s;width:0%;"></div></div>
+      <div id="dqQuestion" style="font-weight:700;font-size:16px;line-height:1.6;margin-bottom:18px;"></div>
+      <div id="dqOptions" class="quiz-options"></div>
+      <div id="dqFeedback" style="display:none;background:#F8FBF8;border:1px solid #E0EAE0;border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:#555;line-height:1.6;"></div>
+      <button id="dqNext" class="btn btn-primary" style="width:100%;padding:13px;" onclick="dailyNext()" disabled>Next →</button>
+    </div>
+
+    <!-- Result after finish -->
+    <div id="dailyResult" style="display:none;max-width:500px;text-align:center;">
+      <div style="font-size:64px;margin-bottom:10px;">🎉</div>
+      <div id="dqScore" style="font-size:48px;font-weight:800;color:#00B050;"></div>
+      <div id="dqMsg" style="font-size:16px;margin:10px 0 20px;"></div>
+      <button class="btn btn-primary" style="padding:12px 28px;" onclick="setSection('quiz')">Practice More →</button>
+    </div>
+
+    <!-- Recent history -->
+    <div id="dailyHistory" style="margin-top:24px;"></div>
+  </section>
+
+
+  <!-- ── LEADERBOARD ────────────────────────────────── -->
+  <section id="leaderboard" class="section fu" data-redirect="quiz:leaderboard">
+    <div class="section-title">Leaderboard 🏆</div>
+    <div class="section-subtitle">Rankings update after every quiz. Complete quizzes to climb!</div>
+
+    <!-- My rank card -->
+    <div class="card" style="padding:18px 20px;margin-bottom:20px;display:none;" id="myRankCard">
+      <div style="font-size:11px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px;">Your Rank</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-size:32px;font-weight:800;color:#00B050;" id="myRankNum">#—</div>
+        <div style="flex:1;">
+          <div style="font-weight:700;font-size:15px;" id="myRankName"></div>
+          <div style="font-size:12px;color:#777;" id="myRankStats"></div>
+        </div>
+        <div style="font-size:11px;color:#777;text-align:right;" id="myRankStreak"></div>
+      </div>
+    </div>
+
+    <!-- Tabs: Overall / Daily -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button id="lbTabAll"   class="btn btn-primary" style="font-size:12px;padding:8px 16px;" onclick="setLbTab('all')">🏆 Overall</button>
+      <button id="lbTabDaily" class="btn btn-light"   style="font-size:12px;padding:8px 16px;" onclick="setLbTab('daily')">🔥 Streak</button>
+    </div>
+
+    <div id="leaderboardList"></div>
+    <div id="leaderboardEmpty" style="text-align:center;color:#777;padding:60px 20px;display:none;">
+      <div style="font-size:48px;margin-bottom:12px;">🏆</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:6px;">No rankings yet</div>
+      <div style="font-size:14px;margin-bottom:16px;">Complete quizzes to appear on the leaderboard.</div>
+      <button class="btn btn-primary" onclick="setSection('quiz')">Take a Quiz →</button>
+    </div>
+  </section>
+
+  <!-- ── PERFORMANCE ANALYTICS ──────────────────────── -->
+  <section id="analytics" class="section fu" data-redirect="quiz:analytics">
+    <div class="section-title">My Performance 📊</div>
+    <div class="section-subtitle">Track accuracy across subjects and identify weak areas</div>
+
+    <!-- Login gate -->
+    <div id="analyticsLock" class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">📊</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Login to track your progress</div>
+      <div style="color:#777;font-size:14px;margin-bottom:16px;">Your quiz scores are saved per account.</div>
+      <button class="btn btn-primary" onclick="openLogin()">Login / Register</button>
+    </div>
+
+    <!-- Analytics content -->
+    <div id="analyticsContent" style="display:none;">
+      <!-- Summary pills -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+        <div class="stat-pill"><strong id="anTotalQ" style="color:#00B050;">0</strong><span>Qs Attempted</span></div>
+        <div class="stat-pill"><strong id="anTotalCorrect" style="color:#1565C0;">0</strong><span>Correct</span></div>
+        <div class="stat-pill"><strong id="anOverallPct" style="color:#f59e0b;">0%</strong><span>Accuracy</span></div>
+        <div class="stat-pill"><strong id="anQuizCount" style="color:#7B1FA2;">0</strong><span>Quizzes Done</span></div>
+      </div>
+
+      <!-- Subject accuracy bars -->
+      <div class="card" style="padding:20px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:16px;">Subject-wise Accuracy</div>
+        <div id="anSubjectBars"></div>
+      </div>
+
+      <!-- Weak areas -->
+      <div class="card" style="padding:20px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:12px;">⚠️ Weak Areas (below 60%)</div>
+        <div id="anWeakAreas"></div>
+      </div>
+
+      <!-- Recent history -->
+      <div class="card" style="padding:20px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:12px;">Recent Quiz History</div>
+        <div id="anHistory"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── AI STUDY PLANNER ───────────────────────────── -->
+  <section id="planner" class="section fu">
+    <div class="section-title">AI Study Planner 🗓️</div>
+    <div class="section-subtitle">Enter your exam date and get a day-by-day study schedule</div>
+
+    <!-- Setup card -->
+    <div class="card" style="padding:22px;margin-bottom:20px;" id="plannerSetup">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:460px;">
+        <div>
+          <label class="lbl">Select Exam</label>
+          <select id="planExam" class="inp">
+            <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD Grade A</option>
+            <option>State PSC Agriculture</option><option>BHU Semester Exam</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label class="lbl">Exam Date *</label>
+          <input id="planDate" class="inp" type="date">
+        </div>
+        <div>
+          <label class="lbl">Daily Study Hours</label>
+          <select id="planHours" class="inp">
+            <option value="2">2 hours / day</option>
+            <option value="4" selected>4 hours / day</option>
+            <option value="6">6 hours / day</option>
+            <option value="8">8 hours / day</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" style="padding:12px;" onclick="generatePlan()">🗓️ Generate My Plan</button>
+      </div>
+    </div>
+
+    <!-- Countdown + plan -->
+    <div id="plannerOutput" style="display:none;">
+      <div class="card" style="padding:18px 20px;margin-bottom:16px;background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;">
+        <div style="font-size:11px;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Days to Exam</div>
+        <div style="font-size:44px;font-weight:800;line-height:1;" id="planCountdown">—</div>
+        <div style="font-size:13px;opacity:.75;margin-top:4px;" id="planExamLabel"></div>
+      </div>
+      <div id="planDaysList"></div>
+      <button class="btn btn-light" style="margin-top:12px;" onclick="resetPlan()">↩ Change Plan</button>
+    </div>
+  </section>
+
+  <!-- ── PYQ BANK ───────────────────────────────────── -->
+  <section id="pyq" class="section fu">
+    <div class="section-title">PYQ Bank 📋</div>
+    <div class="section-subtitle">Previous Year Questions from ICAR JRF, AFO, NABARD with answers</div>
+
+    <!-- Filters -->
+    <div class="card" style="padding:14px 16px;margin-bottom:16px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;">
+          <label class="lbl" style="font-size:10px;">Exam</label>
+          <select id="pyqExamFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
+            <option value="All">All Exams</option>
+            <option value="ICAR JRF">ICAR JRF</option>
+            <option value="IBPS AFO">IBPS AFO</option>
+            <option value="NABARD">NABARD</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <label class="lbl" style="font-size:10px;">Year</label>
+          <select id="pyqYearFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
+            <option value="All">All Years</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:120px;">
+          <label class="lbl" style="font-size:10px;">Subject</label>
+          <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
+            <option value="All">All Subjects</option>
+            <option value="Agronomy">Agronomy</option>
+            <option value="Soil Science">Soil Science</option>
+            <option value="Genetics & Plant Breeding">Genetics</option>
+            <option value="Plant Pathology">Plant Pathology</option>
+            <option value="Entomology">Entomology</option>
+            <option value="Horticulture">Horticulture</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:#777;margin-bottom:12px;" id="pyqCount"></div>
+    <div id="pyqList"></div>
+  </section>
+
 </main>
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <button id="bnHome"      class="active" onclick="setSection('home')"><span>🏠</span><span>Home</span></button>
-  <button id="bnSubjects"  onclick="setSection('subjects')"><span>📚</span><span>Subjects</span></button>
-  <button id="bnResources" onclick="setSection('resources')"><span>📁</span><span>Resources</span></button>
-  <button id="bnQuiz"      onclick="setSection('quiz')"><span>🧠</span><span>Quiz</span></button>
-  <button id="bnChat"      onclick="setSection('chat')"><span>💬</span><span>Doubts</span></button>
-  <button id="bnUpload"    onclick="setSection('upload')"><span>⬆️</span><span>Upload</span></button>
+  <button id="bnHome"        class="active" onclick="setSection('home')"><span>🏠</span><span>Home</span></button>
+  <button id="bnSubjects"    onclick="setSection('subjects')"><span>📚</span><span>Subjects</span></button>
+  <button id="bnQuiz"        onclick="setSection('quiz')"><span>🧠</span><span>Quiz</span></button>
+  <button id="bnChat"        onclick="setSection('chat')"><span>💬</span><span>Doubts</span></button>
+  <button id="bnProfile"     onclick="setSection('profile')"><span>👤</span><span>Profile</span></button>
 </nav>
 
 <script>
@@ -1089,6 +1590,24 @@ window.addEventListener("DOMContentLoaded", async () => {
   renderAll();
   renderChat();
   renderDoubts();
+  // Auto-redirect data-redirect sections
+  document.querySelectorAll(".section[data-redirect]").forEach(sec=>{
+    const [targetSection, targetTab]=sec.dataset.redirect.split(":");
+    // Override active class on these standalone sections to prevent flash
+    const observer=new MutationObserver(()=>{
+      if(sec.classList.contains("active")){
+        sec.classList.remove("active");
+        setSection(targetSection);
+        if(targetTab){
+          setTimeout(()=>{
+            if(targetSection==="quiz") setQuizTab(targetTab);
+            else if(targetSection==="subjects") setSubjectsTab(targetTab);
+          },80);
+        }
+      }
+    });
+    observer.observe(sec,{attributes:true,attributeFilter:["class"]});
+  });
 
   // Firebase live sync every 20s
   if(fbOK){
@@ -1103,24 +1622,74 @@ window.addEventListener("DOMContentLoaded", async () => {
 // ═══════════════════════════════════════════════════════════════
 // NAV
 // ═══════════════════════════════════════════════════════════════
+// ─── Sub-tab state ───
+let activeSubjectsTab="subjects";
+let activeQuizTab="quiz";
+let activeLbTabQ="all";
+
+function setSubjectsTab(tab){
+  activeSubjectsTab=tab;
+  ["subjects","resources","planner"].forEach(t=>{
+    const btn=document.getElementById("stab_"+t);
+    const content=document.getElementById("stab_"+t+"_content");
+    if(btn) btn.classList.toggle("active",t===tab);
+    if(content) content.style.display=t===tab?"block":"none";
+  });
+  if(tab==="resources") renderResources();
+  if(tab==="subjects") renderSubjects();
+  if(tab==="planner") syncPlannerToTab();
+}
+
+function setQuizTab(tab){
+  activeQuizTab=tab;
+  ["quiz","daily","leaderboard","analytics"].forEach(t=>{
+    const btn=document.getElementById("qtab_"+t);
+    const content=document.getElementById("qtab_"+t+"_content");
+    if(btn) btn.classList.toggle("active",t===tab);
+    if(content) content.style.display=t===tab?"block":"none";
+  });
+  if(tab==="daily") syncDailyToTab();
+  if(tab==="leaderboard") syncLeaderboardToTab();
+  if(tab==="analytics") syncAnalyticsToTab();
+  if(tab==="quiz") renderQuizStart();
+}
+
+function setLbTabQ(t){
+  activeLbTabQ=t;
+  const a=document.getElementById("lbTabAllQ"); const d=document.getElementById("lbTabDailyQ");
+  if(a){ a.className="btn "+(t==="all"?"btn-primary":"btn-light"); a.style.cssText="font-size:12px;padding:8px 16px;"; }
+  if(d){ d.className="btn "+(t==="daily"?"btn-primary":"btn-light"); d.style.cssText="font-size:12px;padding:8px 16px;"; }
+  syncLeaderboardToTab();
+}
+
 function setSection(s){
+  // Redirect merged sections to their new tab homes
+  if(s==="resources"){ setSection("subjects"); setTimeout(()=>setSubjectsTab("resources"),50); return; }
+  if(s==="planner"){   setSection("subjects"); setTimeout(()=>setSubjectsTab("planner"),50); return; }
+  if(s==="daily"){     setSection("quiz");     setTimeout(()=>setQuizTab("daily"),50); return; }
+  if(s==="leaderboard"){ setSection("quiz");   setTimeout(()=>setQuizTab("leaderboard"),50); return; }
+  if(s==="analytics"){ setSection("quiz");     setTimeout(()=>setQuizTab("analytics"),50); return; }
+  if(s==="flashcards"){ setSection("quiz"); return; }
+
   section=s;
   document.querySelectorAll(".section").forEach(el=>el.classList.remove("active"));
   const el=document.getElementById(s); if(el) el.classList.add("active");
+
   // nav chips
-  ["home","subjects","resources","quiz","chat","upload","admin"].forEach(k=>{
+  ["home","subjects","quiz","pyq","chat","profile","upload","admin"].forEach(k=>{
     const btn=document.getElementById("nav"+k.charAt(0).toUpperCase()+k.slice(1));
     if(btn){ btn.classList.toggle("btn-primary",k===s); btn.classList.toggle("btn-ghost",k!==s); }
   });
   // bottom nav
-  ["Home","Subjects","Resources","Quiz","Chat","Upload"].forEach(k=>{
+  ["Home","Subjects","Quiz","Chat","Profile"].forEach(k=>{
     const btn=document.getElementById("bn"+k); if(btn) btn.classList.toggle("active",k.toLowerCase()===s);
   });
-  if(s==="resources") renderResources();
-  if(s==="subjects")  renderSubjects();
+
+  if(s==="subjects")  { renderSubjects(); setSubjectsTab(activeSubjectsTab); }
+  if(s==="quiz")      { renderQuizStart(); setQuizTab(activeQuizTab); }
   if(s==="upload")    renderUpload();
   if(s==="admin")     renderAdmin();
-  if(s==="quiz")      renderQuizStart();
+  if(s==="profile")   renderProfile();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -1130,10 +1699,10 @@ function setSection(s){
 function renderAll(){
   renderHeader();
   renderHome();
-  if(section==="resources") renderResources();
-  if(section==="subjects")  renderSubjects();
+  if(section==="resources"||section==="subjects") renderSubjects();
   if(section==="upload")    renderUpload();
   if(section==="admin")     renderAdmin();
+  if(section==="profile")   renderProfile();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1152,9 +1721,12 @@ function renderHeader(){
       </div>`;
     const adminBtn=document.getElementById("navAdmin");
     if(adminBtn) adminBtn.classList.toggle("hidden",!u.isAdmin);
+    const uploadBtn=document.getElementById("navUpload");
+    if(uploadBtn) uploadBtn.classList.toggle("hidden",!u.isAdmin);
   } else {
     huEl.innerHTML=`<button class="btn btn-white" style="font-size:12px;padding:7px 14px;" onclick="openLogin()">Login / Register</button>`;
     const adminBtn=document.getElementById("navAdmin"); if(adminBtn) adminBtn.classList.add("hidden");
+    const uploadBtn=document.getElementById("navUpload"); if(uploadBtn) uploadBtn.classList.add("hidden");
   }
 }
 
@@ -1167,7 +1739,7 @@ function renderHome(){
   document.getElementById("statStudents").textContent=usersDB.length;
   document.getElementById("statSubjects").textContent=SUBJECTS.length;
   document.getElementById("statQuestions").textContent=questions.length;
-  document.getElementById("quickResCount").textContent=approved.length+" file"+(approved.length===1?"":"s");
+  const qrcEl=document.getElementById("quickResCount"); if(qrcEl) qrcEl.textContent=approved.length+" file"+(approved.length===1?"":"s");
 
   // User bar
   const u=currentUser; const isPrem=isSubActive(u);
@@ -1207,28 +1779,19 @@ function renderHome(){
 
   // Quick subjects strip
   const qsEl=document.getElementById("quickSubjects");
-  qsEl.innerHTML=SUBJECTS.map(s=>`
+  if(qsEl) qsEl.innerHTML=SUBJECTS.map(s=>`
     <div class="card hov-card" style="padding:12px 14px;cursor:pointer;text-align:center;flex-shrink:0;min-width:80px;" onclick="setResSubAndNav('${escapeHTML(s.name)}')">
       <div style="font-size:22px;margin-bottom:4px;">${s.icon}</div>
       <div style="font-size:11px;font-weight:700;line-height:1.2;">${escapeHTML(s.name)}</div>
       <div style="font-size:10px;color:#777;margin-top:2px;">${subCount(s.name)} files</div>
     </div>`).join("");
 
-  // Recent resources
-  const recent=approved.slice(0,5);
-  const rrEl=document.getElementById("recentResources");
-  const noRes=document.getElementById("noResources");
-  if(recent.length===0){ rrEl.innerHTML=""; noRes.style.display="block"; }
-  else {
-    noRes.style.display="none";
-    rrEl.innerHTML=recent.map(n=>resCardHTML(n)).join("");
-  }
 }
 
 function setResSubAndNav(name){
   resSubject=name;
-  setSection("resources");
-  renderResources();
+  setSection("subjects");
+  setTimeout(()=>{ setSubjectsTab("resources"); renderResources(); },60);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1390,8 +1953,9 @@ async function deleteNote(id){
 // ═══════════════════════════════════════════════════════════════
 function renderUpload(){
   const u=currentUser;
-  document.getElementById("uploadLock").classList.toggle("hidden",!!u);
-  document.getElementById("uploadForm").classList.toggle("hidden",!u);
+  const isAdmin=u&&u.isAdmin;
+  document.getElementById("uploadLock").classList.toggle("hidden",isAdmin);
+  document.getElementById("uploadForm").classList.toggle("hidden",!isAdmin);
   if(!u) return;
   document.getElementById("uploadHint").textContent=u.isAdmin?"Admin uploads are published instantly.":"Your upload goes to admin review first.";
   const pwrap=document.getElementById("premCheckWrap");
@@ -1695,6 +2259,7 @@ function finishQuiz(){
   document.getElementById("quizQuestion").style.display="none";
   const score=quizQs.filter((q,i)=>quizAns[i]===q.ans).length;
   const pct=Math.round(score/quizQs.length*100);
+  saveQuizResult(quizSubj,score,quizQs.length);
   const msg=pct>=80?"🎉 Excellent! Outstanding performance!":pct>=60?"👍 Good Work! Keep revising!":"📖 Keep Studying! You'll ace it!";
   const timeTakenSec=quizStartTime?Math.round((Date.now()-quizStartTime)/1000):0;
   const timeStr=`${Math.floor(timeTakenSec/60)}m ${timeTakenSec%60}s`;
@@ -2907,6 +3472,456 @@ async function doPay(planId){
 // ═══════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════
+// PROFILE / DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+function renderProfile(){
+  const u=currentUser;
+  const lockEl=document.getElementById("profileLock");
+  const contentEl=document.getElementById("profileContent");
+  if(!u){ lockEl.style.display="block"; contentEl.style.display="none"; return; }
+  lockEl.style.display="none"; contentEl.style.display="block";
+
+  // Avatar
+  const avatarEl=document.getElementById("profileAvatarLg");
+  if(avatarEl){
+    avatarEl.style.background=u.isAdmin?
+      "linear-gradient(135deg,#FF7B00,#FFB347)":"linear-gradient(135deg,#1565C0,#42A5F5)";
+    avatarEl.textContent=u.name[0].toUpperCase();
+  }
+
+  const el=id=>document.getElementById(id);
+  if(el("profileName")) el("profileName").textContent=u.name;
+  if(el("profileYear")) el("profileYear").textContent=u.year||(u.isAdmin?"Administrator":"Student");
+  if(el("profileEmail")) el("profileEmail").textContent=u.email;
+
+  // Badges
+  const badgesEl=el("profileBadges");
+  if(badgesEl){
+    const badges=[];
+    if(u.isAdmin) badges.push('<span class="badge-chip" style="background:rgba(255,123,0,.2);color:#FFB347;">🛡️ Admin</span>');
+    if(isSubActive(u)&&!u.isAdmin) badges.push('<span class="badge-chip" style="background:rgba(249,158,11,.2);color:#f59e0b;">⭐ Premium</span>');
+    if(!isSubActive(u)&&!u.isAdmin) badges.push('<span class="badge-chip" style="background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);">🌱 Free Plan</span>');
+    if(u.roll) badges.push(`<span class="badge-chip" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);">🎓 ${escapeHTML(u.roll)}</span>`);
+    badgesEl.innerHTML=badges.join("");
+  }
+
+  // Load quiz stats from localStorage / saved analytics
+  const stats=getQuizStats();
+  if(el("pStatQuizzes")) el("pStatQuizzes").textContent=stats.quizCount;
+  if(el("pStatAccuracy")) el("pStatAccuracy").textContent=stats.accuracy+"%";
+  if(el("pStatStreak")) el("pStatStreak").textContent=getDailyStreak();
+  if(el("pStatRank")) el("pStatRank").textContent=getUserRankDisplay();
+
+  // Subscription
+  const isPrem=isSubActive(u);
+  const subEl=el("profileSubDetails");
+  if(subEl){
+    if(u.isAdmin){
+      subEl.innerHTML='<span class="badge-chip" style="background:#FFF3E0;color:#FF7B00;font-size:13px;padding:8px 16px;">🛡️ Admin — All Access</span>';
+    } else if(isPrem){
+      const expDate=u.subExpiry?new Date(u.subExpiry).toLocaleDateString("en-IN"):"Unknown";
+      subEl.innerHTML=`
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-weight:700;color:#c9690a;font-size:15px;">⭐ Premium Active</div>
+            <div style="font-size:12px;color:#777;margin-top:3px;">Plan: ${escapeHTML(u.subPlan||"Premium")} · Expires: ${expDate}</div>
+          </div>
+          <span style="background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;padding:5px 14px;border-radius:50px;font-size:12px;font-weight:700;">✓ Active</span>
+        </div>`;
+    } else {
+      subEl.innerHTML=`
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-weight:600;font-size:14px;">🌱 Free Plan</div>
+            <div style="font-size:12px;color:#777;margin-top:3px;">Upgrade to access all premium content</div>
+          </div>
+          <button class="btn btn-gold" style="font-size:12px;padding:8px 16px;" onclick="openPay()">Upgrade ₹19/month →</button>
+        </div>`;
+    }
+  }
+
+  // Subject bars
+  const sbEl=el("profileSubjectBars");
+  const subjectStats=getSubjectStats();
+  if(sbEl){
+    if(Object.keys(subjectStats).length===0){
+      sbEl.innerHTML='<div style="text-align:center;color:#777;font-size:13px;padding:20px;">Complete quizzes to see subject-wise performance.</div>';
+    } else {
+      sbEl.innerHTML=Object.entries(subjectStats).map(([s,st])=>{
+        const pct=st.total?Math.round(st.correct/st.total*100):0;
+        const color=pct>=70?"#00B050":pct>=40?"#f59e0b":"#E53935";
+        return `<div style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+            <span style="font-weight:600;">${escapeHTML(s)}</span>
+            <span style="font-weight:700;color:${color};">${pct}% <span style="font-weight:400;color:#777;">(${st.correct}/${st.total})</span></span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div>
+        </div>`;
+      }).join("");
+    }
+  }
+
+  // Account details
+  const detEl=el("profileDetails");
+  if(detEl){
+    const rows=[
+      ["📧 Email", u.email],
+      ["🎓 Program", u.year||"—"],
+      ["🔖 Roll No.", u.roll||"—"],
+      ["📅 Joined", u.joinedAt?new Date(u.joinedAt).toLocaleDateString("en-IN"):"—"],
+    ];
+    detEl.innerHTML=rows.map(([label,val])=>`
+      <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F0F5F0;font-size:13px;">
+        <span style="color:#777;">${label}</span>
+        <span style="font-weight:600;">${escapeHTML(val)}</span>
+      </div>`).join("");
+  }
+
+  // Achievements
+  const achEl=el("profileAchievements");
+  if(achEl){
+    const achievements=[];
+    const sq=stats.quizCount;
+    if(sq>=1) achievements.push({icon:"🎯",label:"First Quiz",color:"#E8F5E9"});
+    if(sq>=5) achievements.push({icon:"📚",label:"5 Quizzes",color:"#E3F2FD"});
+    if(sq>=10) achievements.push({icon:"🏆",label:"Quiz Master",color:"#FFF3E0"});
+    if(stats.accuracy>=80) achievements.push({icon:"⭐",label:"Top Scorer",color:"#FFF8E1"});
+    if(getDailyStreak()>=3) achievements.push({icon:"🔥",label:"On Fire",color:"#FFEBEE"});
+    if(isSubActive(u)&&!u.isAdmin) achievements.push({icon:"💎",label:"Premium",color:"#F3E5F5"});
+    if(achievements.length===0) achievements.push({icon:"🌱",label:"Getting Started",color:"#E8F5E9"});
+    achEl.innerHTML=achievements.map(a=>`
+      <div style="background:${a.color};border-radius:12px;padding:12px 16px;text-align:center;min-width:80px;">
+        <div style="font-size:24px;margin-bottom:4px;">${a.icon}</div>
+        <div style="font-size:10px;font-weight:700;color:#333;">${a.label}</div>
+      </div>`).join("");
+  }
+}
+
+function getQuizStats(){
+  try{
+    const saved=JSON.parse(localStorage.getItem("bhu:quizStats")||"{}");
+    const email=currentUser?.email||"";
+    const us=saved[email]||{};
+    return {quizCount:us.quizCount||0, accuracy:us.totalQ?Math.round((us.totalCorrect||0)/us.totalQ*100):0};
+  }catch{return {quizCount:0,accuracy:0};}
+}
+function getSubjectStats(){
+  try{
+    const saved=JSON.parse(localStorage.getItem("bhu:subjectStats")||"{}");
+    const email=currentUser?.email||"";
+    return saved[email]||{};
+  }catch{return {};}
+}
+function getDailyStreak(){
+  try{
+    const saved=JSON.parse(localStorage.getItem("bhu:streak")||"{}");
+    const email=currentUser?.email||"";
+    return (saved[email]||{}).streak||0;
+  }catch{return 0;}
+}
+function getUserRankDisplay(){
+  const u=currentUser; if(!u) return "#—";
+  const sorted=[...usersDB].sort((a,b)=>{
+    const as=JSON.parse(localStorage.getItem("bhu:quizStats")||"{}");
+    const ae=as[a.email]||{}, be=as[b.email]||{};
+    return (be.totalCorrect||0)-(ae.totalCorrect||0);
+  });
+  const idx=sorted.findIndex(x=>x.email===u.email);
+  return idx===-1?"#—":"#"+(idx+1);
+}
+function saveQuizResult(subject, correct, total){
+  if(!currentUser) return;
+  const email=currentUser.email;
+  // Overall stats
+  let qs=JSON.parse(localStorage.getItem("bhu:quizStats")||"{}");
+  if(!qs[email]) qs[email]={quizCount:0,totalQ:0,totalCorrect:0};
+  qs[email].quizCount++; qs[email].totalQ+=total; qs[email].totalCorrect+=correct;
+  localStorage.setItem("bhu:quizStats",JSON.stringify(qs));
+  // Subject stats
+  let ss=JSON.parse(localStorage.getItem("bhu:subjectStats")||"{}");
+  if(!ss[email]) ss[email]={};
+  if(!ss[email][subject]) ss[email][subject]={correct:0,total:0};
+  ss[email][subject].correct+=correct; ss[email][subject].total+=total;
+  localStorage.setItem("bhu:subjectStats",JSON.stringify(ss));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SYNC helpers — mirror daily/lb/analytics data into quiz sub-tabs
+// ═══════════════════════════════════════════════════════════════
+function syncDailyToTab(){
+  const el=id=>document.getElementById(id);
+  // Mirror streak stats
+  const sc=el("streakCount"); if(sc) el("streakCountQ")&&(el("streakCountQ").textContent=sc.textContent);
+  const td=el("dailyTotalDone"); if(td) el("dailyTotalDoneQ")&&(el("dailyTotalDoneQ").textContent=td.textContent);
+  const db=el("dailyBest"); if(db) el("dailyBestQ")&&(el("dailyBestQ").textContent=db.textContent);
+  const da=el("dailyAvgPct"); if(da) el("dailyAvgPctQ")&&(el("dailyAvgPctQ").textContent=da.textContent);
+  // Check if daily already done today
+  renderDailyInTab();
+}
+
+function renderDailyInTab(){
+  const el=id=>document.getElementById(id);
+  // Check streak/daily state from localStorage
+  const email=currentUser?.email||"guest";
+  let streakData={};
+  try{ streakData=JSON.parse(localStorage.getItem("bhu:streak")||"{}"); }catch{}
+  const ud=streakData[email]||{};
+  const today=new Date().toISOString().split("T")[0];
+  const todayBlock=el("dailyTodayBlockQ");
+  if(!todayBlock) return;
+  if(ud.lastDate===today&&ud.lastScore!==undefined){
+    todayBlock.innerHTML=`
+      <div class="daily-done-banner" style="margin-bottom:16px;">
+        <div style="font-size:36px;margin-bottom:8px;">✅</div>
+        <div style="font-size:20px;font-weight:800;margin-bottom:4px;">Today's Quiz Done!</div>
+        <div style="font-size:14px;opacity:.8;">Score: ${ud.lastScore}/${ud.lastTotal||10} · Come back tomorrow to keep your streak!</div>
+      </div>`;
+    if(el("dailyQuizBlockQ")) el("dailyQuizBlockQ").style.display="none";
+  } else {
+    todayBlock.innerHTML=`
+      <div class="card" style="padding:20px;margin-bottom:16px;text-align:center;">
+        <div style="font-size:36px;margin-bottom:8px;">🔥</div>
+        <div style="font-weight:700;font-size:16px;margin-bottom:6px;">Today's Challenge Awaits!</div>
+        <div style="font-size:13px;color:#777;margin-bottom:16px;">10 curated questions from your weakest subjects</div>
+        <button class="btn btn-primary" style="padding:12px 28px;font-size:14px;" onclick="startDailyInTab()">Start Today's Quiz →</button>
+      </div>`;
+  }
+  // History
+  const histEl=el("dailyHistoryQ");
+  if(histEl){
+    let hist=[]; try{ hist=JSON.parse(localStorage.getItem("bhu:dailyHistory_"+email)||"[]"); }catch{}
+    if(hist.length>0){
+      histEl.innerHTML=`<div style="font-weight:700;font-size:15px;margin-bottom:10px;">Recent Daily Results</div>`+
+        hist.slice(-7).reverse().map(h=>`
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#F8FBF8;border-radius:10px;margin-bottom:6px;">
+            <div style="width:36px;height:36px;border-radius:10px;background:${h.pct>=70?"#E8F5E9":"#FFEBEE"};display:flex;align-items:center;justify-content:center;font-size:16px;">${h.pct>=70?"✅":"📖"}</div>
+            <div style="flex:1;"><div style="font-weight:600;font-size:13px;">${h.date}</div><div style="font-size:11px;color:#777;">${h.score}/${h.total} correct</div></div>
+            <div style="font-weight:800;color:${h.pct>=70?"#00B050":"#E53935"};">${h.pct}%</div>
+          </div>`).join("");
+    }
+  }
+}
+
+// Daily quiz state for in-tab version
+let dqTabQs=[], dqTabAns=[], dqTabIdx=0, dqTabDone=false;
+function startDailyInTab(){
+  const isPrem=isSubActive(currentUser);
+  let allQs=[];
+  Object.entries(QUIZ_BANK).forEach(([s,qs])=>{ qs.filter(q=>!q.premium||isPrem).forEach(q=>allQs.push({...q,subj:s})); });
+  if(!allQs.length){ toast("No questions available.","e"); return; }
+  dqTabQs=allQs.sort(()=>Math.random()-.5).slice(0,10);
+  dqTabAns=new Array(10).fill(-1); dqTabIdx=0; dqTabDone=false;
+  const todayBlock=document.getElementById("dailyTodayBlockQ"); if(todayBlock) todayBlock.innerHTML="";
+  document.getElementById("dailyQuizBlockQ").style.display="block";
+  renderDailyTabQuestion();
+}
+function renderDailyTabQuestion(){
+  const el=id=>document.getElementById(id);
+  const q=dqTabQs[dqTabIdx]; if(!q) return;
+  if(el("dqIdxQ")) el("dqIdxQ").textContent=dqTabIdx+1;
+  if(el("dqTotalQ")) el("dqTotalQ").textContent=dqTabQs.length;
+  if(el("dqSubjLabelQ")) el("dqSubjLabelQ").textContent=q.subj||"";
+  if(el("dqBarQ")) el("dqBarQ").style.width=((dqTabIdx/dqTabQs.length)*100)+"%";
+  if(el("dqQuestionQ")) el("dqQuestionQ").textContent=q.q;
+  const optsEl=el("dqOptionsQ");
+  if(optsEl) optsEl.innerHTML=q.opts.map((o,i)=>`
+    <button class="quiz-option ${dqTabAns[dqTabIdx]===i?"selected":""}" onclick="selectDQTabOpt(${i})">
+      <div class="circle"></div>${escapeHTML(o)}
+    </button>`).join("");
+  const fb=el("dqFeedbackQ"); if(fb) fb.style.display="none";
+  const nxt=el("dqNextQ"); if(nxt) nxt.disabled=dqTabAns[dqTabIdx]===-1;
+}
+function selectDQTabOpt(i){
+  dqTabAns[dqTabIdx]=i;
+  const q=dqTabQs[dqTabIdx];
+  const optsEl=document.getElementById("dqOptionsQ");
+  if(optsEl) optsEl.querySelectorAll(".quiz-option").forEach((btn,idx)=>btn.classList.toggle("selected",idx===i));
+  const fb=document.getElementById("dqFeedbackQ");
+  if(fb){ fb.style.display="block"; fb.textContent="💡 "+q.exp; }
+  const nxt=document.getElementById("dqNextQ"); if(nxt) nxt.disabled=false;
+}
+function dailyNextQ(){
+  if(dqTabIdx<dqTabQs.length-1){ dqTabIdx++; renderDailyTabQuestion(); }
+  else finishDailyTabQuiz();
+}
+function finishDailyTabQuiz(){
+  document.getElementById("dailyQuizBlockQ").style.display="none";
+  const score=dqTabQs.filter((q,i)=>dqTabAns[i]===q.ans).length;
+  const pct=Math.round(score/dqTabQs.length*100);
+  const email=currentUser?.email||"guest";
+  const today=new Date().toISOString().split("T")[0];
+  // Save streak
+  let sd={}; try{ sd=JSON.parse(localStorage.getItem("bhu:streak")||"{}"); }catch{}
+  if(!sd[email]) sd[email]={streak:0,best:0,lastDate:""};
+  const ud=sd[email];
+  const yesterday=new Date(Date.now()-86400000).toISOString().split("T")[0];
+  ud.streak=ud.lastDate===yesterday?ud.streak+1:1;
+  ud.best=Math.max(ud.best||0,ud.streak);
+  ud.lastDate=today; ud.lastScore=score; ud.lastTotal=dqTabQs.length;
+  sd[email]=ud; localStorage.setItem("bhu:streak",JSON.stringify(sd));
+  // Save history
+  let hist=[]; try{ hist=JSON.parse(localStorage.getItem("bhu:dailyHistory_"+email)||"[]"); }catch{}
+  hist.push({date:fmtDate(),score,total:dqTabQs.length,pct});
+  localStorage.setItem("bhu:dailyHistory_"+email,JSON.stringify(hist));
+  // Save quiz result for stats
+  saveQuizResult("Daily",score,dqTabQs.length);
+  // Show result
+  const resEl=document.getElementById("dailyResultQ");
+  if(resEl){
+    resEl.style.display="block";
+    const se=document.getElementById("dqScoreQ"); if(se) se.textContent=score+"/"+dqTabQs.length;
+    const me=document.getElementById("dqMsgQ"); if(me) me.textContent=pct>=80?"🎉 Excellent! Streak alive!":pct>=60?"👍 Good Work!":"📖 Keep Studying!";
+  }
+  // Update streak displays
+  const sceq=document.getElementById("streakCountQ"); if(sceq) sceq.textContent=ud.streak;
+}
+
+function syncLeaderboardToTab(){
+  const listEl=document.getElementById("leaderboardListQ");
+  const emptyEl=document.getElementById("leaderboardEmptyQ");
+  if(!listEl) return;
+  const u=currentUser;
+  const lb=[...usersDB].map(usr=>{
+    const qs=JSON.parse(localStorage.getItem("bhu:quizStats")||"{}");
+    const ss=JSON.parse(localStorage.getItem("bhu:streak")||"{}");
+    const stats=qs[usr.email]||{};
+    const streak=(ss[usr.email]||{}).streak||0;
+    return {name:usr.name,email:usr.email,score:stats.totalCorrect||0,quizzes:stats.quizCount||0,streak};
+  });
+  const sorted=activeLbTabQ==="all"?
+    lb.sort((a,b)=>b.score-a.score):
+    lb.sort((a,b)=>b.streak-a.streak);
+  if(sorted.every(x=>x.score===0&&x.streak===0)){ listEl.innerHTML=""; if(emptyEl) emptyEl.style.display="block"; return; }
+  if(emptyEl) emptyEl.style.display="none";
+  const myRankEl=document.getElementById("myRankCardQ");
+  const myIdx=u?sorted.findIndex(x=>x.email===u.email):-1;
+  if(myIdx!==-1&&myRankEl){
+    myRankEl.style.display="block";
+    const mn=document.getElementById("myRankNumQ"); if(mn) mn.textContent="#"+(myIdx+1);
+    const mnn=document.getElementById("myRankNameQ"); if(mnn) mnn.textContent=u.name;
+    const mns=document.getElementById("myRankStatsQ"); if(mns) mns.textContent=activeLbTabQ==="all"?sorted[myIdx].score+" pts":"🔥 "+sorted[myIdx].streak+" day streak";
+  }
+  const colors=["#FFD700","#C0C0C0","#CD7F32"];
+  const topEmojis=["🥇","🥈","🥉"];
+  listEl.innerHTML=sorted.slice(0,20).map((lb,i)=>{
+    const isMe=u&&lb.email===u.email;
+    const bg=["#E8D44D15","#C0C0C015","#CD7F3215"][i]||"";
+    return `<div class="lb-row ${isMe?"me":""}" style="${bg?`background:${bg};`:""}">
+      <div class="lb-rank">${i<3?topEmojis[i]:i+1}</div>
+      <div class="lb-avatar" style="background:linear-gradient(135deg,#1565C0,#42A5F5);">${lb.name[0].toUpperCase()}</div>
+      <div class="lb-info"><div style="font-weight:700;font-size:14px;">${escapeHTML(lb.name)}</div>
+        <div style="font-size:11px;color:#777;">${lb.quizzes} quizzes${isMe?" · You":""}</div></div>
+      <div class="lb-score">${activeLbTabQ==="all"?lb.score+" pts":"🔥"+lb.streak}</div>
+    </div>`;
+  }).join("");
+}
+
+function syncAnalyticsToTab(){
+  const u=currentUser;
+  const lockEl=document.getElementById("analyticsLockQ");
+  const contEl=document.getElementById("analyticsContentQ");
+  if(!u){ if(lockEl) lockEl.style.display="block"; if(contEl) contEl.style.display="none"; return; }
+  if(lockEl) lockEl.style.display="none"; if(contEl) contEl.style.display="block";
+  const email=u.email;
+  let qs={}; try{ qs=JSON.parse(localStorage.getItem("bhu:quizStats")||"{}"); }catch{}
+  let ss={}; try{ ss=JSON.parse(localStorage.getItem("bhu:subjectStats")||"{}"); }catch{}
+  const us=qs[email]||{}; const subjectStats=ss[email]||{};
+  const totalQ=us.totalQ||0; const totalC=us.totalCorrect||0; const qCount=us.quizCount||0;
+  const pct=totalQ?Math.round(totalC/totalQ*100):0;
+  const el=id=>document.getElementById(id);
+  if(el("anTotalQQ")) el("anTotalQQ").textContent=totalQ;
+  if(el("anTotalCorrectQ")) el("anTotalCorrectQ").textContent=totalC;
+  if(el("anOverallPctQ")) el("anOverallPctQ").textContent=pct+"%";
+  if(el("anQuizCountQ")) el("anQuizCountQ").textContent=qCount;
+  // Subject bars
+  const sbEl=el("anSubjectBarsQ");
+  if(sbEl){
+    if(Object.keys(subjectStats).length===0){
+      sbEl.innerHTML='<div style="text-align:center;color:#777;font-size:13px;padding:20px;">Complete quizzes to see subject performance.</div>';
+    } else {
+      sbEl.innerHTML=Object.entries(subjectStats).map(([s,st])=>{
+        const p=st.total?Math.round(st.correct/st.total*100):0;
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:110px;font-size:12px;font-weight:600;flex-shrink:0;">${escapeHTML(s)}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${p}%;"></div></div>
+          <div style="font-size:12px;font-weight:700;color:${p>=60?"#00B050":"#E53935"};min-width:36px;">${p}%</div>
+        </div>`;
+      }).join("");
+    }
+  }
+  // Weak areas
+  const waEl=el("anWeakAreasQ");
+  if(waEl){
+    const weak=Object.entries(subjectStats).filter(([,st])=>st.total&&Math.round(st.correct/st.total*100)<60);
+    waEl.innerHTML=weak.length===0?
+      '<div style="color:#00B050;font-size:13px;font-weight:600;">🎉 No weak areas! Keep it up!</div>':
+      weak.map(([s,st])=>`<div style="background:#FFEBEE;border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;font-size:13px;">
+        <span style="font-weight:600;">${escapeHTML(s)}</span>
+        <span style="color:#E53935;font-weight:700;">${Math.round(st.correct/st.total*100)}% — needs work</span>
+      </div>`).join("");
+  }
+  // History placeholder
+  const histEl=el("anHistoryQ");
+  if(histEl){
+    const email2=u.email;
+    let hist=[]; try{ hist=JSON.parse(localStorage.getItem("bhu:dailyHistory_"+email2)||"[]"); }catch{}
+    histEl.innerHTML=hist.length===0?
+      '<div style="color:#777;font-size:13px;">No quiz history yet.</div>':
+      hist.slice(-5).reverse().map(h=>`
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0F5F0;font-size:13px;">
+          <span>${h.date}</span><span style="font-weight:700;color:${h.pct>=60?"#00B050":"#E53935"};">${h.score}/${h.total} — ${h.pct}%</span>
+        </div>`).join("");
+  }
+}
+
+// ── Planner v2 (for tab) ─────────────────────────────────────────
+function generatePlan2(){
+  const dateEl=document.getElementById("planDate2");
+  const examEl=document.getElementById("planExam2");
+  const hoursEl=document.getElementById("planHours2");
+  if(!dateEl?.value){toast("Please select an exam date.","e");return;}
+  const examDate=new Date(dateEl.value); const today=new Date();
+  today.setHours(0,0,0,0);
+  const daysLeft=Math.ceil((examDate-today)/(1000*60*60*24));
+  if(daysLeft<=0){toast("Exam date must be in the future.","e");return;}
+  document.getElementById("plannerSetup2").style.display="none";
+  document.getElementById("plannerOutput2").style.display="block";
+  const cdEl=document.getElementById("planCountdown2"); if(cdEl) cdEl.textContent=daysLeft;
+  const exEl=document.getElementById("planExamLabel2"); if(exEl) exEl.textContent=examEl.value+" · "+hoursEl.value+" hrs/day";
+  const topicsPool=[
+    "Agronomy — Crop Production & Management","Soil Science — Chemistry & Fertility",
+    "Genetics & Plant Breeding — Hybridization","Plant Pathology — Disease Management",
+    "Entomology — IPM & Pest Control","Horticulture — Fruit & Vegetable Science",
+    "Agricultural Economics — Farm Finance","Extension Education — T&V Systems",
+    "Ecology & Environment — Biodiversity","Agricultural Meteorology — Climate & Crops",
+    "Farm Management — Budget & Planning","Agronomy — Weed & Irrigation",
+    "Soil Science — Microbiology & pH","PYQ Revision — ICAR JRF 2024",
+    "Full Mock Test — All Subjects"
+  ];
+  const planEl=document.getElementById("planDaysList2");
+  if(!planEl) return;
+  planEl.innerHTML=Array.from({length:Math.min(daysLeft,30)},(_,i)=>{
+    const d=new Date(today); d.setDate(today.getDate()+i);
+    const isToday=i===0;
+    const topic=topicsPool[i%topicsPool.length];
+    return `<div class="plan-day ${isToday?"today":""}" style="margin-bottom:8px;">
+      <div class="plan-num">${i+1}</div>
+      <div style="flex:1;"><div style="font-weight:700;font-size:13px;">${topic}</div>
+        <div style="font-size:11px;opacity:.7;margin-top:2px;">${d.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"})}</div></div>
+      ${isToday?'<span style="font-size:11px;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:50px;font-weight:700;">TODAY</span>':""}
+    </div>`;
+  }).join("")+(daysLeft>30?`<div style="text-align:center;color:#777;font-size:13px;padding:12px;">…and ${daysLeft-30} more days</div>`:"");
+}
+function resetPlan2(){
+  document.getElementById("plannerSetup2").style.display="block";
+  document.getElementById("plannerOutput2").style.display="none";
+}
+function syncPlannerToTab(){
+  // No-op unless plan is already generated; user must re-generate for tab context
+}
+
 function toggleDark(){
   dark=!dark;
   document.body.classList.toggle("dark",dark);
