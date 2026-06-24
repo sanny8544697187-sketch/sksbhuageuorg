@@ -1015,6 +1015,7 @@ try {
       <button id="atRejected" class="btn btn-light"   onclick="setAdminTab('rejected')">❌ Rejected</button>
       <button id="atUsers"    class="btn btn-light"   onclick="setAdminTab('users')">👥 Students</button>
       <button id="atSubs"     class="btn btn-light"   onclick="setAdminTab('subs')">⭐ Premium</button>
+      <button id="atSubjects" class="btn btn-light"   onclick="setAdminTab('subjects')">📚 Subjects</button>
       <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
       <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
@@ -1262,42 +1263,76 @@ const PLANS = {
   yearly: { id:"yearly",  label:"Yearly",   price:199, period:"year"  },
 };
 
-const SUBJECTS = [
-  { id:"s1",  name:"Agronomy",                icon:"🌾", cat:"core",    badge:"Popular",
-    desc:"Crop production and soil management for optimal yield and sustainability.",
-    topics:["Crop Production","Weed Management","Irrigation Systems","Tillage Systems"], tags:["crops","soil","yield"]},
-  { id:"s2",  name:"Horticulture",            icon:"🍎", cat:"applied", badge:"New",
-    desc:"Cultivating fruits, vegetables, flowers and ornamental plants.",
-    topics:["Fruit Science","Vegetable Production","Floriculture","Post-harvest Tech"], tags:["fruits","flowers","vegetables"]},
-  { id:"s3",  name:"Soil Science",            icon:"🪨", cat:"science", badge:"",
-    desc:"Physical, chemical and biological properties of soils.",
-    topics:["Soil Chemistry","Soil Fertility","Soil Physics","Soil Microbiology"], tags:["soil","nutrients","pH"]},
-  { id:"s4",  name:"Skill Enhancing Course",  icon:"🌿", cat:"science", badge:"",
-    desc:"Plant growth, development, metabolism and physiological processes.",
-    topics:["Photosynthesis","Respiration","Transpiration","Hormonal Regulation"], tags:["growth","metabolism","physiology"]},
-  { id:"s5",  name:"Genetics & Plant Breeding",icon:"🧬", cat:"science", badge:"Popular",
-    desc:"Heredity, variation and genetic improvement of crop plants.",
-    topics:["Mendelian Genetics","Hybridization","Mutation Breeding","Molecular Markers"], tags:["genetics","DNA","heredity"]},
-  { id:"s6",  name:"Plant Pathology",         icon:"🔬", cat:"applied", badge:"",
-    desc:"Plant diseases, causative agents and integrated disease management.",
-    topics:["Fungal Diseases","Bacterial Diseases","Virus Diseases","IDM Strategies"], tags:["disease","fungi","pathogen"]},
-  { id:"s7",  name:"Entomology",              icon:"🐛", cat:"applied", badge:"",
-    desc:"Insects affecting agriculture and integrated pest management.",
-    topics:["Insect Pests","IPM","Beneficial Insects","Pesticide Management"], tags:["insects","IPM","biocontrol"]},
-  { id:"s9",  name:"Agricultural Economics & Statistics", icon:"📊", cat:"applied", badge:"",
-    desc:"Economic principles, statistics and quantitative methods applied to farming, marketing and rural policy.",
-    topics:["Farm Finance","Ag Marketing","Demand & Supply","Statistics & Research Methods"], tags:["economics","statistics","market","policy"]},
-  { id:"s10", name:"Extension Education",      icon:"📣", cat:"applied", badge:"New",
-    desc:"Transferring agricultural knowledge and innovations to farming communities.",
-    topics:["Extension Methods","Rural Communication","FLD & Demonstrations","Farmers Training"], tags:["extension","communication","rural"]},
-  { id:"s11", name:"Dairy Science & Food Tech",icon:"🥛", cat:"applied", badge:"New",
-    desc:"Dairy production, processing, food technology and value-added product development.",
-    topics:["Milk Production","Dairy Processing","Food Preservation","Quality Control"], tags:["dairy","milk","food","processing"]},
-  { id:"s13", name:"Agriculture Engineering",  icon:"🎓", cat:"core",    badge:"New",
-    desc:"Skill development, entrepreneurship and specialised short courses for agriculture graduates.",
-    topics:["Agri-Entrepreneurship","Food Processing","Organic Farming","Rural Development"], tags:["skill","startup","processing"]},
+const DEFAULT_SUBJECTS = [
+  { id:"s1",  name:"Agronomy", icon:"🌾", cat:"core", badge:"Popular",
+    desc:"Crop production, soil management, weed management and agricultural practices for optimal yield.",
+    topics:["Crop Production","Weed Management","Irrigation Systems","Tillage Systems"], tags:["crops","soil","yield","agronomy"]},
+  { id:"s2",  name:"Entomology", icon:"🐛", cat:"applied", badge:"",
+    desc:"Insects affecting agriculture, pest biology and integrated pest management strategies.",
+    topics:["Insect Pests","IPM","Beneficial Insects","Pesticide Management"], tags:["insects","IPM","biocontrol","pest"]},
+  { id:"s3",  name:"Horticulture", icon:"🍎", cat:"applied", badge:"",
+    desc:"Cultivating fruits, vegetables, flowers and ornamental plants with post-harvest technology.",
+    topics:["Fruit Science","Vegetable Production","Floriculture","Post-harvest Tech"], tags:["fruits","flowers","vegetables","horticulture"]},
+  { id:"s4",  name:"Genetics & Plant Breeding", icon:"🧬", cat:"science", badge:"Popular",
+    desc:"Heredity, variation and genetic improvement of crop plants through classical and molecular approaches.",
+    topics:["Mendelian Genetics","Hybridization","Mutation Breeding","Molecular Markers"], tags:["genetics","DNA","heredity","breeding"]},
+  { id:"s5",  name:"Plant Biochemistry", icon:"🔭", cat:"science", badge:"",
+    desc:"Biochemical processes in plants including metabolism, enzyme kinetics and molecular functions.",
+    topics:["Photosynthesis","Respiration","Plant Hormones","Enzyme Kinetics"], tags:["biochemistry","metabolism","enzymes","plant"]},
+  { id:"s6",  name:"Plant Pathology", icon:"🔬", cat:"applied", badge:"",
+    desc:"Plant diseases, causative agents and integrated disease management strategies.",
+    topics:["Fungal Diseases","Bacterial Diseases","Virus Diseases","IDM Strategies"], tags:["disease","fungi","pathogen","pathology"]},
+  { id:"s7",  name:"Soil Sciences & Agricultural Chemistry", icon:"🪨", cat:"science", badge:"",
+    desc:"Physical, chemical and biological properties of soils and agricultural chemistry applications.",
+    topics:["Soil Chemistry","Soil Fertility","Soil Physics","Agricultural Chemicals"], tags:["soil","nutrients","pH","chemistry"]},
+  { id:"s8",  name:"Animal Husbandry & Dairy Tech", icon:"🐄", cat:"applied", badge:"New",
+    desc:"Animal production systems, dairy processing, food technology and value-added product development.",
+    topics:["Animal Production","Dairy Processing","Livestock Management","Quality Control"], tags:["dairy","animal","livestock","food","processing"]},
+  { id:"s9",  name:"Agricultural Engineering", icon:"⚙️", cat:"core", badge:"",
+    desc:"Farm machinery, irrigation engineering, food processing technology and rural infrastructure.",
+    topics:["Farm Machinery","Irrigation Engineering","Food Technology","Rural Infrastructure"], tags:["engineering","machinery","irrigation","technology"]},
+  { id:"s10", name:"Agricultural Economics", icon:"📊", cat:"applied", badge:"",
+    desc:"Economic principles applied to farming, marketing, trade policy and rural development.",
+    topics:["Farm Finance","Ag Marketing","Demand & Supply","Agribusiness Management"], tags:["economics","market","policy","finance"]},
+  { id:"s11", name:"Statistical Methods", icon:"📈", cat:"science", badge:"",
+    desc:"Statistical techniques, research design and quantitative data analysis in agricultural sciences.",
+    topics:["Basic Statistics","Research Design","Data Analysis","Hypothesis Testing"], tags:["statistics","research","data","methods"]},
+  { id:"s12", name:"Extension Education", icon:"📣", cat:"applied", badge:"",
+    desc:"Transferring agricultural knowledge and innovations to farming communities effectively.",
+    topics:["Extension Methods","Rural Communication","FLD & Demonstrations","Farmers Training"], tags:["extension","communication","rural","education"]},
+  { id:"s13", name:"Agricultural Meteorology", icon:"🌦️", cat:"science", badge:"",
+    desc:"Weather, climate patterns and their effects on crop production and agricultural planning.",
+    topics:["Weather Forecasting","Climate Change","Rainfall Analysis","Evapotranspiration"], tags:["weather","climate","forecast","meteorology"]},
+  { id:"s14", name:"Environmental Studies & Disaster Management", icon:"🌍", cat:"science", badge:"",
+    desc:"Environmental science, sustainability, pollution control and disaster preparedness in agriculture.",
+    topics:["Environmental Science","Pollution Control","Disaster Management","Climate Adaptation"], tags:["environment","disaster","ecology","sustainability"]},
+  { id:"s15", name:"Additional Courses", icon:"📚", cat:"core", badge:"New",
+    desc:"Skill enhancement, entrepreneurship, organic farming and specialised short courses for agriculture graduates.",
+    topics:["Agri-Entrepreneurship","Organic Farming","Food Processing","Rural Development"], tags:["skill","startup","additional","courses"]},
 ];
 
+let activeSubjects = []; // loaded from Firebase/localStorage; falls back to DEFAULT_SUBJECTS
+function getSubjects(){ return activeSubjects.length ? activeSubjects : DEFAULT_SUBJECTS; }
+
+function rebuildSubjectDropdowns(){
+  const subs = getSubjects();
+  const opts = subs.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("");
+  ["uSubject","qSubject","qSubjFilter"].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const prefix = id==="uSubject"?'<option value="">— Select —</option>':
+                   id==="qSubjFilter"?'<option value="All">All Subjects</option><option value="General">General</option>':
+                   '<option value="General">General</option>';
+    el.innerHTML = prefix + opts;
+  });
+  // Resource subject filter chips
+  const sf=document.getElementById("subjectFilters");
+  if(sf){
+    sf.innerHTML=`<button class="btn hchip btn-primary" onclick="setResSub('All')" id="rsub_All" style="white-space:nowrap;padding:5px 12px;font-size:12px;">All</button>`;
+    subs.forEach(s=>{
+      sf.innerHTML+=`<button class="btn hchip btn-light" onclick="setResSub('${escapeHTML(s.name)}')" id="rsub_${s.id}" style="white-space:nowrap;padding:5px 12px;font-size:12px;">${escapeHTML(s.name)}</button>`;
+    });
+  }
+}
 let QUIZ_BANK = {
   "Agronomy":[
     {q:"Which nutrient is primarily responsible for vegetative growth?",opts:["Phosphorus","Nitrogen","Potassium","Calcium"],ans:1,exp:"Nitrogen promotes leafy growth and is essential for chlorophyll formation.",premium:false},
@@ -1523,11 +1558,12 @@ function subCount(name){ return getApproved().filter(n=>n.subject===name).length
 // INIT
 // ═══════════════════════════════════════════════════════════════
 window.addEventListener("DOMContentLoaded", async () => {
-  const [n,p,u,sess,saved_ap,theme,q,pyq] = await Promise.all([
+  const [n,p,u,sess,saved_ap,theme,q,pyq,subjData] = await Promise.all([
     sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),
-    sGet("bhu:session"),sGet("bhu:adminpass"),sGet("bhu:theme"),sGet("bhu:questions"),sGet("bhu:pyqdata"),
+    sGet("bhu:session"),sGet("bhu:adminpass"),sGet("bhu:theme"),sGet("bhu:questions"),sGet("bhu:pyqdata"),sGet("bhu:subjects"),
   ]);
   if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q; if(pyq) pyqData=pyq;
+  if(subjData && subjData.length) activeSubjects=subjData;
   if(saved_ap) adminPass=saved_ap;
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
   if(sess){ currentUser=sess; }
@@ -1543,12 +1579,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("splash").style.display="none";
 
-  // Populate subject dropdowns
-  SUBJECTS.forEach(s=>{
-    document.getElementById("uSubject").innerHTML+=`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`;
-    document.getElementById("qSubject").innerHTML+=`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`;
-    document.getElementById("qSubjFilter").innerHTML+=`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`;
-  });
+  // Populate subject dropdowns (also called after admin edits subjects)
+  rebuildSubjectDropdowns();
 
   // Quick questions sidebar
   const qql=document.getElementById("quickQList");
@@ -1568,12 +1600,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     tf.innerHTML+=`<button class="btn hchip ${t==="All"?"btn-primary":"btn-light"}" onclick="setResType('${t}')" id="rt_${t}" style="white-space:nowrap;padding:5px 12px;font-size:12px;">${t}</button>`;
   });
 
-  // Subject filters for resources
-  const sf=document.getElementById("subjectFilters");
-  sf.innerHTML=`<button class="btn hchip btn-primary" onclick="setResSub('All')" id="rsub_All" style="white-space:nowrap;padding:5px 12px;font-size:12px;">All</button>`;
-  SUBJECTS.forEach(s=>{
-    sf.innerHTML+=`<button class="btn hchip btn-light" onclick="setResSub('${escapeHTML(s.name)}')" id="rsub_${s.id}" style="white-space:nowrap;padding:5px 12px;font-size:12px;">${escapeHTML(s.name)}</button>`;
-  });
+  // Subject filters now rebuilt via rebuildSubjectDropdowns()
 
   renderAll();
   renderChat();
@@ -1726,7 +1753,7 @@ function renderHome(){
   const approved=getApproved();
   document.getElementById("statResources").textContent=approved.length;
   document.getElementById("statStudents").textContent=usersDB.length;
-  document.getElementById("statSubjects").textContent=SUBJECTS.length;
+  document.getElementById("statSubjects").textContent=getSubjects().length;
   document.getElementById("statQuestions").textContent=questions.length;
   const qrcEl=document.getElementById("quickResCount"); if(qrcEl) qrcEl.textContent=approved.length+" file"+(approved.length===1?"":"s");
 
@@ -1768,7 +1795,7 @@ function renderHome(){
 
   // Quick subjects strip
   const qsEl=document.getElementById("quickSubjects");
-  if(qsEl) qsEl.innerHTML=SUBJECTS.map(s=>`
+  if(qsEl) qsEl.innerHTML=getSubjects().map(s=>`
     <div class="card hov-card" style="padding:12px 14px;cursor:pointer;text-align:center;flex-shrink:0;min-width:80px;" onclick="setResSubAndNav('${escapeHTML(s.name)}')">
       <div style="font-size:22px;margin-bottom:4px;">${s.icon}</div>
       <div style="font-size:11px;font-weight:700;line-height:1.2;">${escapeHTML(s.name)}</div>
@@ -1797,7 +1824,7 @@ function setCatFilter(cat){
 
 function renderSubjects(){
   const search=(document.getElementById("subSearch")||{}).value?.toLowerCase()||"";
-  const filtered=SUBJECTS.filter(s=>{
+  const filtered=getSubjects().filter(s=>{
     if(catFilter!=="All"&&s.cat.toLowerCase()!==catFilter.toLowerCase()) return false;
     if(!search) return true;
     return s.name.toLowerCase().includes(search)||s.desc.toLowerCase().includes(search)||s.tags.some(t=>t.includes(search));
@@ -1832,8 +1859,8 @@ function setResType(t){
 }
 function setResSub(s){
   resSubject=s;
-  const allBtns=["All",...SUBJECTS.map(sub=>sub.id)];
-  SUBJECTS.forEach(sub=>{ const b=document.getElementById("rsub_"+sub.id); if(b){ b.className=`btn hchip ${sub.name===s?"btn-primary":"btn-light"}`; b.style.cssText="white-space:nowrap;padding:5px 12px;font-size:12px;"; }});
+  const allBtns=["All",...getSubjects().map(sub=>sub.id)];
+  getSubjects().forEach(sub=>{ const b=document.getElementById("rsub_"+sub.id); if(b){ b.className=`btn hchip ${sub.name===s?"btn-primary":"btn-light"}`; b.style.cssText="white-space:nowrap;padding:5px 12px;font-size:12px;"; }});
   const allB=document.getElementById("rsub_All"); if(allB){ allB.className=`btn hchip ${s==="All"?"btn-primary":"btn-light"}`; allB.style.cssText="white-space:nowrap;padding:5px 12px;font-size:12px;"; }
   renderResources();
 }
@@ -2701,7 +2728,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["pending","rejected","users","subs","quiz","pyq","settings"].forEach(k=>{
+  ["pending","rejected","users","subs","subjects","quiz","pyq","settings"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -2812,7 +2839,7 @@ async function renderAdmin(){
           <div>
             <label class="lbl">Fallback subject <span style="font-weight:400;color:#777;">(if auto-detect fails)</span></label>
             <select id="pdfQuizSubject" class="inp">
-              ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
             </select>
           </div>
           <div>
@@ -2843,7 +2870,7 @@ async function renderAdmin(){
           <div style="flex:1;min-width:160px;">
             <label class="lbl">Fallback subject</label>
             <select id="bulkFallbackSubject" class="inp">
-              ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
             </select>
           </div>
           <button class="btn btn-light" style="border:1.5px solid #00B050;color:#00B050;padding:9px 16px;" onclick="parseBulkPaste()">🔎 Parse Text</button>
@@ -2858,7 +2885,7 @@ async function renderAdmin(){
         <div style="display:flex;flex-direction:column;gap:11px;">
           <div><label class="lbl">Subject *</label>
             <select id="mQuizSubj" class="inp">
-              ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
             </select>
           </div>
           <div><label class="lbl">Question *</label><input id="mQuizQ" class="inp" placeholder="Enter the question text"></div>
@@ -2901,6 +2928,73 @@ async function renderAdmin(){
         <div id="customQListContainer"></div>
       </div>`:''}`;
     renderCustomQList();
+  } else if(adminTab==="subjects"){
+    const subs=getSubjects();
+    el.innerHTML=`
+      <div class="card" style="padding:20px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">📚 Subject Manager — ${subs.length} subjects</div>
+        <div style="font-size:12px;color:#777;margin-bottom:12px;">Add, edit, rename or hide subjects shown to all students. Changes sync across devices.</div>
+        ${activeSubjects.length?`<button class="btn btn-light" style="font-size:12px;border:1.5px solid #E53935;color:#E53935;" onclick="resetSubjectsToDefault()">↩ Reset to Default List</button>`:''}
+      </div>
+
+      <!-- Add / Edit Subject Form -->
+      <div class="card" style="padding:22px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;" id="subjFormTitle">➕ Add New Subject</div>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:560px;">
+          <div style="display:grid;grid-template-columns:60px 1fr;gap:10px;">
+            <div><label class="lbl">Icon</label><input id="sIcon" class="inp" placeholder="🌾" style="text-align:center;font-size:18px;padding:8px;"></div>
+            <div><label class="lbl">Subject Name *</label><input id="sName" class="inp" placeholder="e.g. Plant Biochemistry"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><label class="lbl">Category</label>
+              <select id="sCat" class="inp">
+                <option value="core">Core</option>
+                <option value="science">Science</option>
+                <option value="applied">Applied</option>
+              </select>
+            </div>
+            <div><label class="lbl">Badge</label>
+              <select id="sBadge" class="inp">
+                <option value="">None</option>
+                <option value="Popular">Popular</option>
+                <option value="New">New</option>
+                <option value="Hot">Hot</option>
+              </select>
+            </div>
+          </div>
+          <div><label class="lbl">Description *</label>
+            <textarea id="sDesc" class="inp" rows="2" placeholder="Brief description of this subject…" style="resize:vertical;"></textarea>
+          </div>
+          <div><label class="lbl">Topics (comma-separated)</label>
+            <input id="sTopics" class="inp" placeholder="e.g. Crop Production, Weed Management, Irrigation, Soil Health">
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" id="subjSaveBtn" onclick="saveSubject()">➕ Add Subject</button>
+            <button class="btn btn-light" id="subjCancelBtn" style="display:none;" onclick="cancelSubjectEdit()">✕ Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subject List -->
+      <div class="card" style="padding:20px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">Current Subjects</div>
+        <div id="adminSubjectList">
+          ${subs.map((s,i)=>`
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#F8FBF8;border-radius:12px;margin-bottom:8px;">
+              <div style="font-size:22px;flex-shrink:0;">${s.icon||"📚"}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:700;font-size:13px;">${escapeHTML(s.name)}</div>
+                <div style="font-size:11px;color:#777;text-transform:capitalize;">${s.cat||"core"}${s.badge?` · <span style="background:#E8F5E9;color:#0F3D23;padding:1px 6px;border-radius:10px;font-weight:700;">${s.badge}</span>`:""}</div>
+              </div>
+              <div style="display:flex;gap:5px;flex-shrink:0;">
+                <button onclick="editSubject('${escapeHTML(s.id)}')" style="background:#E3F2FD;color:#1565C0;border:none;padding:4px 10px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;">✏️ Edit</button>
+                <button onclick="moveSubject('${escapeHTML(s.id)}',-1)" style="background:#F2F5F2;color:#555;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:12px;" title="Move up">↑</button>
+                <button onclick="moveSubject('${escapeHTML(s.id)}',1)" style="background:#F2F5F2;color:#555;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:12px;" title="Move down">↓</button>
+                <button onclick="deleteSubject('${escapeHTML(s.id)}')" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;">🗑</button>
+              </div>
+            </div>`).join("")}
+        </div>
+      </div>`;
   } else if(adminTab==="pyq"){
     const total=pyqData.length;
     el.innerHTML=`
@@ -2931,7 +3025,7 @@ async function renderAdmin(){
             </div>
             <div><label class="lbl">Subject *</label>
               <select id="pyqSubjAdmin" class="inp">
-                ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+                ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
               </select>
             </div>
           </div>
@@ -3062,14 +3156,107 @@ async function changeAdminPass(){
 }
 async function clearAllData(){
   if(!window.confirm("⚠️ CLEAR ALL DATA? This cannot be undone.")) return;
-  notes=[]; pending=[]; usersDB=[]; questions=[]; pyqData=[];
-  await Promise.all([sSet("bhu:notes",[]),sSet("bhu:pending",[]),sSet("bhu:users",[]),sSet("bhu:questions",[]),sSet("bhu:pyqdata",[])]);
+  notes=[]; pending=[]; usersDB=[]; questions=[]; pyqData=[]; activeSubjects=[];
+  await Promise.all([sSet("bhu:notes",[]),sSet("bhu:pending",[]),sSet("bhu:users",[]),sSet("bhu:questions",[]),sSet("bhu:pyqdata",[]),sDel("bhu:subjects")]);
   toast("All data cleared.","e"); renderAll(); renderAdmin();
 }
 
 // ═══════════════════════════════════════════════════════════════
 // PYQ ADMIN — Add / Edit / Delete PYQ questions
 // ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// SUBJECT ADMIN — Add / Edit / Move / Delete subjects dynamically
+// ═══════════════════════════════════════════════════════════════
+let _editingSubjectId = null;
+
+function _genSubjectId(){ return "sc_"+Date.now()+"_"+Math.random().toString(36).slice(2,6); }
+
+async function saveSubject(){
+  const name  = document.getElementById("sName").value.trim();
+  const icon  = document.getElementById("sIcon").value.trim()||"📚";
+  const cat   = document.getElementById("sCat").value;
+  const badge = document.getElementById("sBadge").value;
+  const desc  = document.getElementById("sDesc").value.trim();
+  const topicsRaw = document.getElementById("sTopics").value.trim();
+  if(!name){ toast("Subject name is required.","e"); return; }
+  const topics = topicsRaw ? topicsRaw.split(",").map(t=>t.trim()).filter(Boolean) : [];
+  const tags   = name.toLowerCase().split(/\s+/);
+
+  // Start from current list (or defaults) for editing
+  let subs = getSubjects().map(s=>({...s}));
+
+  if(_editingSubjectId){
+    subs = subs.map(s => s.id===_editingSubjectId
+      ? {...s, name, icon, cat, badge, desc, topics, tags}
+      : s);
+    toast("✅ Subject updated!");
+    cancelSubjectEdit();
+  } else {
+    subs.push({ id:_genSubjectId(), name, icon, cat, badge, desc, topics, tags });
+    toast("✅ Subject '"+name+"' added!");
+    ["sName","sDesc","sTopics"].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=""; });
+    document.getElementById("sIcon").value="";
+  }
+  activeSubjects = subs;
+  await sSet("bhu:subjects", activeSubjects);
+  rebuildSubjectDropdowns();
+  renderAdmin(); renderHome(); renderSubjects();
+}
+
+function editSubject(id){
+  const subs = getSubjects();
+  const s = subs.find(x=>x.id===id); if(!s) return;
+  _editingSubjectId = id;
+  document.getElementById("sName").value  = s.name||"";
+  document.getElementById("sIcon").value  = s.icon||"";
+  document.getElementById("sCat").value   = s.cat||"core";
+  document.getElementById("sBadge").value = s.badge||"";
+  document.getElementById("sDesc").value  = s.desc||"";
+  document.getElementById("sTopics").value= (s.topics||[]).join(", ");
+  document.getElementById("subjFormTitle").textContent = "✏️ Edit Subject — "+s.name;
+  document.getElementById("subjSaveBtn").textContent = "💾 Save Changes";
+  document.getElementById("subjCancelBtn").style.display = "inline-block";
+  document.getElementById("sName").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function cancelSubjectEdit(){
+  _editingSubjectId = null;
+  ["sName","sDesc","sTopics","sIcon"].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=""; });
+  const ft=document.getElementById("subjFormTitle"); if(ft) ft.textContent="➕ Add New Subject";
+  const sb=document.getElementById("subjSaveBtn"); if(sb) sb.textContent="➕ Add Subject";
+  const cb=document.getElementById("subjCancelBtn"); if(cb) cb.style.display="none";
+}
+
+async function moveSubject(id, dir){
+  let subs = getSubjects().map(s=>({...s}));
+  const idx = subs.findIndex(s=>s.id===id);
+  if(idx===-1) return;
+  const newIdx = idx+dir;
+  if(newIdx<0||newIdx>=subs.length) return;
+  [subs[idx], subs[newIdx]] = [subs[newIdx], subs[idx]];
+  activeSubjects = subs;
+  await sSet("bhu:subjects", activeSubjects);
+  renderAdmin(); renderHome();
+}
+
+async function deleteSubject(id){
+  if(!window.confirm("Delete this subject? Resources assigned to it will still exist but the subject card will disappear.")) return;
+  let subs = getSubjects().map(s=>({...s}));
+  subs = subs.filter(s=>s.id!==id);
+  activeSubjects = subs;
+  await sSet("bhu:subjects", activeSubjects);
+  if(_editingSubjectId===id) cancelSubjectEdit();
+  rebuildSubjectDropdowns();
+  toast("Subject deleted."); renderAdmin(); renderHome(); renderSubjects();
+}
+
+async function resetSubjectsToDefault(){
+  if(!window.confirm("Reset subjects to the built-in default list? All custom subjects and edits will be lost.")) return;
+  activeSubjects = [];
+  await sDel("bhu:subjects");
+  toast("✅ Subjects reset to defaults."); renderAdmin(); renderHome(); renderSubjects();
+}
+
 let _editingPYQId = null;
 
 async function savePYQQuestion(){
@@ -3112,7 +3299,7 @@ function editPYQQuestion(id){
   _editingPYQId = id;
   document.getElementById("pyqExam").value = q.exam||"ICAR JRF";
   document.getElementById("pyqYear").value = q.year||"2024";
-  document.getElementById("pyqSubjAdmin").value = q.subject||SUBJECTS[0].name;
+  document.getElementById("pyqSubjAdmin").value = q.subject||getSubjects()[0].name;
   document.getElementById("pyqQ").value = q.q||"";
   document.getElementById("pyqOptA").value = q.opts[0]||"";
   document.getElementById("pyqOptB").value = q.opts[1]||"";
@@ -3385,7 +3572,7 @@ function renderParsedDocPreview(status, btn){
             <div style="margin-top:3px;font-size:10px;color:${tagColor};font-weight:600;">${tagLabel}</div>
           </div>
           <select class="inp" style="width:auto;font-size:11px;padding:4px 6px;flex-shrink:0;" onchange="_parsedPdfQuestions[${i}].subject=this.value;_parsedPdfQuestions[${i}].subjectSource='manual';">
-            ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
+            ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
           </select>
         </div>`;
       }).join("")}
@@ -3401,9 +3588,9 @@ function normalizeSubjectName(raw){
   if(!raw) return null;
   const norm=raw.trim().toLowerCase().replace(/[:\-–—]+$/,"").trim();
   if(!norm) return null;
-  let found=SUBJECTS.find(s=>s.name.toLowerCase()===norm);
+  let found=getSubjects().find(s=>s.name.toLowerCase()===norm);
   if(found) return found.name;
-  found=SUBJECTS.find(s=>norm.includes(s.name.toLowerCase())||s.name.toLowerCase().includes(norm));
+  found=getSubjects().find(s=>norm.includes(s.name.toLowerCase())||s.name.toLowerCase().includes(norm));
   return found?found.name:null;
 }
 
@@ -3412,7 +3599,7 @@ function normalizeSubjectName(raw){
 function autoDetectSubject(qText, opts){
   const text=(qText+" "+(opts||[]).join(" ")).toLowerCase();
   let bestSubj=null, bestScore=0;
-  SUBJECTS.forEach(s=>{
+  getSubjects().forEach(s=>{
     let score=0;
     const keywords=[s.name, ...(s.topics||[]), ...(s.tags||[])];
     keywords.forEach(k=>{
@@ -3522,7 +3709,7 @@ function renderBulkPreview(){
         <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
           <div style="flex:1;font-size:12px;"><strong>Q${i+1}:</strong> ${escapeHTML(q.q.slice(0,80))}${q.q.length>80?"…":""}</div>
           <select class="inp" style="width:auto;font-size:11px;padding:4px 6px;flex-shrink:0;" onchange="_bulkParsedQuestions[${i}].subject=this.value;">
-            ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
+            ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
           </select>
         </div>`).join("")}
     </div>`;
