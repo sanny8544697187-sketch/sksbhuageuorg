@@ -1016,6 +1016,7 @@ try {
       <button id="atUsers"    class="btn btn-light"   onclick="setAdminTab('users')">👥 Students</button>
       <button id="atSubs"     class="btn btn-light"   onclick="setAdminTab('subs')">⭐ Premium</button>
       <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
+      <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
     </div>
     <div id="adminContent"></div>
@@ -1283,21 +1284,15 @@ const SUBJECTS = [
   { id:"s7",  name:"Entomology",              icon:"🐛", cat:"applied", badge:"",
     desc:"Insects affecting agriculture and integrated pest management.",
     topics:["Insect Pests","IPM","Beneficial Insects","Pesticide Management"], tags:["insects","IPM","biocontrol"]},
-  { id:"s8",  name:"Agricultural Meteorology",icon:"🌦️", cat:"science", badge:"",
-    desc:"Weather and climate effects on crop production and yield.",
-    topics:["Weather Forecasting","Climate Change","Rainfall Analysis","Evapotranspiration"], tags:["weather","climate","forecast"]},
-  { id:"s9",  name:"Agricultural Economics",  icon:"📊", cat:"applied", badge:"",
-    desc:"Economic principles applied to farming, marketing and rural policy.",
-    topics:["Farm Finance","Ag Marketing","Demand & Supply","Agribusiness"], tags:["economics","market","policy"]},
+  { id:"s9",  name:"Agricultural Economics & Statistics", icon:"📊", cat:"applied", badge:"",
+    desc:"Economic principles, statistics and quantitative methods applied to farming, marketing and rural policy.",
+    topics:["Farm Finance","Ag Marketing","Demand & Supply","Statistics & Research Methods"], tags:["economics","statistics","market","policy"]},
   { id:"s10", name:"Extension Education",      icon:"📣", cat:"applied", badge:"New",
     desc:"Transferring agricultural knowledge and innovations to farming communities.",
     topics:["Extension Methods","Rural Communication","FLD & Demonstrations","Farmers Training"], tags:["extension","communication","rural"]},
-  { id:"s11", name:"Farm Management",          icon:"🏡", cat:"applied", badge:"",
-    desc:"Planning, organizing and managing farm resources for maximum profitability.",
-    topics:["Farm Planning","Cost & Returns","Farm Records","Decision Making"], tags:["farm","management","profit"]},
-  { id:"s12", name:"Ecology & Environment",    icon:"🌍", cat:"science", badge:"Popular",
-    desc:"Study of ecosystems, biodiversity and environmental sustainability in agriculture.",
-    topics:["Agroecosystem","Biodiversity","Pollution & Remediation","Climate Adaptation"], tags:["ecology","environment","biodiversity"]},
+  { id:"s11", name:"Dairy Science & Food Tech",icon:"🥛", cat:"applied", badge:"New",
+    desc:"Dairy production, processing, food technology and value-added product development.",
+    topics:["Milk Production","Dairy Processing","Food Preservation","Quality Control"], tags:["dairy","milk","food","processing"]},
   { id:"s13", name:"Agriculture Engineering",  icon:"🎓", cat:"core",    badge:"New",
     desc:"Skill development, entrepreneurship and specialised short courses for agriculture graduates.",
     topics:["Agri-Entrepreneurship","Food Processing","Organic Farming","Rural Development"], tags:["skill","startup","processing"]},
@@ -1346,19 +1341,12 @@ let QUIZ_BANK = {
     {q:"The 'T&V' system in extension stands for:",opts:["Training & Visits","Technology & Villages","Transfer & Verify","Teaching & Validation"],ans:0,exp:"Training & Visit (T&V) system was introduced in India in the 1970s by World Bank.",premium:true},
     {q:"ATMA stands for:",opts:["Agricultural Technology Management Agency","Advanced Training for Modern Agriculture","Agri Technology Marketing Authority","Agricultural Technician Management Act"],ans:0,exp:"ATMA (Agricultural Technology Management Agency) operates at district level.",premium:true},
   ],
-  "Farm Management":[
-    {q:"Which principle states inputs should be applied until marginal return equals marginal cost?",opts:["Law of Diminishing Returns","Principle of Equi-marginal Returns","Principle of Opportunity Cost","Law of Substitution"],ans:0,exp:"Law of Diminishing Returns — stop where MC = MR.",premium:false},
-    {q:"Farm budget that considers only variable costs is called:",opts:["Complete budget","Partial budget","Enterprise budget","Cash flow budget"],ans:1,exp:"A partial budget analyses only the effect of a small change in the farm plan.",premium:false},
-    {q:"Break-even point in farm management is when:",opts:["Profit is maximum","Total revenue equals total cost","Fixed cost equals variable cost","Output is maximum"],ans:1,exp:"At break-even point TR = TC — neither profit nor loss.",premium:true},
-    {q:"Which is NOT a fixed cost in farming?",opts:["Land revenue","Depreciation of machinery","Hired labour wages","Interest on fixed capital"],ans:2,exp:"Hired labour wages vary with the scale of operation and are a variable cost.",premium:true},
-    {q:"Net Present Worth (NPW) method is used for:",opts:["Soil testing","Long-term investment appraisal","Crop insurance","Irrigation scheduling"],ans:1,exp:"NPW discounts future cash flows to evaluate profitability of long-term farm investments.",premium:true},
-  ],
-  "Ecology & Environment":[
-    {q:"The term 'Ecology' was coined by:",opts:["Charles Darwin","Ernst Haeckel","Alexander von Humboldt","Linnaeus"],ans:1,exp:"Ernst Haeckel coined the term 'Ecology' (Ökologie) in 1866.",premium:false},
-    {q:"Which gas is primarily responsible for the greenhouse effect?",opts:["Oxygen","Nitrogen","Carbon dioxide","Argon"],ans:2,exp:"CO₂ is the principal anthropogenic greenhouse gas contributing to global warming.",premium:false},
-    {q:"Biodiversity hotspot means a region:",opts:["With maximum rainfall","Rich in endemic species and facing high habitat loss","With no human activity","With maximum crop variety"],ans:1,exp:"A biodiversity hotspot must have ≥1500 endemic vascular plant species AND ≥70% habitat loss.",premium:true},
-    {q:"BOD in water quality assessment stands for:",opts:["Biological Oxygen Demand","Biochemical Oxygen Deficit","Bacterial Organic Density","Bio-Oxidation Degree"],ans:0,exp:"BOD (Biological Oxygen Demand) measures dissolved oxygen used by microorganisms — key pollution indicator.",premium:true},
-    {q:"The Paris Agreement (2015) aims to limit global temperature rise to:",opts:["1°C above pre-industrial","1.5–2°C above pre-industrial","3°C above pre-industrial","4°C above pre-industrial"],ans:1,exp:"The Paris Agreement targets limiting warming to well below 2°C, preferably 1.5°C.",premium:true},
+  "Dairy Science & Food Tech":[
+    {q:"Which enzyme is responsible for coagulation of milk during cheese making?",opts:["Lipase","Rennet (Rennin)","Amylase","Protease"],ans:1,exp:"Rennet contains chymosin which cleaves κ-casein, causing milk coagulation for cheese making.",premium:false},
+    {q:"Normal pH of fresh cow milk is:",opts:["5.5–6.0","6.5–6.7","7.0–7.2","4.5–5.0"],ans:1,exp:"Fresh cow milk has a pH of 6.5–6.7, slightly acidic due to dissolved CO₂ and casein.",premium:false},
+    {q:"UHT treatment of milk is done at:",opts:["72°C for 15 sec","63°C for 30 min","135–150°C for 2–4 sec","100°C for 10 min"],ans:2,exp:"UHT (Ultra High Temperature) processing at 135–150°C for 2–4 seconds gives shelf-stable milk.",premium:true},
+    {q:"Buffalo milk fat content compared to cow milk is approximately:",opts:["2–3% vs 1%","6–8% vs 3.5%","10% vs 8%","Equal fat content"],ans:1,exp:"Buffalo milk contains 6–8% fat whereas cow milk has 3–4%, making buffalo milk richer.",premium:true},
+    {q:"HTST pasteurisation conditions are:",opts:["100°C for 5 min","72°C for 15 seconds","63°C for 30 minutes","85°C for 1 min"],ans:1,exp:"HTST (High Temperature Short Time) uses 72°C for 15 seconds — standard commercial pasteurisation.",premium:true},
   ],
 };
 // Immutable snapshot of the built-in bank — admin-added (custom/PDF/OCR/bulk) questions are
@@ -1483,7 +1471,7 @@ const expiryDate  = plan => { const d=new Date(); if(plan==="monthly") d.setMont
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
-let notes=[],pending=[],usersDB=[],questions=[],currentUser=null,adminPass=ADMIN_PASS_DEFAULT;
+let notes=[],pending=[],usersDB=[],questions=[],pyqData=[],currentUser=null,adminPass=ADMIN_PASS_DEFAULT;
 let section="home",dark=false,loginTab="login",catFilter="All",resType="All",resSubject="All";
 let uFileData="",uploading=false,folderFiles=[],uploadMode="file";
 let quizSubj="",quizQs=[],quizAns=[],quizIdx=0,quizDone=false;
@@ -1535,11 +1523,11 @@ function subCount(name){ return getApproved().filter(n=>n.subject===name).length
 // INIT
 // ═══════════════════════════════════════════════════════════════
 window.addEventListener("DOMContentLoaded", async () => {
-  const [n,p,u,sess,saved_ap,theme,q] = await Promise.all([
+  const [n,p,u,sess,saved_ap,theme,q,pyq] = await Promise.all([
     sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),
-    sGet("bhu:session"),sGet("bhu:adminpass"),sGet("bhu:theme"),sGet("bhu:questions"),
+    sGet("bhu:session"),sGet("bhu:adminpass"),sGet("bhu:theme"),sGet("bhu:questions"),sGet("bhu:pyqdata"),
   ]);
-  if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q;
+  if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q; if(pyq) pyqData=pyq;
   if(saved_ap) adminPass=saved_ap;
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
   if(sess){ currentUser=sess; }
@@ -1690,6 +1678,7 @@ function setSection(s){
   if(s==="upload")    renderUpload();
   if(s==="admin")     renderAdmin();
   if(s==="profile")   renderProfile();
+  if(s==="pyq")       renderPYQ();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -2350,8 +2339,8 @@ function clearChat(){
 const _cfg = ["AIzaSyDe_aAvPDNN","mXBtdZXxaldO0JSE","3k-hl7U"].join("");
 const AI_SYS = "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). "+
   "You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, "+
-  "Plant Physiology, Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Meteorology, "+
-  "Agricultural Economics, Extension Education, Farm Management, Ecology & Environment, and Agriculture Engineering. "+
+  "Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Economics & Statistics, "+
+  "Extension Education, Dairy Science & Food Tech, and Agriculture Engineering. "+
   "Answer student questions clearly and concisely. Use simple language with relevant examples from Indian "+
   "agriculture, and keep answers exam-focused. Format answers in plain text without markdown symbols.";
 
@@ -2712,7 +2701,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["pending","rejected","users","subs","quiz","settings"].forEach(k=>{
+  ["pending","rejected","users","subs","quiz","pyq","settings"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -2912,6 +2901,80 @@ async function renderAdmin(){
         <div id="customQListContainer"></div>
       </div>`:''}`;
     renderCustomQList();
+  } else if(adminTab==="pyq"){
+    const total=pyqData.length;
+    el.innerHTML=`
+      <div class="card" style="padding:20px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">📋 PYQ Bank — ${total} question${total===1?"":"s"}</div>
+        <div style="font-size:12px;color:#777;">Add previous year questions visible to all students in the PYQ section.</div>
+      </div>
+
+      <!-- Add / Edit PYQ Form -->
+      <div class="card" style="padding:22px;margin-bottom:16px;" id="pyqAdminForm">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;" id="pyqFormTitle">➕ Add PYQ Question</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <div><label class="lbl">Exam *</label>
+              <select id="pyqExam" class="inp">
+                <option value="ICAR JRF">ICAR JRF</option>
+                <option value="IBPS AFO">IBPS AFO</option>
+                <option value="NABARD">NABARD</option>
+                <option value="BHU Entrance">BHU Entrance</option>
+                <option value="IARI">IARI</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div><label class="lbl">Year *</label>
+              <select id="pyqYear" class="inp">
+                ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
+              </select>
+            </div>
+            <div><label class="lbl">Subject *</label>
+              <select id="pyqSubjAdmin" class="inp">
+                ${SUBJECTS.map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          <div><label class="lbl">Question *</label>
+            <textarea id="pyqQ" class="inp" rows="3" placeholder="Enter the previous year question…" style="resize:vertical;"></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><label class="lbl">Option A *</label><input id="pyqOptA" class="inp" placeholder="Option A"></div>
+            <div><label class="lbl">Option B *</label><input id="pyqOptB" class="inp" placeholder="Option B"></div>
+            <div><label class="lbl">Option C</label><input id="pyqOptC" class="inp" placeholder="Option C (optional)"></div>
+            <div><label class="lbl">Option D</label><input id="pyqOptD" class="inp" placeholder="Option D (optional)"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div><label class="lbl">Correct Answer *</label>
+              <select id="pyqAns" class="inp">
+                <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
+              </select>
+            </div>
+            <div><label class="lbl">Difficulty</label>
+              <select id="pyqDiff" class="inp">
+                <option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+          <div><label class="lbl">Explanation / Answer Key</label>
+            <textarea id="pyqExp" class="inp" rows="2" placeholder="Explain the correct answer (shown after reveal)…" style="resize:vertical;"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" id="pyqSubmitBtn" onclick="savePYQQuestion()">➕ Add to PYQ Bank</button>
+            <button class="btn btn-light" id="pyqCancelBtn" style="display:none;" onclick="cancelPYQEdit()">✕ Cancel Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PYQ List -->
+      <div class="card" style="padding:20px;" id="pyqAdminList">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+          <div style="font-weight:700;font-size:15px;flex:1;">Uploaded PYQs (${total})</div>
+          <input id="pyqAdminSearch" class="inp" placeholder="🔍 Search…" style="width:auto;flex:1;max-width:220px;font-size:12px;padding:7px 12px;" oninput="renderAdminPYQList()">
+        </div>
+        <div id="pyqAdminListItems"></div>
+      </div>`;
+    renderAdminPYQList();
   } else if(adminTab==="settings"){
     el.innerHTML=`
       <div class="card" style="padding:22px;margin-bottom:14px;max-width:460px;">
@@ -2999,14 +3062,195 @@ async function changeAdminPass(){
 }
 async function clearAllData(){
   if(!window.confirm("⚠️ CLEAR ALL DATA? This cannot be undone.")) return;
-  notes=[]; pending=[]; usersDB=[]; questions=[];
-  await Promise.all([sSet("bhu:notes",[]),sSet("bhu:pending",[]),sSet("bhu:users",[]),sSet("bhu:questions",[])]);
+  notes=[]; pending=[]; usersDB=[]; questions=[]; pyqData=[];
+  await Promise.all([sSet("bhu:notes",[]),sSet("bhu:pending",[]),sSet("bhu:users",[]),sSet("bhu:questions",[]),sSet("bhu:pyqdata",[])]);
   toast("All data cleared.","e"); renderAll(); renderAdmin();
 }
 
 // ═══════════════════════════════════════════════════════════════
-// QUIZ BANK ADMIN — DOCUMENT INTELLIGENCE (PDF/IMAGE + OCR) + MANUAL ADD
+// PYQ ADMIN — Add / Edit / Delete PYQ questions
 // ═══════════════════════════════════════════════════════════════
+let _editingPYQId = null;
+
+async function savePYQQuestion(){
+  const exam  = document.getElementById("pyqExam").value;
+  const year  = document.getElementById("pyqYear").value;
+  const subj  = document.getElementById("pyqSubjAdmin").value;
+  const qText = document.getElementById("pyqQ").value.trim();
+  const a     = document.getElementById("pyqOptA").value.trim();
+  const b     = document.getElementById("pyqOptB").value.trim();
+  const c     = document.getElementById("pyqOptC").value.trim();
+  const d     = document.getElementById("pyqOptD").value.trim();
+  const ans   = parseInt(document.getElementById("pyqAns").value);
+  const diff  = document.getElementById("pyqDiff").value;
+  const exp   = document.getElementById("pyqExp").value.trim();
+
+  if(!qText||!a||!b){ toast("Question, Option A and B are required.","e"); return; }
+  const opts = [a,b]; if(c) opts.push(c); if(d) opts.push(d);
+
+  if(_editingPYQId){
+    pyqData = pyqData.map(q => q.id===_editingPYQId
+      ? {...q, exam, year, subject:subj, q:qText, opts, ans, exp, diff}
+      : q);
+    toast("✅ PYQ updated!");
+    cancelPYQEdit();
+  } else {
+    const entry = {id:Date.now()+"", exam, year, subject:subj, q:qText, opts, ans, exp, diff,
+      addedBy:currentUser?.name||"Admin", addedAt:new Date().toISOString()};
+    pyqData = [entry, ...pyqData];
+    toast("✅ PYQ added to bank!");
+    ["pyqQ","pyqOptA","pyqOptB","pyqOptC","pyqOptD","pyqExp"].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value="";
+    });
+  }
+  await sSet("bhu:pyqdata", pyqData);
+  renderAdmin();
+}
+
+function editPYQQuestion(id){
+  const q = pyqData.find(x=>x.id===id); if(!q) return;
+  _editingPYQId = id;
+  document.getElementById("pyqExam").value = q.exam||"ICAR JRF";
+  document.getElementById("pyqYear").value = q.year||"2024";
+  document.getElementById("pyqSubjAdmin").value = q.subject||SUBJECTS[0].name;
+  document.getElementById("pyqQ").value = q.q||"";
+  document.getElementById("pyqOptA").value = q.opts[0]||"";
+  document.getElementById("pyqOptB").value = q.opts[1]||"";
+  document.getElementById("pyqOptC").value = q.opts[2]||"";
+  document.getElementById("pyqOptD").value = q.opts[3]||"";
+  document.getElementById("pyqAns").value = q.ans;
+  document.getElementById("pyqDiff").value = q.diff||"medium";
+  document.getElementById("pyqExp").value = q.exp||"";
+  document.getElementById("pyqFormTitle").textContent = "✏️ Edit PYQ Question";
+  document.getElementById("pyqSubmitBtn").textContent = "💾 Update Question";
+  document.getElementById("pyqCancelBtn").style.display = "inline-block";
+  document.getElementById("pyqQ").scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function cancelPYQEdit(){
+  _editingPYQId = null;
+  ["pyqQ","pyqOptA","pyqOptB","pyqOptC","pyqOptD","pyqExp"].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value="";
+  });
+  const ft=document.getElementById("pyqFormTitle"); if(ft) ft.textContent="➕ Add PYQ Question";
+  const sb=document.getElementById("pyqSubmitBtn"); if(sb) sb.textContent="➕ Add to PYQ Bank";
+  const cb=document.getElementById("pyqCancelBtn"); if(cb) cb.style.display="none";
+}
+
+async function deletePYQQuestion(id){
+  if(!window.confirm("Delete this PYQ question?")) return;
+  pyqData = pyqData.filter(q=>q.id!==id);
+  await sSet("bhu:pyqdata", pyqData);
+  toast("Deleted."); renderAdmin();
+}
+
+function renderAdminPYQList(){
+  const container = document.getElementById("pyqAdminListItems"); if(!container) return;
+  const search = (document.getElementById("pyqAdminSearch")?.value||"").toLowerCase();
+  const filtered = pyqData.filter(q=>
+    !search || q.q.toLowerCase().includes(search) ||
+    (q.exam||"").toLowerCase().includes(search) ||
+    (q.subject||"").toLowerCase().includes(search)
+  );
+  if(!filtered.length){
+    container.innerHTML=`<div style="text-align:center;color:#777;font-size:13px;padding:24px;">
+      ${pyqData.length===0?"No PYQs added yet. Use the form above to add your first question.":"No results found."}
+    </div>`; return;
+  }
+  const letters=["A","B","C","D"];
+  container.innerHTML = filtered.map((q,i)=>`
+    <div style="background:#F8FBF8;border-radius:12px;padding:13px 15px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;">
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;">
+          <span style="background:#F3E5F5;color:#7B1FA2;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:700;">${escapeHTML(q.exam||"")} ${escapeHTML(q.year||"")}</span>
+          <span style="background:#E8F5E9;color:#0F3D23;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:700;">${escapeHTML(q.subject||"")}</span>
+          <span style="background:#FFF3E0;color:#E65100;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:600;text-transform:capitalize;">${escapeHTML(q.diff||"medium")}</span>
+        </div>
+        <div style="font-weight:600;font-size:13px;margin-bottom:5px;line-height:1.5;">${escapeHTML(q.q)}</div>
+        <div style="font-size:11px;color:#555;display:flex;flex-wrap:wrap;gap:6px;">
+          ${q.opts.map((o,oi)=>`<span style="background:${oi===q.ans?"#E8F5E9":"#F2F5F2"};color:${oi===q.ans?"#00B050":"#555"};padding:2px 8px;border-radius:6px;font-weight:${oi===q.ans?"700":"400"};">${letters[oi]}. ${escapeHTML(o)}</span>`).join("")}
+        </div>
+        ${q.exp?`<div style="font-size:11px;color:#777;margin-top:5px;">💡 ${escapeHTML(q.exp)}</div>`:""}
+      </div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button onclick="editPYQQuestion('${q.id}')" style="background:#E3F2FD;color:#1565C0;border:none;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;">✏️</button>
+        <button onclick="deletePYQQuestion('${q.id}')" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;">🗑</button>
+      </div>
+    </div>`).join("");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER PYQ SECTION (student-facing)
+// ═══════════════════════════════════════════════════════════════
+let pyqRevealedIds = {};
+
+function renderPYQ(){
+  const examF   = (document.getElementById("pyqExamFilter")?.value||"All");
+  const yearF   = (document.getElementById("pyqYearFilter")?.value||"All");
+  const subjF   = (document.getElementById("pyqSubjectFilter")?.value||"All");
+  const listEl  = document.getElementById("pyqList");
+  const countEl = document.getElementById("pyqCount");
+  if(!listEl) return;
+
+  const filtered = pyqData.filter(q=>{
+    if(examF!=="All" && q.exam!==examF) return false;
+    if(yearF!=="All" && String(q.year)!==yearF) return false;
+    if(subjF!=="All" && q.subject!==subjF) return false;
+    return true;
+  });
+
+  if(countEl) countEl.textContent = `Showing ${filtered.length} of ${pyqData.length} questions`;
+
+  if(!filtered.length){
+    listEl.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:10px;">📋</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px;">
+        ${pyqData.length===0?"No PYQs uploaded yet":"No questions match your filters"}
+      </div>
+      <div style="color:#777;font-size:13px;">
+        ${pyqData.length===0?"Admin is adding questions — check back soon!":"Try selecting different exam, year or subject filters."}
+      </div>
+      ${currentUser?.isAdmin?`<button class="btn btn-primary" style="margin-top:16px;" onclick="setSection('admin');setTimeout(()=>setAdminTab('pyq'),80);">+ Add PYQ Questions →</button>`:""}
+    </div>`; return;
+  }
+
+  const letters = ["A","B","C","D"];
+  const diffColor = {easy:"#E8F5E9",medium:"#FFF3E0",hard:"#FFEBEE"};
+  const diffText  = {easy:"#388E3C",medium:"#E65100",hard:"#C62828"};
+
+  listEl.innerHTML = filtered.map(q=>{
+    const revealed = pyqRevealedIds[q.id];
+    return `<div class="pyq-card">
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+        <span style="background:#F3E5F5;color:#7B1FA2;font-size:10px;padding:3px 10px;border-radius:50px;font-weight:700;">${escapeHTML(q.exam||"")} ${escapeHTML(q.year||"")}</span>
+        <span style="background:#E8F5E9;color:#0F3D23;font-size:10px;padding:3px 10px;border-radius:50px;font-weight:700;">${escapeHTML(q.subject||"")}</span>
+        ${q.diff?`<span style="background:${diffColor[q.diff]||"#F2F5F2"};color:${diffText[q.diff]||"#555"};font-size:10px;padding:3px 10px;border-radius:50px;font-weight:600;text-transform:capitalize;">${escapeHTML(q.diff)}</span>`:""}
+      </div>
+      <div style="font-weight:700;font-size:14px;line-height:1.6;margin-bottom:12px;">${escapeHTML(q.q)}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+        ${q.opts.map((o,oi)=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid ${revealed&&oi===q.ans?"#00B050":"#E0EAE0"};border-radius:10px;background:${revealed&&oi===q.ans?"#E8F5E9":"#FAFAFA"};">
+            <span style="font-weight:700;font-size:12px;color:${revealed&&oi===q.ans?"#00B050":"#999"};min-width:18px;">${letters[oi]}.</span>
+            <span style="font-size:13px;font-weight:${revealed&&oi===q.ans?"700":"400"};color:${revealed&&oi===q.ans?"#0F3D23":"#333"};">${escapeHTML(o)}</span>
+            ${revealed&&oi===q.ans?'<span style="margin-left:auto;font-size:14px;">✅</span>':""}
+          </div>`).join("")}
+      </div>
+      ${revealed&&q.exp?`<div style="background:#E8F5E9;border-radius:10px;padding:12px 14px;font-size:13px;color:#0F3D23;line-height:1.65;">💡 <strong>Explanation:</strong> ${escapeHTML(q.exp)}</div>`:""}
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn ${revealed?"btn-light":"btn-primary"}" style="font-size:12px;padding:6px 14px;" onclick="togglePYQReveal('${q.id}')">
+          ${revealed?"🙈 Hide Answer":"👁 Show Answer"}
+        </button>
+        ${currentUser?.isAdmin?`<button class="btn" style="background:#E3F2FD;color:#1565C0;font-size:11px;padding:5px 10px;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('pyq');setTimeout(()=>editPYQQuestion('${q.id}'),100);},80);">✏️ Edit</button>`:""}
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function togglePYQReveal(id){
+  pyqRevealedIds[id] = !pyqRevealedIds[id];
+  renderPYQ();
+}
+
 
 // ── OCR engine loader (Tesseract.js, loaded on-demand) ──────────
 async function loadTesseract(){
@@ -3895,8 +4139,8 @@ function generatePlan2(){
     "Genetics & Plant Breeding — Hybridization","Plant Pathology — Disease Management",
     "Entomology — IPM & Pest Control","Horticulture — Fruit & Vegetable Science",
     "Agricultural Economics — Farm Finance","Extension Education — T&V Systems",
-    "Ecology & Environment — Biodiversity","Agricultural Meteorology — Climate & Crops",
-    "Farm Management — Budget & Planning","Agronomy — Weed & Irrigation",
+    "Dairy Science — Milk Processing & Quality","Agricultural Economics & Statistics",
+    "Agronomy — Weed & Irrigation Management","Plant Pathology — Disease Control",
     "Soil Science — Microbiology & pH","PYQ Revision — ICAR JRF 2024",
     "Full Mock Test — All Subjects"
   ];
