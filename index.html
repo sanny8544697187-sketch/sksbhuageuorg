@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
-  ║          BHU AGRICULTURE e-LEARNING PORTAL  v4.0                ║
-  ║          Zepto UI Design  ×  Firebase Multi-Device Sync         ║
+  ║           AGRI EDU RISE — e-Learning Portal  v10.0              ║
+  ║   Firebase Sync × PWA × AI Chat × Premium Gates × PYQ Upload   ║
   ╠══════════════════════════════════════════════════════════════════╣
   ║  QUICK SETUP (5 minutes):                                        ║
   ║  1. console.firebase.google.com → New Project                   ║
@@ -18,9 +18,14 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="BHU Agriculture e-Learning Portal — Notes, Videos, Quizzes, AI Professor"/>
+  <meta name="description" content="Agri Edu Rise — Agriculture e-Learning Portal — Notes, Videos, Quizzes, AI Professor"/>
   <meta name="theme-color" content="#0F3D23"/>
-  <title>BHU Agriculture e-Learning Portal v5</title>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="Agri Edu Rise"/>
+  <link rel="manifest" href="#" id="pwaManifestLink"/>
+  <title>Agri Edu Rise — Agriculture e-Learning v10</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
@@ -202,6 +207,18 @@
     /* ── PREMIUM BANNER ── */
     .prem-banner{background:linear-gradient(135deg,#1a0a00,#3d1f00);border:1px solid #f59e0b;border-radius:16px;padding:22px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
 
+    /* ── PREMIUM LOCK OVERLAY ── */
+    .prem-lock{background:linear-gradient(135deg,#fffbe6,#fff8e1);border:2px solid #f59e0b;border-radius:16px;padding:32px 24px;text-align:center;}
+    .prem-badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;padding:4px 14px;border-radius:50px;font-size:11px;font-weight:800;letter-spacing:.3px;}
+    .free-limit{background:#FFF8E1;border:1px solid #f59e0b;border-radius:10px;padding:10px 14px;font-size:12px;color:#c9690a;font-weight:600;display:flex;align-items:center;gap:8px;}
+
+    /* ── PWA INSTALL ── */
+    #pwaInstallBanner{animation:fadeUp .4s ease both;}
+
+    /* ── UPLOAD IMPROVED ── */
+    .upload-progress{height:6px;background:#E8F5E9;border-radius:50px;overflow:hidden;margin-top:8px;}
+    .upload-progress-fill{height:100%;background:linear-gradient(90deg,#00B050,#1B6B3A);border-radius:50px;transition:width .3s;}
+
     /* ── SECTION SHOW/HIDE ── */
     .section{display:none;}
     .section.active{display:block;}
@@ -323,7 +340,7 @@
 <!-- SPLASH -->
 <div id="splash">
   <div style="font-size:52px">🌾</div>
-  <div style="font-size:18px;font-weight:800;color:#0F3D23">BHU Agriculture Portal</div>
+  <div style="font-size:18px;font-weight:800;color:#0F3D23">Agri Edu Rise</div>
   <p style="font-size:13px;color:#777">Loading resources…</p>
   <div class="splash-bar"><div></div></div>
 </div>
@@ -457,7 +474,7 @@ try {
   <div class="header-inner">
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;" onclick="setSection('home')">
       <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;">🌾</div>
-      <div><div style="font-weight:800;font-size:14px;line-height:1.1;">BHU Ag Portal</div><div style="font-size:9px;opacity:.6;font-weight:500;">e-Learning Hub</div></div>
+      <div><div style="font-weight:800;font-size:14px;line-height:1.1;">Agri Edu Rise</div><div style="font-size:9px;opacity:.6;font-weight:500;">e-Learning Hub</div></div>
     </div>
     <div class="header-search" style="flex:1;">
       <span style="font-size:13px;opacity:.6;">🔍</span>
@@ -484,7 +501,7 @@ try {
   <section id="home" class="section active fu">
     <div class="hero">
       <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;margin-bottom:14px;letter-spacing:.3px;">
-        🎓 BANARAS HINDU UNIVERSITY
+        🌾 AGRI EDU RISE — e-LEARNING PORTAL
       </div>
       <h1>Your Complete<br>Agriculture Learning Hub</h1>
       <p>Study notes, PDFs, video lectures & AI-powered doubt solving — synced live across every device.</p>
@@ -697,7 +714,13 @@ try {
           <div id="premCheckWrap" style="display:none;align-items:center;gap:8px;padding:10px 14px;background:#FFF8E1;border-radius:10px;border:1px solid #f59e0b;">
             <input type="checkbox" id="uPrem"><label for="uPrem" style="font-size:13px;color:#c9690a;font-weight:600;cursor:pointer;">⭐ Mark as Premium (subscribers only)</label>
           </div>
-          <button id="uploadBtn" class="btn btn-primary" style="padding:12px 24px;font-size:14px;display:flex;align-items:center;gap:8px;justify-content:center;" onclick="doUpload()">📨 Submit for Review</button>
+          <button id="uploadBtn" class="btn btn-primary" style="padding:12px 24px;font-size:14px;display:flex;align-items:center;gap:8px;justify-content:center;" onclick="doUpload()">
+            📨 Submit for Review
+          </button>
+          <div id="uploadProgressWrap" style="display:none;">
+            <div class="upload-progress"><div class="upload-progress-fill" id="uploadProgressFill" style="width:0%"></div></div>
+            <div id="uploadProgressLabel" style="font-size:11px;color:#00B050;margin-top:4px;text-align:center;"></div>
+          </div>
           <div style="font-size:12px;color:#777;text-align:center;">Submitted resources appear after admin approval.</div>
         </div>
       </div>
@@ -715,6 +738,8 @@ try {
       <button class="sub-tab-btn" id="qtab_daily" onclick="setQuizTab('daily')">🔥 Daily</button>
       <button class="sub-tab-btn" id="qtab_leaderboard" onclick="setQuizTab('leaderboard')">🏆 Rank</button>
       <button class="sub-tab-btn" id="qtab_analytics" onclick="setQuizTab('analytics')">📊 Analytics</button>
+      <button class="sub-tab-btn" id="qtab_saved" onclick="setQuizTab('saved')">📌 Saved</button>
+      <button class="sub-tab-btn" id="qtab_wrong" onclick="setQuizTab('wrong')">❌ Wrong</button>
     </div>
 
     <!-- ── PRACTICE QUIZ TAB ── -->
@@ -817,6 +842,16 @@ try {
         </div>
       </div>
     </div><!-- end qtab_analytics_content -->
+
+    <!-- ── SAVED QUESTIONS TAB ── -->
+    <div id="qtab_saved_content" style="display:none;">
+      <div id="savedQuizContent"></div>
+    </div><!-- end qtab_saved_content -->
+
+    <!-- ── WRONG QUESTIONS TAB ── -->
+    <div id="qtab_wrong_content" style="display:none;">
+      <div id="wrongQuizContent"></div>
+    </div><!-- end qtab_wrong_content -->
 
   </section>
 
@@ -1015,7 +1050,6 @@ try {
       <button id="atRejected" class="btn btn-light"   onclick="setAdminTab('rejected')">❌ Rejected</button>
       <button id="atUsers"    class="btn btn-light"   onclick="setAdminTab('users')">👥 Students</button>
       <button id="atSubs"     class="btn btn-light"   onclick="setAdminTab('subs')">⭐ Premium</button>
-      <button id="atSubjects" class="btn btn-light"   onclick="setAdminTab('subjects')">📚 Subjects</button>
       <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
       <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
@@ -1197,6 +1231,15 @@ try {
     <div class="section-title">PYQ Bank 📋</div>
     <div class="section-subtitle">Previous Year Questions from ICAR JRF, AFO, NABARD with answers</div>
 
+    <!-- PYQ Sub-tabs -->
+    <div class="sub-tabs">
+      <button class="sub-tab-btn active" id="ptab_mcq" onclick="setPYQTab('mcq')">📋 MCQ Bank</button>
+      <button class="sub-tab-btn" id="ptab_pdf" onclick="setPYQTab('pdf')">📄 PDF Files</button>
+      <button class="sub-tab-btn" id="ptab_saved" onclick="setPYQTab('saved')">📌 Saved</button>
+    </div>
+
+    <!-- ── MCQ TAB ── -->
+    <div id="ptab_mcq_content">
     <!-- Filters -->
     <div class="card" style="padding:14px 16px;margin-bottom:16px;">
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -1235,6 +1278,18 @@ try {
     </div>
     <div style="font-size:13px;color:#777;margin-bottom:12px;" id="pyqCount"></div>
     <div id="pyqList"></div>
+    </div><!-- end ptab_mcq_content -->
+
+    <!-- ── PDF FILES TAB ── -->
+    <div id="ptab_pdf_content" style="display:none;">
+      <div id="pyqPdfList"></div>
+    </div><!-- end ptab_pdf_content -->
+
+    <!-- ── SAVED PYQ TAB ── -->
+    <div id="ptab_saved_content" style="display:none;">
+      <div id="savedPYQContent"></div>
+    </div><!-- end ptab_saved_content -->
+
   </section>
 
 </main>
@@ -1257,6 +1312,11 @@ try {
 const ADMIN_EMAIL        = "admin@bhu.ac.in";
 const ADMIN_PASS_DEFAULT = "admin2025";
 const RAZORPAY_KEY       = "rzp_live_SxOPLwrDUzQWx9";
+
+// Free tier limits
+const FREE_QUIZ_PER_DAY = 10;   // max Qs in practice per day
+const FREE_PYQ_REVEALS  = 3;    // max PYQ answer reveals per day
+const FREE_DOUBTS       = 2;    // max community doubts per account
 
 const PLANS = {
   monthly:{ id:"monthly", label:"Monthly",  price:19,  period:"month" },
@@ -1399,9 +1459,8 @@ const RES_TYPES = ["All","PDF","Video","Link","Notes","PYQ","PPT"];
 // ═══════════════════════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════════════════════
-// AI endpoint — your Netlify function. Leave as-is if deployed on Netlify.
-// Set to "" to skip OpenRouter and use Gemini fallback only.
-const AI_ENDPOINT = "/.netlify/functions/chat";
+// AI endpoint — set to "" to use Gemini directly (recommended for all deployments)
+const AI_ENDPOINT = "";
 
 // ═══════════════════════════════════════════════════════════════
 // INDEXEDDB — large file storage (replaces localStorage for files)
@@ -1568,6 +1627,9 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
   if(sess){ currentUser=sess; }
 
+  // Load PYQ PDFs
+  await loadPYQPdfs();
+
   // Load custom quiz questions added by admin
   const cqb = await sGet("bhu:customquizbank");
   if(cqb){ customQuizBank=cqb; }
@@ -1629,7 +1691,19 @@ window.addEventListener("DOMContentLoaded", async () => {
     syncInterval=setInterval(async()=>{
       const [nn,np,nu,nq]=await Promise.all([sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),sGet("bhu:questions")]);
       if(nn) notes=nn; if(np) pending=np; if(nu) usersDB=nu; if(nq) questions=nq;
-      renderAll();
+      // ⚠️ Do NOT call renderAll() when admin is on quiz/pyq tab — would wipe form inputs
+      renderHeader(); renderHome();
+      if(section==="admin"){
+        // Only update the pending badge count — don't rebuild the whole panel
+        const pb=document.getElementById("pendingBadge");
+        if(pb){ pb.textContent=pending.length; pb.classList.toggle("hidden",pending.length===0); }
+        if(adminTab==="pending"||adminTab==="rejected"||adminTab==="users"||adminTab==="subs"||adminTab==="settings") renderAdmin();
+        // adminTab==="quiz" and adminTab==="pyq" are left alone to preserve form inputs
+      } else {
+        if(section==="subjects"||section==="resources") { renderSubjects(); renderResources(); }
+        if(section==="upload") renderUpload();
+        if(section==="profile") renderProfile();
+      }
     },20000);
   }
 });
@@ -1657,7 +1731,7 @@ function setSubjectsTab(tab){
 
 function setQuizTab(tab){
   activeQuizTab=tab;
-  ["quiz","daily","leaderboard","analytics"].forEach(t=>{
+  ["quiz","daily","leaderboard","analytics","saved","wrong"].forEach(t=>{
     const btn=document.getElementById("qtab_"+t);
     const content=document.getElementById("qtab_"+t+"_content");
     if(btn) btn.classList.toggle("active",t===tab);
@@ -1667,6 +1741,8 @@ function setQuizTab(tab){
   if(tab==="leaderboard") syncLeaderboardToTab();
   if(tab==="analytics") syncAnalyticsToTab();
   if(tab==="quiz") renderQuizStart();
+  if(tab==="saved") renderSavedQuizQs();
+  if(tab==="wrong") renderWrongQuizQs();
 }
 
 function setLbTabQ(t){
@@ -1976,6 +2052,9 @@ function renderUpload(){
   document.getElementById("uploadHint").textContent=u.isAdmin?"Admin uploads are published instantly.":"Your upload goes to admin review first.";
   const pwrap=document.getElementById("premCheckWrap");
   pwrap.style.display=u.isAdmin?"flex":"none";
+  // Set correct button text
+  const ubtn=document.getElementById("uploadBtn");
+  if(ubtn) ubtn.innerHTML=u.isAdmin?"🚀 Publish Now":"📨 Submit for Review";
   // Restore upload mode UI
   const sfz=document.getElementById("singleFileZone"); const fz=document.getElementById("folderZone");
   const mfb=document.getElementById("modeFileBtn"); const mdb=document.getElementById("modeFolderBtn");
@@ -2109,19 +2188,28 @@ async function doUpload(){
   if(!title||!subj){toast("Title & Subject required.","e");return;}
   if(!link&&!uFileData){toast("Provide a link or upload a file.","e");return;}
   if(uploading) return; uploading=true;
-  const btn=document.getElementById("uploadBtn"); btn.disabled=true; btn.textContent="⏳ Uploading…";
+  const btn=document.getElementById("uploadBtn");
+  btn.disabled=true; btn.innerHTML="⏳ Uploading…";
+  const pw=document.getElementById("uploadProgressWrap");
+  const pf=document.getElementById("uploadProgressFill");
+  const pl=document.getElementById("uploadProgressLabel");
+  if(pw) pw.style.display="block";
+  if(pf) pf.style.width="30%";
+  if(pl) pl.textContent="Saving resource…";
   const id=Date.now()+"";
   const note={id,title,subject:subj,type,link,desc,uploader:u.name,uploaderEmail:u.email,
     date:fmtDate(),fileName:uFileData?(document.getElementById("uFile").files[0]?.name||""):"",
     status:u.isAdmin?"approved":"pending",hasFile:!!uFileData,submittedAt:new Date().toISOString(),isPremium:isPrem};
-  if(uFileData) await sSet("bhu:file:"+id,uFileData);
+  if(uFileData){ if(pf) pf.style.width="60%"; if(pl) pl.textContent="Uploading file…"; await sSet("bhu:file:"+id,uFileData); }
+  if(pf) pf.style.width="100%"; if(pl) pl.textContent="Done!";
   if(u.isAdmin){notes=[note,...notes];await sSet("bhu:notes",notes);toast("Published! 📢");}
   else{pending=[note,...pending];await sSet("bhu:pending",pending);toast("Submitted for review! ⏳");}
   document.getElementById("uTitle").value="";document.getElementById("uSubject").value="";
   document.getElementById("uLink").value="";document.getElementById("uDesc").value="";
   document.getElementById("uFile").value="";uFileData="";
   document.getElementById("fileName").textContent="Click to upload (PDF, DOC, PPT, image…)";
-  btn.disabled=false; btn.textContent=u.isAdmin?"🚀 Publish Now":"📨 Submit for Review";
+  setTimeout(()=>{ if(pw) pw.style.display="none"; if(pf) pf.style.width="0%"; },1200);
+  btn.disabled=false; btn.innerHTML=u.isAdmin?"🚀 Publish Now":"📨 Submit for Review";
   uploading=false; renderUpload(); renderAll();
 }
 
@@ -2132,14 +2220,48 @@ function setQuizMode(m){ quizMode=m; renderQuizStart(); }
 
 function renderQuizStart(){
   const isPrem=isSubActive(currentUser);
-  const subEl=document.getElementById("quizSubtitle");
-  if(subEl) subEl.textContent=isPrem?"Full quiz bank unlocked! ⭐":"2 free Qs per subject · Premium for all 5";
-
+  const isLoggedIn=!!currentUser;
+  const freeUsed=getFreeQuizUsedToday();
+  const freeLeft=Math.max(0,FREE_QUIZ_PER_DAY-freeUsed);
   const totalAvail=Object.values(QUIZ_BANK).reduce((s,qs)=>s+qs.filter(q=>!q.premium||isPrem).length,0);
   const mixedCount=Math.min(20,totalAvail);
 
   const startEl=document.getElementById("quizStart");
+
+  // ── Premium banner for free/guest users ──
+  let premBanner='';
+  if(!isPrem){
+    if(!isLoggedIn){
+      premBanner=`<div style="background:linear-gradient(135deg,#1a0a00,#3d1f00);border:1px solid #f59e0b;border-radius:14px;padding:16px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="color:#f59e0b;font-weight:800;font-size:14px;margin-bottom:3px;">⭐ Login for Free Daily Quizzes</div>
+          <div style="color:rgba(255,200,100,.75);font-size:12px;">Login to track progress · Premium unlocks all questions & subjects</div>
+        </div>
+        <button class="btn btn-gold" style="padding:8px 18px;font-size:12px;" onclick="openLogin()">Login / Register</button>
+      </div>`;
+    } else {
+      premBanner=`<div style="background:linear-gradient(135deg,#1a0a00,#3d1f00);border:1px solid #f59e0b;border-radius:14px;padding:16px 18px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="color:#f59e0b;font-weight:800;font-size:14px;margin-bottom:3px;">⭐ Free Plan — ${freeLeft}/${FREE_QUIZ_PER_DAY} Qs left today</div>
+            <div style="color:rgba(255,200,100,.75);font-size:12px;">Upgrade for unlimited practice, all premium questions & detailed analytics</div>
+          </div>
+          <button class="btn btn-gold" style="padding:8px 18px;font-size:12px;" onclick="openPay()">Upgrade ₹19/month →</button>
+        </div>
+        <div style="background:rgba(255,255,255,.1);border-radius:50px;height:6px;margin-top:12px;overflow:hidden;">
+          <div style="height:100%;border-radius:50px;background:linear-gradient(90deg,#f59e0b,#c9690a);width:${Math.round((freeUsed/FREE_QUIZ_PER_DAY)*100)}%;transition:width .4s;"></div>
+        </div>
+      </div>`;
+    }
+  } else {
+    premBanner=`<div style="background:linear-gradient(90deg,#0a2e14,#0F3D23);border:1px solid #00B050;border-radius:14px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:20px;">⭐</span>
+      <div style="color:#6ee7a0;font-size:13px;font-weight:700;">Premium Active — Unlimited Practice, All Subjects & Questions Unlocked!</div>
+    </div>`;
+  }
+
   startEl.innerHTML=`
+    ${premBanner}
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
       <span style="font-size:11px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.4px;margin-right:2px;">Mode:</span>
       <button class="btn hchip ${quizMode==='test'?'btn-primary':'btn-light'}" style="font-size:12px;padding:7px 14px;" onclick="setQuizMode('test')">📝 Test</button>
@@ -2152,7 +2274,7 @@ function renderQuizStart(){
     </div>
     <div style="font-size:11px;color:#777;margin-bottom:16px;">${quizMode==='practice'?'💡 Practice Mode reveals the correct answer right after each question.':'📝 Test Mode reveals all answers together at the end, with a subject-wise score breakdown.'}</div>
 
-    <button class="btn btn-gold hov-btn" style="width:100%;padding:13px;font-size:14px;margin-bottom:18px;" onclick="startQuiz('__mixed__')" ${mixedCount===0?"disabled":""}>🎲 Mixed Quiz — All Subjects (${mixedCount} random Qs)</button>
+    <button class="btn btn-gold hov-btn" style="width:100%;padding:13px;font-size:14px;margin-bottom:18px;" onclick="startQuiz('__mixed__')" ${mixedCount===0?"disabled":""}>🎲 Mixed Quiz — All Subjects (${isPrem?mixedCount:'up to '+Math.min(FREE_QUIZ_PER_DAY,mixedCount)} Qs)</button>
 
     <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px;">Or Choose a Subject</div>
     <div id="quizSubjects" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
@@ -2160,28 +2282,54 @@ function renderQuizStart(){
 
   const qsEl=document.getElementById("quizSubjects");
   qsEl.innerHTML=Object.entries(QUIZ_BANK).map(([subj,qs])=>{
-    const free=qs.filter(q=>!q.premium).length,total=qs.length;
-    return `<button class="btn btn-light hov-btn" style="border:1.5px solid #E0EAE0;font-size:13px;padding:8px 16px;" onclick="startQuiz('${escapeHTML(subj)}')">${escapeHTML(subj)} <span style="opacity:.65;font-weight:400;">(${isPrem?total:free}/${total})</span></button>`;
+    const freeQs=qs.filter(q=>!q.premium).length;
+    const totalQs=qs.length;
+    const premQs=totalQs-freeQs;
+    const showCount=isPrem?totalQs:freeQs;
+    return `<div style="position:relative;display:inline-block;">
+      <button class="btn btn-light hov-btn" style="border:1.5px solid #E0EAE0;font-size:13px;padding:8px 16px;" onclick="startQuiz('${escapeHTML(subj)}')">
+        ${escapeHTML(subj)} <span style="opacity:.65;font-weight:400;">(${showCount}/${totalQs})</span>
+        ${premQs>0&&!isPrem?`<span style="background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:9px;padding:1px 6px;border-radius:50px;font-weight:700;margin-left:4px;">+${premQs}⭐</span>`:''}
+      </button>
+    </div>`;
   }).join("");
-  const hintEl=document.getElementById("quizPremHint");
-  if(!isPrem&&hintEl){
-    hintEl.innerHTML=`<div style="margin-top:16px;background:#FFF8E1;border:1px solid #f59e0b;border-radius:10px;padding:13px 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;"><span style="font-size:13px;color:#c9690a;font-weight:600;">⭐ Premium unlocks all 5 Qs per subject</span><button class="btn btn-gold" style="padding:6px 14px;font-size:12px;" onclick="openPay()">Upgrade</button></div>`;
-  } else if(hintEl) hintEl.innerHTML="";
 }
 
 function startQuiz(subj){
   const isPrem=isSubActive(currentUser);
+
+  // ── Free user daily limit gate ──
+  if(!isPrem){
+    const freeUsed=getFreeQuizUsedToday();
+    if(freeUsed>=FREE_QUIZ_PER_DAY){
+      toast(`⭐ Daily free limit of ${FREE_QUIZ_PER_DAY} questions reached. Upgrade for unlimited practice!`,"e");
+      setTimeout(()=>openPay(),900);
+      return;
+    }
+  }
+
   let qs;
   if(subj==="__mixed__"){
     let all=[];
     Object.entries(QUIZ_BANK).forEach(([s,arr])=>{ arr.filter(q=>!q.premium||isPrem).forEach(q=>all.push({...q,subj:s})); });
-    qs=all.sort(()=>Math.random()-.5).slice(0,20);
+    let maxQs=20;
+    if(!isPrem){ maxQs=Math.min(20,Math.max(0,FREE_QUIZ_PER_DAY-getFreeQuizUsedToday())); }
+    qs=all.sort(()=>Math.random()-.5).slice(0,maxQs);
     quizSubj="Mixed — All Subjects";
   } else {
     qs=[...(QUIZ_BANK[subj]||[])].filter(q=>!q.premium||isPrem).map(q=>({...q,subj})).sort(()=>Math.random()-.5);
+    if(!isPrem){ const left=Math.max(0,FREE_QUIZ_PER_DAY-getFreeQuizUsedToday()); qs=qs.slice(0,left); }
     quizSubj=subj;
   }
-  if(!qs.length){openPay();return;}
+  if(!qs.length){
+    if(!isPrem&&getFreeQuizUsedToday()>=FREE_QUIZ_PER_DAY){
+      toast(`⭐ Daily free limit of ${FREE_QUIZ_PER_DAY} Qs reached — upgrade for unlimited!`,"e");
+      setTimeout(()=>openPay(),900);
+    } else { openPay(); }
+    return;
+  }
+  // Track free usage
+  if(!isPrem) addFreeQuizUsed(qs.length);
   quizQs=qs; quizAns=new Array(qs.length).fill(-1); quizIdx=0; quizDone=false;
   quizFlagged={}; quizStartTime=Date.now();
   document.getElementById("quizStart").style.display="none";
@@ -2220,7 +2368,10 @@ function renderQuizQuestion(){
     <div id="quizNav" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;"></div>
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:20px;">
       <div style="font-weight:700;font-size:16px;line-height:1.55;">${escapeHTML(q.q)}</div>
-      <button onclick="toggleFlag()" title="Flag for review" style="background:none;border:none;cursor:pointer;font-size:20px;flex-shrink:0;opacity:${quizFlagged[quizIdx]?"1":".3"};">🚩</button>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button onclick="toggleSaveQuizQ('${escapeHTML(q.subj||quizSubj)}',quizQs[${quizIdx}])" title="Save question" style="background:${isQuizQSaved(q.subj||quizSubj,q)?"#00B050":"#F2F5F2"};color:${isQuizQSaved(q.subj||quizSubj,q)?"white":"#777"};border:none;cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📌</button>
+        <button onclick="toggleFlag()" title="Flag for review" style="background:${quizFlagged[quizIdx]?"#FFF3E0":"#F2F5F2"};color:${quizFlagged[quizIdx]?"#f59e0b":"#777"};border:none;cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🚩</button>
+      </div>
     </div>
     <div class="quiz-options">
       ${q.opts.map((o,i)=>{
@@ -2276,6 +2427,9 @@ function finishQuiz(){
   const score=quizQs.filter((q,i)=>quizAns[i]===q.ans).length;
   const pct=Math.round(score/quizQs.length*100);
   saveQuizResult(quizSubj,score,quizQs.length);
+  // ✅ Track wrong answers for the Wrong tab
+  saveWrongQuestions(quizQs,quizAns,quizSubj);
+  updateWrongTabCount(); updateSavedTabCount();
   const msg=pct>=80?"🎉 Excellent! Outstanding performance!":pct>=60?"👍 Good Work! Keep revising!":"📖 Keep Studying! You'll ace it!";
   const timeTakenSec=quizStartTime?Math.round((Date.now()-quizStartTime)/1000):0;
   const timeStr=`${Math.floor(timeTakenSec/60)}m ${timeTakenSec%60}s`;
@@ -2728,7 +2882,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["pending","rejected","users","subs","subjects","quiz","pyq","settings"].forEach(k=>{
+  ["pending","rejected","users","subs","quiz","pyq","settings"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -2818,8 +2972,8 @@ async function renderAdmin(){
     el.innerHTML=`
       <div class="card" style="padding:20px;margin-bottom:16px;">
         <div style="font-weight:700;font-size:15px;margin-bottom:4px;">📊 Quiz Bank Summary</div>
-        <div style="font-size:13px;color:#777;margin-bottom:12px;">Built-in questions: <strong style="color:#0F3D23;">${totalQ-customQ}</strong> &nbsp;·&nbsp; Admin-added: <strong style="color:#00B050;">${customQ}</strong> &nbsp;·&nbsp; Total: <strong style="color:#1565C0;">${totalQ}</strong></div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <div id="adminQuizBankSummaryCount" style="font-size:13px;color:#777;margin-bottom:12px;">Built-in questions: <strong style="color:#0F3D23;">${totalQ-customQ}</strong> &nbsp;·&nbsp; Admin-added: <strong style="color:#00B050;">${customQ}</strong> &nbsp;·&nbsp; Total: <strong style="color:#1565C0;">${totalQ}</strong></div>
+        <div id="adminQuizBankSubjectCounts" style="display:flex;flex-wrap:wrap;gap:8px;">
           ${Object.entries(QUIZ_BANK).map(([s,q])=>`<span style="background:#E8F5E9;color:#0F3D23;font-size:11px;padding:4px 10px;border-radius:50px;font-weight:600;">${escapeHTML(s)}: ${q.length}Q</span>`).join("")}
         </div>
       </div>
@@ -2928,84 +3082,78 @@ async function renderAdmin(){
         <div id="customQListContainer"></div>
       </div>`:''}`;
     renderCustomQList();
-  } else if(adminTab==="subjects"){
-    const subs=getSubjects();
-    el.innerHTML=`
-      <div class="card" style="padding:20px;margin-bottom:16px;">
-        <div style="font-weight:700;font-size:15px;margin-bottom:4px;">📚 Subject Manager — ${subs.length} subjects</div>
-        <div style="font-size:12px;color:#777;margin-bottom:12px;">Add, edit, rename or hide subjects shown to all students. Changes sync across devices.</div>
-        ${activeSubjects.length?`<button class="btn btn-light" style="font-size:12px;border:1.5px solid #E53935;color:#E53935;" onclick="resetSubjectsToDefault()">↩ Reset to Default List</button>`:''}
-      </div>
-
-      <!-- Add / Edit Subject Form -->
-      <div class="card" style="padding:22px;margin-bottom:16px;">
-        <div style="font-weight:700;font-size:15px;margin-bottom:14px;" id="subjFormTitle">➕ Add New Subject</div>
-        <div style="display:flex;flex-direction:column;gap:12px;max-width:560px;">
-          <div style="display:grid;grid-template-columns:60px 1fr;gap:10px;">
-            <div><label class="lbl">Icon</label><input id="sIcon" class="inp" placeholder="🌾" style="text-align:center;font-size:18px;padding:8px;"></div>
-            <div><label class="lbl">Subject Name *</label><input id="sName" class="inp" placeholder="e.g. Plant Biochemistry"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div><label class="lbl">Category</label>
-              <select id="sCat" class="inp">
-                <option value="core">Core</option>
-                <option value="science">Science</option>
-                <option value="applied">Applied</option>
-              </select>
-            </div>
-            <div><label class="lbl">Badge</label>
-              <select id="sBadge" class="inp">
-                <option value="">None</option>
-                <option value="Popular">Popular</option>
-                <option value="New">New</option>
-                <option value="Hot">Hot</option>
-              </select>
-            </div>
-          </div>
-          <div><label class="lbl">Description *</label>
-            <textarea id="sDesc" class="inp" rows="2" placeholder="Brief description of this subject…" style="resize:vertical;"></textarea>
-          </div>
-          <div><label class="lbl">Topics (comma-separated)</label>
-            <input id="sTopics" class="inp" placeholder="e.g. Crop Production, Weed Management, Irrigation, Soil Health">
-          </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" id="subjSaveBtn" onclick="saveSubject()">➕ Add Subject</button>
-            <button class="btn btn-light" id="subjCancelBtn" style="display:none;" onclick="cancelSubjectEdit()">✕ Cancel</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Subject List -->
-      <div class="card" style="padding:20px;">
-        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">Current Subjects</div>
-        <div id="adminSubjectList">
-          ${subs.map((s,i)=>`
-            <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#F8FBF8;border-radius:12px;margin-bottom:8px;">
-              <div style="font-size:22px;flex-shrink:0;">${s.icon||"📚"}</div>
-              <div style="flex:1;min-width:0;">
-                <div style="font-weight:700;font-size:13px;">${escapeHTML(s.name)}</div>
-                <div style="font-size:11px;color:#777;text-transform:capitalize;">${s.cat||"core"}${s.badge?` · <span style="background:#E8F5E9;color:#0F3D23;padding:1px 6px;border-radius:10px;font-weight:700;">${s.badge}</span>`:""}</div>
-              </div>
-              <div style="display:flex;gap:5px;flex-shrink:0;">
-                <button onclick="editSubject('${escapeHTML(s.id)}')" style="background:#E3F2FD;color:#1565C0;border:none;padding:4px 10px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;">✏️ Edit</button>
-                <button onclick="moveSubject('${escapeHTML(s.id)}',-1)" style="background:#F2F5F2;color:#555;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:12px;" title="Move up">↑</button>
-                <button onclick="moveSubject('${escapeHTML(s.id)}',1)" style="background:#F2F5F2;color:#555;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:12px;" title="Move down">↓</button>
-                <button onclick="deleteSubject('${escapeHTML(s.id)}')" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 9px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;">🗑</button>
-              </div>
-            </div>`).join("")}
-        </div>
-      </div>`;
   } else if(adminTab==="pyq"){
     const total=pyqData.length;
     el.innerHTML=`
       <div class="card" style="padding:20px;margin-bottom:16px;">
         <div style="font-weight:700;font-size:15px;margin-bottom:4px;">📋 PYQ Bank — ${total} question${total===1?"":"s"}</div>
-        <div style="font-size:12px;color:#777;">Add previous year questions visible to all students in the PYQ section.</div>
+        <div style="font-size:12px;color:#777;">Add previous year questions via PDF upload, bulk paste, or manual entry.</div>
       </div>
 
-      <!-- Add / Edit PYQ Form -->
+      <!-- PYQ PDF Upload -->
+      <div class="card" style="padding:22px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📄 Bulk Import PYQs from PDF / Image</div>
+        <div style="font-size:12px;color:#777;margin-bottom:12px;line-height:1.7;">Upload a scanned or digital PDF of a previous year paper. Questions are auto-parsed in Q./A./B./C./D./ANS: format.<br>Set Exam, Year and Subject before importing — they apply to all imported questions.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div><label class="lbl">Exam</label>
+            <select id="pyqBulkExam" class="inp">
+              <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option>
+              <option>BHU Entrance</option><option>IARI</option><option>Other</option>
+            </select>
+          </div>
+          <div><label class="lbl">Year</label>
+            <select id="pyqBulkYear" class="inp">
+              ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
+            </select>
+          </div>
+          <div><label class="lbl">Default Subject</label>
+            <select id="pyqBulkSubject" class="inp">
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <div class="drop-zone" onclick="document.getElementById('pyqBulkFile').click()" style="margin-bottom:10px;">
+          <input id="pyqBulkFile" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="handlePYQBulkFile(this)">
+          <div style="font-size:26px;margin-bottom:6px;">📄</div>
+          <div id="pyqBulkLabel" style="font-size:13px;color:#333;font-weight:500;">Click to upload PDF or photo of question paper</div>
+          <div style="font-size:11px;color:#777;margin-top:3px;">Max 15 MB · scanned pages auto-OCR'd</div>
+        </div>
+        <div id="pyqBulkStatus" style="display:none;margin-bottom:10px;"></div>
+        <button class="btn btn-primary" id="pyqBulkAddBtn" onclick="addBulkPYQQuestions()" disabled>➕ Add All to PYQ Bank</button>
+      </div>
+
+      <!-- PYQ Bulk Paste -->
+      <div class="card" style="padding:22px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📋 Paste PYQ Text</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div><label class="lbl">Exam</label>
+            <select id="pyqPasteExam" class="inp">
+              <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option>
+              <option>BHU Entrance</option><option>IARI</option><option>Other</option>
+            </select>
+          </div>
+          <div><label class="lbl">Year</label>
+            <select id="pyqPasteYear" class="inp">
+              ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
+            </select>
+          </div>
+          <div><label class="lbl">Default Subject</label>
+            <select id="pyqPasteSubject" class="inp">
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <textarea id="pyqPasteText" class="inp" rows="5" placeholder="Q. Which nutrient promotes vegetative growth?&#10;A. Phosphorus&#10;B. Nitrogen&#10;C. Potassium&#10;D. Calcium&#10;ANS: B&#10;EXP: Nitrogen is responsible for leaf and stem growth." style="resize:vertical;font-family:monospace;font-size:12px;margin-bottom:10px;"></textarea>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-light" style="border:1.5px solid #00B050;color:#00B050;" onclick="parsePYQPasteText()">🔎 Parse</button>
+          <button class="btn btn-primary" id="pyqPasteAddBtn" onclick="addPastedPYQs()" disabled>➕ Add Parsed PYQs</button>
+        </div>
+        <div id="pyqPasteStatus" style="display:none;margin-top:10px;"></div>
+      </div>
+
+      <!-- Manual Add / Edit PYQ Form -->
       <div class="card" style="padding:22px;margin-bottom:16px;" id="pyqAdminForm">
-        <div style="font-weight:700;font-size:15px;margin-bottom:14px;" id="pyqFormTitle">➕ Add PYQ Question</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;" id="pyqFormTitle">✏️ Add PYQ Manually</div>
         <div style="display:flex;flex-direction:column;gap:12px;">
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
             <div><label class="lbl">Exam *</label>
@@ -3063,12 +3211,16 @@ async function renderAdmin(){
       <!-- PYQ List -->
       <div class="card" style="padding:20px;" id="pyqAdminList">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
-          <div style="font-weight:700;font-size:15px;flex:1;">Uploaded PYQs (${total})</div>
+          <div id="pyqAdminListCountTitle" style="font-weight:700;font-size:15px;flex:1;">Uploaded PYQs (${total})</div>
           <input id="pyqAdminSearch" class="inp" placeholder="🔍 Search…" style="width:auto;flex:1;max-width:220px;font-size:12px;padding:7px 12px;" oninput="renderAdminPYQList()">
         </div>
         <div id="pyqAdminListItems"></div>
-      </div>`;
+      </div>
+
+      <!-- PDF Papers Library (raw PDFs, no MCQ conversion) -->
+      <div class="card" style="padding:20px;margin-top:16px;" id="adminPYQPdfSection"></div>`;
     renderAdminPYQList();
+    renderAdminPYQPdfSection();
   } else if(adminTab==="settings"){
     el.innerHTML=`
       <div class="card" style="padding:22px;margin-bottom:14px;max-width:460px;">
@@ -3291,7 +3443,10 @@ async function savePYQQuestion(){
     });
   }
   await sSet("bhu:pyqdata", pyqData);
-  renderAdmin();
+  // ✅ FIXED: Only update the list — renderAdmin() would wipe form inputs
+  renderAdminPYQList();
+  // Update count heading
+  const cl=document.getElementById("pyqAdminListCountTitle"); if(cl) cl.textContent=`Uploaded PYQs (${pyqData.length})`;
 }
 
 function editPYQQuestion(id){
@@ -3328,7 +3483,8 @@ async function deletePYQQuestion(id){
   if(!window.confirm("Delete this PYQ question?")) return;
   pyqData = pyqData.filter(q=>q.id!==id);
   await sSet("bhu:pyqdata", pyqData);
-  toast("Deleted."); renderAdmin();
+  toast("Deleted."); renderAdminPYQList();
+  const cl=document.getElementById("pyqAdminListCountTitle"); if(cl) cl.textContent=`Uploaded PYQs (${pyqData.length})`;
 }
 
 function renderAdminPYQList(){
@@ -3370,14 +3526,42 @@ function renderAdminPYQList(){
 // RENDER PYQ SECTION (student-facing)
 // ═══════════════════════════════════════════════════════════════
 let pyqRevealedIds = {};
+const _pyqFreeReveals = {};
 
 function renderPYQ(){
+  const u=currentUser;
+  const isPrem=isSubActive(u);
   const examF   = (document.getElementById("pyqExamFilter")?.value||"All");
   const yearF   = (document.getElementById("pyqYearFilter")?.value||"All");
   const subjF   = (document.getElementById("pyqSubjectFilter")?.value||"All");
   const listEl  = document.getElementById("pyqList");
   const countEl = document.getElementById("pyqCount");
   if(!listEl) return;
+
+  // Premium banner above PYQ list
+  const today=new Date().toISOString().split("T")[0];
+  const revKey=u?u.email+"_"+today:"guest_"+today;
+  const revealsUsed=Object.keys(_pyqFreeReveals).filter(k=>k.startsWith(revKey)).length;
+  let pyqBannerEl=document.getElementById("pyqPremBanner");
+  if(!pyqBannerEl){
+    pyqBannerEl=document.createElement("div"); pyqBannerEl.id="pyqPremBanner";
+    listEl.before(pyqBannerEl);
+  }
+  if(!isPrem){
+    const left=Math.max(0,FREE_PYQ_REVEALS-Object.values(_pyqFreeReveals).filter((_,i)=>Object.keys(_pyqFreeReveals)[i]&&Object.keys(_pyqFreeReveals)[i].startsWith(u?u.email+"_"+today:"__")).length);
+    const freeRevLeft=FREE_PYQ_REVEALS-Object.keys(_pyqFreeReveals).filter(k=>k.startsWith((u?.email||"guest")+"_"+today)).length;
+    pyqBannerEl.innerHTML=`<div style="background:linear-gradient(135deg,#1a0a00,#3d1f00);border:1px solid #f59e0b;border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="color:#f59e0b;font-weight:800;font-size:13px;margin-bottom:2px;">⭐ Free Plan — ${Math.max(0,freeRevLeft)}/${FREE_PYQ_REVEALS} answer reveals left today</div>
+        <div style="color:rgba(255,200,100,.75);font-size:12px;">Upgrade for unlimited answer reveals + explanations</div>
+      </div>
+      <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="openPay()">Upgrade ₹19 →</button>
+    </div>`;
+  } else {
+    pyqBannerEl.innerHTML=`<div style="background:linear-gradient(90deg,#0a2e14,#0F3D23);border:1px solid #00B050;border-radius:14px;padding:10px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:18px;">⭐</span><div style="color:#6ee7a0;font-size:13px;font-weight:700;">Premium — Unlimited PYQ reveals & explanations unlocked!</div>
+    </div>`;
+  }
 
   const filtered = pyqData.filter(q=>{
     if(examF!=="All" && q.exam!==examF) return false;
@@ -3427,6 +3611,9 @@ function renderPYQ(){
         <button class="btn ${revealed?"btn-light":"btn-primary"}" style="font-size:12px;padding:6px 14px;" onclick="togglePYQReveal('${q.id}')">
           ${revealed?"🙈 Hide Answer":"👁 Show Answer"}
         </button>
+        <button onclick="_toggleSavePYQQ('${q.id}')" style="background:${isPYQSaved(q.id)?"#E8F5E9":"#F2F5F2"};color:${isPYQSaved(q.id)?"#00B050":"#777"};border:none;padding:6px 12px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;">
+          ${isPYQSaved(q.id)?"📌 Saved":"📌 Save"}
+        </button>
         ${currentUser?.isAdmin?`<button class="btn" style="background:#E3F2FD;color:#1565C0;font-size:11px;padding:5px 10px;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('pyq');setTimeout(()=>editPYQQuestion('${q.id}'),100);},80);">✏️ Edit</button>`:""}
       </div>
     </div>`;
@@ -3434,10 +3621,459 @@ function renderPYQ(){
 }
 
 function togglePYQReveal(id){
-  pyqRevealedIds[id] = !pyqRevealedIds[id];
+  const u=currentUser;
+  if(!u){ openLogin(); return; }
+  if(!isSubActive(u)){
+    const today=new Date().toISOString().split("T")[0];
+    const dayKey=u.email+"_"+today;
+    const todayReveals=Object.keys(_pyqFreeReveals).filter(k=>k.startsWith(dayKey+"_")&&_pyqFreeReveals[k]).length;
+    if(!pyqRevealedIds[id]){
+      if(todayReveals>=FREE_PYQ_REVEALS){
+        toast(`⭐ Free limit: ${FREE_PYQ_REVEALS} reveals/day. Upgrade for unlimited PYQ answers!`,"e");
+        setTimeout(()=>openPay(),800); return;
+      }
+      _pyqFreeReveals[dayKey+"_"+id]=true;
+    }
+  }
+  pyqRevealedIds[id]=!pyqRevealedIds[id];
+  renderPYQ();
+  updateSavedPYQCount();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PYQ TAB SYSTEM
+// ═══════════════════════════════════════════════════════════════
+let pyqTab='mcq';
+let pyqPdfs=[];
+
+function setPYQTab(tab){
+  pyqTab=tab;
+  ['mcq','pdf','saved'].forEach(t=>{
+    const btn=document.getElementById('ptab_'+t);
+    const content=document.getElementById('ptab_'+t+'_content');
+    if(btn) btn.classList.toggle('active',t===tab);
+    if(content) content.style.display=t===tab?'block':'none';
+  });
+  if(tab==='mcq') renderPYQ();
+  if(tab==='pdf') renderPYQPdfLibrary();
+  if(tab==='saved') renderSavedPYQs();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SAVED & WRONG QUESTIONS SYSTEM
+// ═══════════════════════════════════════════════════════════════
+const _sqKey=t=>'bhu:saved_'+t+'_'+(currentUser?.email||'guest');
+const _wqKey=t=>'bhu:wrong_'+t+'_'+(currentUser?.email||'guest');
+function getSavedQs(t){try{return JSON.parse(localStorage.getItem(_sqKey(t))||'[]');}catch{return [];}}
+function setSavedQs(t,a){localStorage.setItem(_sqKey(t),JSON.stringify(a));}
+function getWrongQs(){try{return JSON.parse(localStorage.getItem(_wqKey('quiz'))||'[]');}catch{return [];}}
+function setWrongQs(a){localStorage.setItem(_wqKey('quiz'),JSON.stringify(a));}
+
+function _makeQid(subj,q){return((subj||'')+'|'+(q.q||'')).slice(0,60);}
+function isQuizQSaved(subj,q){return getSavedQs('quiz').some(x=>x._qid===_makeQid(subj,q));}
+function isPYQSaved(id){return getSavedQs('pyq').some(x=>x.id===id);}
+
+function toggleSaveQuizQ(subj,qObj){
+  if(!currentUser){openLogin();return;}
+  const qid=_makeQid(subj,qObj);
+  let saved=getSavedQs('quiz');
+  const idx=saved.findIndex(x=>x._qid===qid);
+  if(idx>=0){saved.splice(idx,1);toast('📌 Removed from saved');}
+  else{saved.push({...qObj,subj,_qid:qid,savedAt:Date.now()});toast('📌 Question saved!');}
+  setSavedQs('quiz',saved);
+  updateSavedTabCount();
+  renderQuizQuestion();
+}
+
+function _toggleSavePYQQ(id){
+  if(!currentUser){openLogin();return;}
+  const q=pyqData.find(x=>x.id===id); if(!q) return;
+  let saved=getSavedQs('pyq');
+  const idx=saved.findIndex(x=>x.id===id);
+  if(idx>=0){saved.splice(idx,1);toast('📌 Removed from saved');}
+  else{saved.push({...q,savedAt:Date.now()});toast('📌 PYQ Saved!');}
+  setSavedQs('pyq',saved);
+  updateSavedPYQCount();
   renderPYQ();
 }
 
+function saveWrongQuestions(qs,ans,subj){
+  if(!currentUser) return;
+  let wrong=getWrongQs();
+  qs.forEach((q,i)=>{
+    if(ans[i]!==q.ans){
+      const qid=_makeQid(q.subj||subj,q);
+      const ei=wrong.findIndex(x=>x._qid===qid);
+      const entry={...q,subj:q.subj||subj,_qid:qid,userAns:ans[i],
+        wrongCount:ei>=0?(wrong[ei].wrongCount||0)+1:1,lastWrong:Date.now()};
+      if(ei>=0) wrong[ei]=entry; else wrong.push(entry);
+    }
+  });
+  setWrongQs(wrong);
+}
+
+function updateSavedTabCount(){
+  const n=getSavedQs('quiz').length;
+  const btn=document.getElementById('qtab_saved');
+  if(btn) btn.textContent='📌 Saved'+(n>0?` (${n})`:'');
+}
+function updateWrongTabCount(){
+  const n=getWrongQs().length;
+  const btn=document.getElementById('qtab_wrong');
+  if(btn) btn.textContent='❌ Wrong'+(n>0?` (${n})`:'');
+}
+function updateSavedPYQCount(){
+  const n=getSavedQs('pyq').length;
+  const btn=document.getElementById('ptab_saved');
+  if(btn) btn.textContent='📌 Saved'+(n>0?` (${n})`:'');
+}
+
+// Global map for safe onclick references in dynamically-generated HTML
+const _sqMap={};
+
+function renderSavedQuizQs(){
+  const el=document.getElementById('savedQuizContent'); if(!el) return;
+  updateSavedTabCount();
+  if(!currentUser){
+    el.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">📌</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Login to save questions</div>
+      <div style="color:#777;font-size:13px;margin-bottom:16px;">Tap 📌 on any question during a quiz to save it here.</div>
+      <button class="btn btn-primary" onclick="openLogin()">Login / Register</button>
+    </div>`; return;
+  }
+  const saved=getSavedQs('quiz');
+  if(!saved.length){
+    el.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">📌</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">No saved questions yet</div>
+      <div style="color:#777;font-size:13px;margin-bottom:16px;">Tap 📌 on any question while practising to save it here for quick review.</div>
+      <button class="btn btn-primary" onclick="setQuizTab('quiz')">Practice Quiz →</button>
+    </div>`; return;
+  }
+  saved.forEach((q,i)=>{_sqMap['sv'+i]=q;});
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div style="font-weight:700;font-size:16px;">📌 Saved Questions (${saved.length})</div>
+      <button class="btn btn-primary" style="font-size:12px;padding:7px 14px;" onclick="practiceQs(getSavedQs('quiz'))">▶ Practice All →</button>
+    </div>
+    ${saved.map((q,i)=>`
+      <div class="card" style="padding:16px;margin-bottom:10px;border-left:3px solid #00B050;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="flex:1;">
+            <div style="font-size:11px;color:#777;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px;">${escapeHTML(q.subj||'')}</div>
+            <div style="font-weight:700;font-size:14px;margin-bottom:8px;line-height:1.5;">${escapeHTML(q.q)}</div>
+            <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;">
+              ${q.opts.map((o,oi)=>`<div style="font-size:12px;background:${oi===q.ans?"#E8F5E9":"#F8FBF8"};color:${oi===q.ans?"#0F3D23":"#555"};padding:5px 10px;border-radius:8px;font-weight:${oi===q.ans?"700":"400"};">${["A","B","C","D"][oi]}. ${escapeHTML(o)}</div>`).join('')}
+            </div>
+            ${q.exp?`<div style="font-size:12px;color:#777;padding:8px 10px;background:#F2F5F2;border-radius:8px;">💡 ${escapeHTML(q.exp)}</div>`:''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+            <button onclick="practiceQs([_sqMap['sv${i}']])" style="background:#E8F5E9;color:#00B050;border:none;padding:4px 8px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;" title="Practice this">▶</button>
+            <button onclick="toggleSaveQuizQ(_sqMap['sv${i}'].subj,_sqMap['sv${i}'])" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 8px;border-radius:8px;cursor:pointer;font-size:11px;" title="Remove">✕</button>
+          </div>
+        </div>
+      </div>`).join('')}`;
+}
+
+const _wqMap={};
+
+function renderWrongQuizQs(){
+  const el=document.getElementById('wrongQuizContent'); if(!el) return;
+  updateWrongTabCount();
+  if(!currentUser){
+    el.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">❌</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Login to track mistakes</div>
+      <div style="color:#777;font-size:13px;margin-bottom:16px;">Wrong answers are automatically tracked here so you can practise weak spots.</div>
+      <button class="btn btn-primary" onclick="openLogin()">Login / Register</button>
+    </div>`; return;
+  }
+  const wrong=getWrongQs();
+  if(!wrong.length){
+    el.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">🎯</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">No wrong answers yet!</div>
+      <div style="color:#777;font-size:13px;margin-bottom:16px;">Questions you get wrong will appear here automatically — perfect your weak spots!</div>
+      <button class="btn btn-primary" onclick="setQuizTab('quiz')">Practice Quiz →</button>
+    </div>`; return;
+  }
+  wrong.forEach((q,i)=>{_wqMap['wq'+i]=q;});
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div style="font-weight:700;font-size:16px;">❌ Wrong Answers (${wrong.length})</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" style="font-size:12px;padding:7px 14px;" onclick="practiceQs(getWrongQs())">▶ Retry All →</button>
+        <button class="btn btn-light" style="font-size:12px;padding:7px 14px;" onclick="if(confirm('Clear all wrong questions?')){setWrongQs([]);renderWrongQuizQs();}">Clear All</button>
+      </div>
+    </div>
+    <div style="background:#FFEBEE;border:1px solid #FFCDD2;border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#C62828;">
+      💡 <strong>Pro tip:</strong> Practise these until the count drops to zero — then you've truly mastered these topics!
+    </div>
+    ${wrong.sort((a,b)=>(b.wrongCount||0)-(a.wrongCount||0)).map((q,i)=>`
+      <div class="card" style="padding:16px;margin-bottom:10px;border-left:3px solid #E53935;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+              <div style="font-size:11px;color:#777;text-transform:uppercase;letter-spacing:.3px;">${escapeHTML(q.subj||'')}</div>
+              <span style="background:#FFEBEE;color:#E53935;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:700;">${q.wrongCount}× wrong</span>
+            </div>
+            <div style="font-weight:700;font-size:14px;margin-bottom:8px;line-height:1.5;">${escapeHTML(q.q)}</div>
+            ${q.userAns!==undefined&&q.userAns!==-1?`<div style="font-size:12px;color:#E53935;margin-bottom:4px;">You answered: ${escapeHTML(q.opts?.[q.userAns]||'—')}</div>`:''}
+            <div style="font-size:12px;color:#00B050;margin-bottom:8px;font-weight:600;">✓ Correct: ${escapeHTML(q.opts?.[q.ans]||'')}</div>
+            ${q.exp?`<div style="font-size:12px;color:#777;padding:8px 10px;background:#F2F5F2;border-radius:8px;">💡 ${escapeHTML(q.exp)}</div>`:''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;">
+            <button onclick="practiceQs([_wqMap['wq${i}']])" style="background:#E8F5E9;color:#00B050;border:none;padding:4px 8px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;" title="Practice">▶</button>
+            <button onclick="(()=>{const w=getWrongQs();setWrongQs(w.filter(x=>x._qid!=='${escapeHTML(q._qid||'').replace(/'/g,"\\'")}'));renderWrongQuizQs();})()" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 8px;border-radius:8px;cursor:pointer;font-size:11px;" title="Remove">✕</button>
+          </div>
+        </div>
+      </div>`).join('')}`;
+}
+
+function renderSavedPYQs(){
+  const el=document.getElementById('savedPYQContent'); if(!el) return;
+  updateSavedPYQCount();
+  if(!currentUser){
+    el.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">📌</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Login to save PYQs</div>
+      <button class="btn btn-primary" onclick="openLogin()">Login / Register</button>
+    </div>`; return;
+  }
+  const saved=getSavedQs('pyq');
+  if(!saved.length){
+    el.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">📌</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">No saved PYQs</div>
+      <div style="color:#777;font-size:13px;margin-bottom:16px;">Tap 📌 Save on any PYQ question to bookmark it here.</div>
+      <button class="btn btn-primary" onclick="setPYQTab('mcq')">Browse PYQs →</button>
+    </div>`; return;
+  }
+  const letters=["A","B","C","D"];
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div style="font-weight:700;font-size:16px;">📌 Saved PYQs (${saved.length})</div>
+    </div>
+    ${saved.map(q=>`
+      <div class="card" style="padding:16px;margin-bottom:10px;border-left:3px solid #7B1FA2;">
+        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;">
+          <span style="background:#F3E5F5;color:#7B1FA2;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:700;">${escapeHTML(q.exam||'')} ${escapeHTML(q.year||'')}</span>
+          <span style="background:#E8F5E9;color:#0F3D23;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:700;">${escapeHTML(q.subject||'')}</span>
+        </div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:8px;line-height:1.5;">${escapeHTML(q.q)}</div>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;">
+          ${q.opts.map((o,oi)=>`<div style="font-size:12px;background:${oi===q.ans?"#E8F5E9":"#F8FBF8"};color:${oi===q.ans?"#0F3D23":"#555"};padding:5px 10px;border-radius:8px;font-weight:${oi===q.ans?"700":"400"};">${letters[oi]}. ${escapeHTML(o)} ${oi===q.ans?"✅":""}</div>`).join('')}
+        </div>
+        ${q.exp?`<div style="font-size:12px;color:#555;padding:8px 10px;background:#F2F5F2;border-radius:8px;">💡 ${escapeHTML(q.exp)}</div>`:''}
+        <button onclick="_toggleSavePYQQ('${q.id}')" style="margin-top:10px;background:#FFEBEE;color:#E53935;border:none;padding:5px 12px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;">✕ Remove</button>
+      </div>`).join('')}`;
+}
+
+// Practice a custom set of questions (saved/wrong)
+function practiceQs(qs){
+  if(!qs||!qs.length){toast('No questions to practice.','e');return;}
+  quizQs=qs.map(q=>({...q,subj:q.subj||q.subject||'Mixed'}));
+  quizAns=new Array(qs.length).fill(-1);
+  quizIdx=0; quizDone=false; quizFlagged={}; quizStartTime=Date.now();
+  quizSubj='Practice Session';
+  setQuizTab('quiz');
+  setTimeout(()=>{
+    document.getElementById('quizStart').style.display='none';
+    document.getElementById('quizResult').style.display='none';
+    renderQuizQuestion();
+    document.getElementById('quizQuestion').style.display='block';
+  },80);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PYQ PDF LIBRARY — upload raw PDFs (not MCQ-forced)
+// ═══════════════════════════════════════════════════════════════
+async function loadPYQPdfs(){
+  const data=await sGet('bhu:pyqpdfs'); if(data) pyqPdfs=data;
+}
+
+function renderPYQPdfLibrary(){
+  const el=document.getElementById('pyqPdfList'); if(!el) return;
+  const u=currentUser;
+  const isAdmin=u?.isAdmin;
+
+  // Admin quick-upload panel (inline in student tab)
+  let adminUploadHtml='';
+  if(isAdmin){
+    adminUploadHtml=`
+      <div class="card" style="padding:20px;margin-bottom:16px;border:2px dashed #00B050;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:#0F3D23;">📤 Upload PYQ PDF Paper (Admin)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div><label class="lbl">Title *</label><input id="qpPdfTitle" class="inp" placeholder="e.g. ICAR JRF 2024 Full Paper"></div>
+          <div><label class="lbl">Exam</label>
+            <select id="qpPdfExam" class="inp"><option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option><option>BHU Entrance</option><option>Other</option></select>
+          </div>
+          <div><label class="lbl">Year</label>
+            <select id="qpPdfYear" class="inp">${[2025,2024,2023,2022,2021,2020,2019].map(y=>`<option>${y}</option>`).join('')}</select>
+          </div>
+          <div><label class="lbl">Drive / Direct Link</label><input id="qpPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
+        </div>
+        <div class="drop-zone" style="padding:14px;margin-bottom:10px;" onclick="document.getElementById('qpPdfFileInput').click()">
+          <input id="qpPdfFileInput" type="file" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleQPPdfFile(this)">
+          <div style="font-size:22px;margin-bottom:4px;">📄</div>
+          <div id="qpPdfFileLabel" style="font-size:13px;color:#333;">Click to upload PDF (max 10 MB) — or use a link above</div>
+        </div>
+        <div><label class="lbl">Description</label><input id="qpPdfDesc" class="inp" placeholder="Optional brief description"></div>
+        <button class="btn btn-primary" style="margin-top:10px;" onclick="uploadQPPdfFile()">📤 Publish PDF Paper</button>
+      </div>`;
+  }
+
+  if(!pyqPdfs.length){
+    el.innerHTML=adminUploadHtml+`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">📄</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">No PDF papers uploaded yet</div>
+      <div style="color:#777;font-size:13px;">Admin can upload complete PYQ papers as PDFs for students to download.</div>
+    </div>`; return;
+  }
+  el.innerHTML=adminUploadHtml+`
+    <div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${pyqPdfs.length})</div>
+    ${pyqPdfs.map(p=>`
+      <div class="res-card hov-card">
+        <div class="res-icon" style="background:#FFEBEE;">📄</div>
+        <div class="res-info">
+          <div class="res-title">${escapeHTML(p.title)}</div>
+          <div class="res-meta">
+            <span style="background:#F3E5F5;color:#7B1FA2;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:700;margin-right:4px;">${escapeHTML(p.exam||'')} ${escapeHTML(p.year||'')}</span>
+            PDF Paper · ${escapeHTML(p.date||'')} · by ${escapeHTML(p.uploader||'Admin')}
+          </div>
+          ${p.desc?`<div class="res-desc">${escapeHTML(p.desc)}</div>`:''}
+          <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;">
+            ${p.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')">👁 View PDF</button>`:''}
+            ${p.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="downloadPYQPdf('${p.id}')">📥 Download</button>`:''}
+            ${isAdmin?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deletePYQPdf('${p.id}')">🗑</button>`:''}
+          </div>
+        </div>
+      </div>`).join('')}`;
+}
+
+// Inline PDF upload handlers for the student-facing PYQ PDF tab
+let _qpPdfFileData='', _qpPdfFile=null;
+function handleQPPdfFile(input){
+  const f=input.files[0]; if(!f) return;
+  if(f.size>10*1024*1024){toast('File > 10 MB. Use a Google Drive link.','e');input.value='';return;}
+  _qpPdfFile=f;
+  const r=new FileReader(); r.onload=ev=>{_qpPdfFileData=ev.target.result;};
+  r.readAsDataURL(f);
+  const lbl=document.getElementById('qpPdfFileLabel');
+  if(lbl) lbl.textContent='📄 '+f.name+' ('+(f.size/1024).toFixed(0)+' KB)';
+}
+async function uploadQPPdfFile(){
+  if(!currentUser?.isAdmin) return;
+  const title=document.getElementById('qpPdfTitle')?.value?.trim();
+  const exam=document.getElementById('qpPdfExam')?.value||'ICAR JRF';
+  const year=document.getElementById('qpPdfYear')?.value||'2024';
+  const link=document.getElementById('qpPdfLink')?.value?.trim();
+  const desc=document.getElementById('qpPdfDesc')?.value?.trim();
+  if(!title){toast('Title required.','e');return;}
+  if(!link&&!_qpPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
+  const id=Date.now()+'';
+  const entry={id,title,exam,year,link:link||'',desc:desc||'',
+    uploader:currentUser.name,date:fmtDate(),
+    fileName:_qpPdfFile?.name||'',hasFile:!!_qpPdfFileData};
+  if(_qpPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_qpPdfFileData);
+  pyqPdfs=[entry,...pyqPdfs];
+  await sSet('bhu:pyqpdfs',pyqPdfs);
+  toast('✅ PDF paper published!');
+  _qpPdfFileData=''; _qpPdfFile=null;
+  renderPYQPdfLibrary();
+}
+
+async function downloadPYQPdf(id){
+  const p=pyqPdfs.find(x=>x.id===id); if(!p) return;
+  if(p.hasFile){ const data=await sGet('bhu:file:pyqpdf_'+id); if(data){b64Download(data,p.fileName||'paper.pdf');return;} }
+  if(p.link){ openDrivePreview(p.link,p.title); return; }
+  toast('No file found.','e');
+}
+
+async function deletePYQPdf(id){
+  if(!confirm('Delete this PDF paper?')) return;
+  pyqPdfs=pyqPdfs.filter(x=>x.id!==id);
+  await sSet('bhu:pyqpdfs',pyqPdfs);
+  await sDel('bhu:file:pyqpdf_'+id);
+  toast('Deleted.'); renderPYQPdfLibrary(); renderAdminPYQPdfSection();
+}
+
+// Admin: Upload a raw PYQ PDF (no MCQ conversion)
+let _pyqPdfFileData='', _pyqPdfFile=null;
+
+function handlePYQPdfFile(input){
+  const f=input.files[0]; if(!f) return;
+  if(f.size>10*1024*1024){toast('File > 10 MB. Use a Google Drive link.','e');input.value='';return;}
+  _pyqPdfFile=f;
+  const r=new FileReader(); r.onload=ev=>{_pyqPdfFileData=ev.target.result;};
+  r.readAsDataURL(f);
+  const lbl=document.getElementById('pyqPdfFileLabel');
+  if(lbl) lbl.textContent='📄 '+f.name+' ('+(f.size/1024).toFixed(0)+' KB)';
+}
+
+async function uploadPYQPdfFile(){
+  if(!currentUser?.isAdmin) return;
+  const title=document.getElementById('pyqPdfTitle')?.value?.trim();
+  const exam=document.getElementById('pyqPdfExam')?.value||'ICAR JRF';
+  const year=document.getElementById('pyqPdfYear')?.value||'2024';
+  const link=document.getElementById('pyqPdfLink')?.value?.trim();
+  const desc=document.getElementById('pyqPdfDesc')?.value?.trim();
+  if(!title){toast('Title required.','e');return;}
+  if(!link&&!_pyqPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
+  const id=Date.now()+'';
+  const entry={id,title,exam,year,link:link||'',desc:desc||'',
+    uploader:currentUser.name,date:fmtDate(),
+    fileName:_pyqPdfFile?.name||'',hasFile:!!_pyqPdfFileData};
+  if(_pyqPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_pyqPdfFileData);
+  pyqPdfs=[entry,...pyqPdfs];
+  await sSet('bhu:pyqpdfs',pyqPdfs);
+  toast('✅ PDF paper uploaded!');
+  _pyqPdfFileData=''; _pyqPdfFile=null;
+  ['pyqPdfTitle','pyqPdfLink','pyqPdfDesc'].forEach(eid=>{const e=document.getElementById(eid);if(e)e.value='';});
+  const lbl=document.getElementById('pyqPdfFileLabel');
+  if(lbl) lbl.textContent='Click to upload PDF (max 10 MB)';
+  renderAdminPYQPdfSection(); renderPYQPdfLibrary();
+}
+
+function renderAdminPYQPdfSection(){
+  const el=document.getElementById('adminPYQPdfSection'); if(!el) return;
+  el.innerHTML=`
+    <div style="font-weight:700;font-size:15px;margin-bottom:4px;">📄 PDF Papers Library (${pyqPdfs.length})</div>
+    <div style="font-size:12px;color:#777;margin-bottom:12px;">Upload complete PYQ papers as PDF — students can download/view them directly. No MCQ conversion.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div><label class="lbl">Paper Title *</label><input id="pyqPdfTitle" class="inp" placeholder="e.g. ICAR JRF 2024 Full Paper"></div>
+      <div><label class="lbl">Exam</label>
+        <select id="pyqPdfExam" class="inp">
+          <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option><option>BHU Entrance</option><option>Other</option>
+        </select>
+      </div>
+      <div><label class="lbl">Year</label>
+        <select id="pyqPdfYear" class="inp">
+          ${[2025,2024,2023,2022,2021,2020,2019].map(y=>`<option>${y}</option>`).join('')}
+        </select>
+      </div>
+      <div><label class="lbl">Google Drive / Direct PDF Link</label><input id="pyqPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label class="lbl">Or Upload PDF File (max 10 MB)</label>
+      <div class="drop-zone" onclick="document.getElementById('pyqPdfFileInput').click()" style="padding:14px;">
+        <input id="pyqPdfFileInput" type="file" accept=".pdf,.doc,.docx" style="display:none;" onchange="handlePYQPdfFile(this)">
+        <div style="font-size:22px;margin-bottom:4px;">📄</div>
+        <div id="pyqPdfFileLabel" style="font-size:13px;color:#333;">Click to upload PDF (max 10 MB)</div>
+      </div>
+    </div>
+    <div><label class="lbl">Description</label><textarea id="pyqPdfDesc" class="inp" rows="2" placeholder="Brief description (optional)" style="resize:vertical;"></textarea></div>
+    <button class="btn btn-primary" style="margin-top:12px;padding:10px 20px;" onclick="uploadPYQPdfFile()">📤 Upload PDF Paper</button>
+    ${pyqPdfs.length>0?`
+      <div style="margin-top:16px;font-weight:700;font-size:13px;margin-bottom:8px;">Uploaded Papers (${pyqPdfs.length})</div>
+      ${pyqPdfs.map(p=>`
+        <div style="background:#F8FBF8;border-radius:10px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;font-size:13px;"><strong>${escapeHTML(p.title)}</strong><br><span style="font-size:11px;color:#777;">${escapeHTML(p.exam)} ${escapeHTML(p.year)} · ${escapeHTML(p.date)}</span></div>
+          ${p.link?`<button onclick="openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')" style="background:#E3F2FD;color:#1565C0;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">👁</button>`:''}
+          <button onclick="deletePYQPdf('${p.id}')" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">🗑</button>
+        </div>`).join('')}`:''}`;
+}
 
 // ── OCR engine loader (Tesseract.js, loaded on-demand) ──────────
 async function loadTesseract(){
@@ -3617,46 +4253,64 @@ function autoDetectSubject(qText, opts){
 function parsePdfQuizText(text){
   const questions=[];
   // Normalise line breaks + collapse repeated whitespace that OCR often introduces
-  const lines=text.replace(/\r/g,"").split("\n").map(l=>l.replace(/\s+/g," ").trim()).filter(Boolean);
+  const lines=text.replace(/\r/g,"").split("\n")
+    .map(l=>l.replace(/\s+/g," ").trim()).filter(Boolean);
   let i=0;
-  let headingSubject=null; // set whenever a "Subject: X" heading line is seen; applies to everything below it
+  let headingSubject=null;
+
   while(i<lines.length){
     const line=lines[i];
 
-    // Detect a subject heading line, e.g. "Subject: Agronomy"
-    const subjHeadMatch=line.match(/^Subject\s*[:\-]\s*(.+)/i);
+    // Detect subject heading: "Subject: Agronomy" or "-- Agronomy --"
+    const subjHeadMatch=line.match(/^(?:Subject|Section|Topic)\s*[:\-–]\s*(.+)/i);
     if(subjHeadMatch){
       headingSubject=normalizeSubjectName(subjHeadMatch[1])||subjHeadMatch[1].trim();
       i++; continue;
     }
 
-    // Detect question line: starts with Q. / Q1. / 1. / Question 1: etc
-    const qMatch=line.match(/^(?:Q(?:uestion)?\.?\s*\d*\.?[:.)]?\s*|\d+[.)]\s*)(.+)/i);
+    // Detect question line — handles Q1, Q.1, 1., Q:, Question 1 etc.
+    const qMatch=line.match(/^(?:Q(?:uestion)?\.?\s*\d*[.):\s]?\s*|\d+[.)]\s+)(.+)/i);
     if(!qMatch){ i++; continue; }
-    const qText=qMatch[1].trim(); i++;
-    if(qText.length<4){ continue; } // skip noise lines OCR sometimes mistakes for a question
-    const opts=[]; let ansIdx=-1; let exp="";
-    // Read options A-D — tolerant of "A.", "A)", "(A)", "A:" markers
-    const optLetters=["A","B","C","D"];
-    while(i<lines.length&&opts.length<4){
-      const ol=lines[i];
-      const optM=ol.match(/^\(?([A-Da-d])\)?[.):]\s*(.+)/);
-      if(optM){ opts.push(optM[2].trim()); i++; }
-      else break;
+    let qText=qMatch[1].trim();
+    // Sometimes the question continues on the next line (no option prefix yet)
+    i++;
+    while(i<lines.length && !lines[i].match(/^\(?[A-Da-d]\)?[.):]\s/i) && !lines[i].match(/^(?:Q(?:uestion)?\.?\s*\d*[.):\s]|\d+[.)]\s+)/i) && !lines[i].match(/^(?:ANS|ANSWER|EXP)/i)){
+      const cont=lines[i].trim();
+      if(!cont){ i++; break; } // blank line = end of question text
+      qText+=" "+cont; i++;
     }
-    if(opts.length<2){ continue; } // not enough options — skip
-    // Read ANS / ANSWER / EXP line(s)
+    if(qText.length<4){ continue; }
+
+    const opts=[]; let ansIdx=-1; let exp="";
+    const optLetters=["A","B","C","D"];
+
+    // Read options — tolerant of (A), A., A), A: markers; also handles "a)" lowercase
+    while(i<lines.length && opts.length<4){
+      const ol=lines[i];
+      // Match option start: (A), A., A), A:  — case insensitive
+      const optM=ol.match(/^\(?([A-Da-d])\)?[.).:\s]\s*(.+)/);
+      if(optM){
+        opts.push(optM[2].trim()); i++;
+      } else {
+        // Option text may continue on next line if no prefix — append if we're mid-options
+        if(opts.length>0 && !ol.match(/^(?:ANS|ANSWER|EXP|Q\.)/i)){
+          opts[opts.length-1]+=" "+ol; i++;
+        } else break;
+      }
+    }
+    if(opts.length<2){ continue; }
+
+    // Read ANS / ANSWER line — handles "ANS: A", "Answer: (B)", "Ans. C"
     while(i<lines.length){
       const al=lines[i];
-      const ansM=al.match(/^(?:ANS(?:WER)?)[:\s]+\(?([A-Da-d])\)?/i);
-      const expM=al.match(/^(?:EXP(?:LANATION)?)[:\s]+(.+)/i);
+      const ansM=al.match(/^(?:ANS(?:WER)?)[.:)\s]+\(?([A-Da-d])\)?/i);
+      const expM=al.match(/^(?:EXP(?:LANATION)?|REASON|HINT)[.:)\s]+(.+)/i);
       if(ansM){ ansIdx=optLetters.indexOf(ansM[1].toUpperCase()); i++; }
       else if(expM){ exp=expM[1].trim(); i++; }
       else break;
     }
     if(ansIdx===-1) ansIdx=0;
 
-    // Resolve subject: explicit heading wins, otherwise auto-classify by keywords
     const autoSubj=headingSubject||autoDetectSubject(qText,opts);
     questions.push({
       q:qText, opts, ans:ansIdx, exp:exp||"", premium:false,
@@ -3800,7 +4454,15 @@ async function addManualQuestion(){
 
   await sSet("bhu:customquizbank",customQuizBank);
   rebuildQuizBank();
-  renderAdmin(); renderQuizStart();
+  // ✅ FIXED: Only update list & count — renderAdmin() would wipe the form inputs
+  renderCustomQList();
+  const totalQ=Object.values(QUIZ_BANK).reduce((s,a)=>s+a.length,0);
+  const customQ=Object.values(customQuizBank).reduce((s,a)=>s+a.length,0);
+  const sumEl=document.getElementById("adminQuizBankSummaryCount");
+  if(sumEl) sumEl.textContent=`Built-in: ${totalQ-customQ} · Admin-added: ${customQ} · Total: ${totalQ}`;
+  const subsEl=document.getElementById("adminQuizBankSubjectCounts");
+  if(subsEl) subsEl.innerHTML=Object.entries(QUIZ_BANK).map(([s,q])=>`<span style="background:#E8F5E9;color:#0F3D23;font-size:11px;padding:4px 10px;border-radius:50px;font-weight:600;">${escapeHTML(s)}: ${q.length}Q</span>`).join("");
+  renderQuizStart();
 }
 
 async function deleteCustomQuestion(subj,idx){
@@ -4062,6 +4724,17 @@ function getUserRankDisplay(){
   const idx=sorted.findIndex(x=>x.email===u.email);
   return idx===-1?"#—":"#"+(idx+1);
 }
+function getFreeQuizUsedToday(){
+  if(!currentUser) return 0;
+  const key='bhu:freeQuiz_'+currentUser.email+'_'+new Date().toISOString().split('T')[0];
+  return parseInt(localStorage.getItem(key)||'0');
+}
+function addFreeQuizUsed(n){
+  if(!currentUser||isSubActive(currentUser)) return;
+  const key='bhu:freeQuiz_'+currentUser.email+'_'+new Date().toISOString().split('T')[0];
+  localStorage.setItem(key, getFreeQuizUsedToday()+n);
+}
+
 function saveQuizResult(subject, correct, total){
   if(!currentUser) return;
   const email=currentUser.email;
@@ -4365,6 +5038,395 @@ function searchHeader(){
   resType="All"; resSubject="All";
   setSection("resources"); renderResources();
 }
+
+// ═══════════════════════════════════════════════════════════════
+// PYQ BULK IMPORT — PDF / Image upload + paste
+// ═══════════════════════════════════════════════════════════════
+let _parsedPYQQuestions=[];
+let _parsedPYQPaste=[];
+
+async function handlePYQBulkFile(input){
+  const file=input.files[0]; if(!file) return;
+  const label=document.getElementById("pyqBulkLabel");
+  const status=document.getElementById("pyqBulkStatus");
+  const btn=document.getElementById("pyqBulkAddBtn");
+  label.textContent="📄 "+file.name;
+  status.style.display="block"; status.innerHTML=`<div style="color:#c9690a;font-size:13px;">⏳ Processing document…</div>`;
+  btn.disabled=true; _parsedPYQQuestions=[];
+  if(file.size>15*1024*1024){ status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ File too large (max 15 MB).</div>`; return; }
+  try{
+    let fullText="";
+    const isImage=file.type.startsWith("image/")||/\.(jpe?g|png|webp)$/i.test(file.name);
+    const isPdf=file.type==="application/pdf"||/\.pdf$/i.test(file.name);
+    if(isImage){
+      status.innerHTML=`<div style="color:#c9690a;font-size:13px;">🔎 Running OCR… <span id="pyqOcrPct">0%</span></div>`;
+      fullText=await ocrRecognize(file,"eng",pct=>{const e=document.getElementById("pyqOcrPct");if(e)e.textContent=pct+"%";});
+    } else if(isPdf){
+      await ensurePdfJs();
+      status.innerHTML=`<div style="color:#c9690a;font-size:13px;">⏳ Reading PDF…</div>`;
+      const ab=await file.arrayBuffer();
+      const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+      let nativeText=""; const pageLens=[];
+      for(let i=1;i<=pdf.numPages;i++){
+        const page=await pdf.getPage(i);
+        const tc=await page.getTextContent();
+        const pt=tc.items.map(it=>it.str).join(" ");
+        nativeText+=pt+"\n"; pageLens.push(pt.trim().length);
+      }
+      const avgLen=pageLens.reduce((a,b)=>a+b,0)/Math.max(1,pageLens.length);
+      if(avgLen<40){
+        status.innerHTML=`<div style="color:#c9690a;font-size:13px;">🔎 Scanned PDF detected — OCR in progress… <span id="pyqOcrPct">Page 1/${pdf.numPages}</span></div>`;
+        for(let i=1;i<=pdf.numPages;i++){
+          const page=await pdf.getPage(i);
+          const canvas=await renderPdfPageToCanvas(page);
+          const pt=await ocrRecognize(canvas,"eng",pct=>{const e=document.getElementById("pyqOcrPct");if(e)e.textContent=`Page ${i}/${pdf.numPages} — ${pct}%`;});
+          fullText+=pt+"\n";
+        }
+      } else { fullText=nativeText; }
+    } else { status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ Unsupported file type.</div>`; return; }
+
+    _parsedPYQQuestions=parsePdfQuizText(fullText);
+    if(!_parsedPYQQuestions.length){
+      status.innerHTML=`<div style="color:#E53935;font-size:13px;">⚠️ No questions found. Ensure format: Q. … A. … B. … ANS: A</div>`; return;
+    }
+    const exam=document.getElementById("pyqBulkExam").value;
+    const year=document.getElementById("pyqBulkYear").value;
+    const fallbackSubj=document.getElementById("pyqBulkSubject").value;
+    status.innerHTML=`<div style="color:#00B050;font-size:13px;font-weight:600;">✅ Found ${_parsedPYQQuestions.length} question(s) for ${exam} ${year}</div>
+      <div style="background:#E8F5E9;border-radius:10px;padding:10px;margin-top:8px;max-height:200px;overflow-y:auto;">
+        ${_parsedPYQQuestions.map((q,i)=>`
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
+            <div style="flex:1;font-size:12px;"><strong>Q${i+1}:</strong> ${escapeHTML(q.q.slice(0,70))}${q.q.length>70?"…":""}</div>
+            <select class="inp" style="width:auto;font-size:11px;padding:3px 5px;flex-shrink:0;" onchange="_parsedPYQQuestions[${i}].subject=this.value;">
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
+            </select>
+          </div>`).join("")}
+      </div>`;
+    btn.disabled=false;
+  } catch(e){ status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ Error: ${escapeHTML(e.message)}</div>`; }
+}
+
+async function addBulkPYQQuestions(){
+  if(!_parsedPYQQuestions.length){ toast("No parsed questions.","e"); return; }
+  const exam=document.getElementById("pyqBulkExam").value;
+  const year=document.getElementById("pyqBulkYear").value;
+  const fallbackSubj=document.getElementById("pyqBulkSubject").value;
+  const entries=_parsedPYQQuestions.map(q=>({
+    id:Date.now()+"_"+Math.random().toString(36).slice(2,6),
+    exam, year, subject:q.subject||fallbackSubj,
+    q:q.q, opts:q.opts, ans:q.ans, exp:q.exp, diff:"medium",
+    addedBy:currentUser?.name||"Admin", addedAt:new Date().toISOString()
+  }));
+  pyqData=[...entries,...pyqData];
+  await sSet("bhu:pyqdata",pyqData);
+  toast(`✅ ${entries.length} PYQs added for ${exam} ${year}!`);
+  _parsedPYQQuestions=[];
+  renderAdmin();
+}
+
+function parsePYQPasteText(){
+  const text=document.getElementById("pyqPasteText").value;
+  const status=document.getElementById("pyqPasteStatus");
+  const btn=document.getElementById("pyqPasteAddBtn");
+  status.style.display="block";
+  if(!text.trim()){ status.innerHTML=`<div style="color:#E53935;font-size:13px;">⚠️ Paste some question text first.</div>`; return; }
+  _parsedPYQPaste=parsePdfQuizText(text);
+  if(!_parsedPYQPaste.length){
+    status.innerHTML=`<div style="color:#E53935;font-size:13px;">⚠️ No questions detected. Check format: Q. … A. … B. … ANS: A</div>`;
+    btn.disabled=true; return;
+  }
+  const fallbackSubj=document.getElementById("pyqPasteSubject").value;
+  status.innerHTML=`<div style="color:#00B050;font-size:13px;font-weight:600;">✅ Found ${_parsedPYQPaste.length} question(s)</div>
+    <div style="background:#E8F5E9;border-radius:8px;padding:8px;margin-top:6px;font-size:12px;max-height:150px;overflow-y:auto;">
+      ${_parsedPYQPaste.map((q,i)=>`<div style="padding:4px 0;${i>0?"border-top:1px solid #c8e6c9":""};display:flex;gap:8px;align-items:center;">
+        <span style="flex:1;"><strong>Q${i+1}:</strong> ${escapeHTML(q.q.slice(0,60))}${q.q.length>60?"…":""}</span>
+        <select class="inp" style="width:auto;font-size:10px;padding:2px 4px;flex-shrink:0;" onchange="_parsedPYQPaste[${i}].subject=this.value;">
+          ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
+        </select>
+      </div>`).join("")}
+    </div>`;
+  btn.disabled=false;
+}
+
+async function addPastedPYQs(){
+  if(!_parsedPYQPaste.length){ toast("Parse text first.","e"); return; }
+  const exam=document.getElementById("pyqPasteExam").value;
+  const year=document.getElementById("pyqPasteYear").value;
+  const fallbackSubj=document.getElementById("pyqPasteSubject").value;
+  const entries=_parsedPYQPaste.map(q=>({
+    id:Date.now()+"_"+Math.random().toString(36).slice(2,6),
+    exam, year, subject:q.subject||fallbackSubj,
+    q:q.q, opts:q.opts, ans:q.ans, exp:q.exp, diff:"medium",
+    addedBy:currentUser?.name||"Admin", addedAt:new Date().toISOString()
+  }));
+  pyqData=[...entries,...pyqData];
+  await sSet("bhu:pyqdata",pyqData);
+  toast(`✅ ${entries.length} PYQs added!`);
+  document.getElementById("pyqPasteText").value="";
+  _parsedPYQPaste=[];
+  document.getElementById("pyqPasteStatus").style.display="none";
+  renderAdmin();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PREMIUM GATES — lock features for free users
+// ═══════════════════════════════════════════════════════════════
+const PREMIUM_FEATURES={
+  quiz:"Practice Quiz — unlimited subjects & questions",
+  daily:"Daily Quiz & Streak Tracking",
+  planner:"AI Study Planner",
+  analytics:"Performance Analytics",
+  pyq:"PYQ Bank — full answer reveal",
+  doubt:"Community Doubts — post & reply"
+};
+
+function premiumGateHTML(feature,style=""){
+  return `<div class="card" style="padding:36px 24px;text-align:center;${style}">
+    <div style="font-size:44px;margin-bottom:12px;">⭐</div>
+    <div style="font-weight:800;font-size:18px;margin-bottom:8px;">Premium Feature</div>
+    <div style="color:#777;font-size:14px;margin-bottom:6px;">${escapeHTML(PREMIUM_FEATURES[feature]||feature)}</div>
+    <div style="color:#777;font-size:12px;margin-bottom:20px;">Upgrade to get full access — starts at just ₹19/month</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-gold" style="padding:11px 24px;font-size:14px;" onclick="openPay()">⭐ Upgrade Now</button>
+      <button class="btn btn-light" style="padding:11px 20px;font-size:13px;" onclick="openLogin()">Login / Register</button>
+    </div>
+  </div>`;
+}
+
+// Wrap renderDailyInTab to add premium gate
+const _origRenderDailyInTab=renderDailyInTab;
+function renderDailyInTab(){
+  if(!currentUser){ document.getElementById("dailyTodayBlockQ").innerHTML=premiumGateHTML("daily"); return; }
+  if(!isSubActive(currentUser)){
+    // Allow 1 free daily attempt per day, then gate
+    const email=currentUser.email;
+    let sd={}; try{sd=JSON.parse(localStorage.getItem("bhu:streak")||"{}");}catch{}
+    const today=new Date().toISOString().split("T")[0];
+    const ud=sd[email]||{};
+    if(ud.lastDate===today){ _origRenderDailyInTab(); return; } // already done today, show result
+    // Show 1-attempt notice for free users
+    const todayBlock=document.getElementById("dailyTodayBlockQ");
+    if(todayBlock) todayBlock.innerHTML=`
+      <div class="card" style="padding:20px;margin-bottom:16px;border:2px solid #f59e0b;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="font-size:28px;">🔥</div>
+          <div><div style="font-weight:700;font-size:15px;">Daily Quiz — 1 Free Attempt</div>
+          <div style="font-size:12px;color:#777;">Free accounts get 1 daily quiz attempt. Upgrade for unlimited streaks & history.</div></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="startDailyInTab()">Start Free Attempt →</button>
+          <button class="btn btn-gold" onclick="openPay()">⭐ Upgrade for Full Access</button>
+        </div>
+      </div>`;
+    // Render history placeholder  
+    const histEl=document.getElementById("dailyHistoryQ");
+    if(histEl) histEl.innerHTML=`<div style="text-align:center;padding:20px;color:#777;font-size:13px;">📊 Full history & streak tracking — <a href="#" onclick="event.preventDefault();openPay();" style="color:#00B050;font-weight:700;">Premium feature</a></div>`;
+    return;
+  }
+  _origRenderDailyInTab();
+}
+
+// Override syncAnalyticsToTab for premium gate
+const _origSyncAnalyticsToTab=syncAnalyticsToTab;
+function syncAnalyticsToTab(){
+  if(!currentUser){ 
+    const lockEl=document.getElementById("analyticsLockQ"); const contEl=document.getElementById("analyticsContentQ");
+    if(lockEl) lockEl.style.display="block"; if(contEl) contEl.style.display="none"; return;
+  }
+  if(!isSubActive(currentUser)){
+    const lockEl=document.getElementById("analyticsLockQ"); const contEl=document.getElementById("analyticsContentQ");
+    if(lockEl){ lockEl.style.display="block"; lockEl.innerHTML=premiumGateHTML("analytics"); }
+    if(contEl) contEl.style.display="none"; return;
+  }
+  _origSyncAnalyticsToTab();
+}
+
+// Premium gate for doubts posting
+const _origPostDoubt=postDoubt;
+async function postDoubt(){
+  if(!currentUser){ openLogin(); return; }
+  if(!isSubActive(currentUser)){
+    // Free users: max 2 posts total
+    const myQs=questions.filter(q=>q.authorEmail===currentUser.email);
+    if(myQs.length>=2){
+      toast("⭐ Free limit: 2 doubts. Upgrade to post unlimited questions!","e");
+      setTimeout(()=>openPay(),800); return;
+    }
+  }
+  await _origPostDoubt();
+}
+
+// Premium gate on planner generate
+function generatePlan2(){
+  if(!currentUser){ openLogin(); return; }
+  if(!isSubActive(currentUser)){
+    // Free users: only 7-day plan
+    toast("⭐ Upgrade for full AI study plans! Showing 7-day free preview.","e");
+    _generatePlan2Impl(7);
+    return;
+  }
+  _generatePlan2Impl(null);
+}
+
+function _generatePlan2Impl(freeLimit){
+  const dateEl=document.getElementById("planDate2");
+  const examEl=document.getElementById("planExam2");
+  const hoursEl=document.getElementById("planHours2");
+  if(!dateEl?.value){toast("Please select an exam date.","e");return;}
+  const examDate=new Date(dateEl.value); const today=new Date();
+  today.setHours(0,0,0,0);
+  let daysLeft=Math.ceil((examDate-today)/(1000*60*60*24));
+  if(daysLeft<=0){toast("Exam date must be in the future.","e");return;}
+  const maxDays=freeLimit||daysLeft;
+  const showDays=Math.min(daysLeft,maxDays);
+  document.getElementById("plannerSetup2").style.display="none";
+  document.getElementById("plannerOutput2").style.display="block";
+  const cdEl=document.getElementById("planCountdown2"); if(cdEl) cdEl.textContent=daysLeft;
+  const exEl=document.getElementById("planExamLabel2"); if(exEl) exEl.textContent=examEl.value+" · "+hoursEl.value+" hrs/day";
+  const topicsPool=[
+    "Agronomy — Crop Production & Management","Soil Science — Chemistry & Fertility",
+    "Genetics & Plant Breeding — Hybridization","Plant Pathology — Disease Management",
+    "Entomology — IPM & Pest Control","Horticulture — Fruit & Vegetable Science",
+    "Agricultural Economics — Farm Finance","Extension Education — T&V Systems",
+    "Dairy Science — Milk Processing & Quality","Agricultural Statistics & Research Methods",
+    "Agronomy — Weed & Irrigation Management","Plant Pathology — Disease Control",
+    "Soil Science — Microbiology & pH","PYQ Revision — ICAR JRF 2024",
+    "Full Mock Test — All Subjects"
+  ];
+  const planEl=document.getElementById("planDaysList2");
+  if(!planEl) return;
+  planEl.innerHTML=Array.from({length:showDays},(_,i)=>{
+    const d=new Date(today); d.setDate(today.getDate()+i);
+    const isToday=i===0;
+    const topic=topicsPool[i%topicsPool.length];
+    return `<div class="plan-day ${isToday?"today":""}" style="margin-bottom:8px;">
+      <div class="plan-num">${i+1}</div>
+      <div style="flex:1;"><div style="font-weight:700;font-size:13px;">${topic}</div>
+        <div style="font-size:11px;opacity:.7;margin-top:2px;">${d.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"})}</div></div>
+      ${isToday?'<span style="font-size:11px;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:50px;font-weight:700;">TODAY</span>':""}
+    </div>`;
+  }).join("")
+  +(freeLimit&&daysLeft>freeLimit?`
+    <div style="text-align:center;padding:20px;border:2px dashed #f59e0b;border-radius:14px;margin-top:10px;">
+      <div style="font-size:22px;margin-bottom:8px;">⭐</div>
+      <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${daysLeft-freeLimit} more days locked</div>
+      <div style="font-size:12px;color:#777;margin-bottom:12px;">Upgrade to unlock your full ${daysLeft}-day study plan</div>
+      <button class="btn btn-gold" style="padding:9px 20px;font-size:13px;" onclick="openPay()">Upgrade to Full Plan →</button>
+    </div>`
+  :(daysLeft>30?`<div style="text-align:center;color:#777;font-size:13px;padding:12px;">…and ${daysLeft-30} more days</div>`:""));
+}
+
+function resetPlan2(){
+  document.getElementById("plannerSetup2").style.display="block";
+  document.getElementById("plannerOutput2").style.display="none";
+}
+function syncPlannerToTab(){}
+
+// ═══════════════════════════════════════════════════════════════
+// PWA — Progressive Web App setup
+// ═══════════════════════════════════════════════════════════════
+(function initPWA(){
+  // Inline manifest injected as blob URL so no external file is needed
+  const manifest={
+    name:"Agri Edu Rise",
+    short_name:"AgriEdu",
+    description:"Agriculture e-Learning Portal — Notes, Quizzes, AI Professor",
+    start_url:"./",
+    display:"standalone",
+    background_color:"#F2F5F2",
+    theme_color:"#0F3D23",
+    orientation:"portrait-primary",
+    icons:[
+      {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230F3D23'/%3E%3Ctext y='130' x='96' text-anchor='middle' font-size='120'%3E🌾%3C/text%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml"},
+      {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230F3D23'/%3E%3Ctext y='360' x='256' text-anchor='middle' font-size='320'%3E🌾%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}
+    ],
+    categories:["education"],
+    shortcuts:[
+      {name:"Daily Quiz",short_name:"Quiz",url:"./#daily",description:"Take today's quiz"},
+      {name:"Study Resources",short_name:"Resources",url:"./#subjects",description:"Browse study materials"}
+    ]
+  };
+
+  // Inject manifest blob
+  try{
+    const blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
+    const url=URL.createObjectURL(blob);
+    const link=document.getElementById("pwaManifestLink");
+    if(link) link.href=url;
+  }catch(e){ console.warn("Manifest injection failed:",e); }
+
+  // Register inline service worker via blob for offline caching
+  if("serviceWorker" in navigator){
+    const swCode=`
+const CACHE="agri-edu-rise-v1";
+const OFFLINE_URLS=["/"];
+self.addEventListener("install",e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(OFFLINE_URLS)).catch(()=>{}));
+  self.skipWaiting();
+});
+self.addEventListener("activate",e=>{
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim();
+});
+self.addEventListener("fetch",e=>{
+  if(e.request.method!=="GET") return;
+  e.respondWith(
+    fetch(e.request).then(r=>{
+      if(r&&r.status===200){
+        const rc=r.clone();
+        caches.open(CACHE).then(c=>c.put(e.request,rc));
+      }
+      return r;
+    }).catch(()=>caches.match(e.request))
+  );
+});`;
+    try{
+      const swBlob=new Blob([swCode],{type:"application/javascript"});
+      const swUrl=URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl,{scope:"./"})
+        .then(()=>console.log("✅ Agri Edu Rise SW registered"))
+        .catch(e=>console.warn("SW register failed:",e));
+    }catch(e){ console.warn("SW blob failed:",e); }
+  }
+
+  // PWA Install prompt
+  let deferredPrompt=null;
+  window.addEventListener("beforeinstallprompt",e=>{
+    e.preventDefault(); deferredPrompt=e;
+    showInstallBanner();
+  });
+
+  function showInstallBanner(){
+    if(document.getElementById("pwaInstallBanner")) return;
+    const banner=document.createElement("div");
+    banner.id="pwaInstallBanner";
+    banner.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;padding:14px 20px;border-radius:18px;display:flex;align-items:center;gap:12px;z-index:9998;box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:360px;width:calc(100% - 32px);animation:msgIn .3s ease both;";
+    banner.innerHTML=`
+      <div style="font-size:28px;flex-shrink:0;">🌾</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:13px;">Install Agri Edu Rise</div>
+        <div style="font-size:11px;opacity:.75;margin-top:2px;">Add to home screen for offline access</div>
+      </div>
+      <button onclick="installPWA()" style="background:#00B050;border:none;color:white;font-weight:700;padding:7px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-family:inherit;flex-shrink:0;">Install</button>
+      <button onclick="document.getElementById('pwaInstallBanner').remove()" style="background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">✕</button>`;
+    document.body.appendChild(banner);
+  }
+
+  window.installPWA=function(){
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(r=>{
+      if(r.outcome==="accepted") toast("🌾 Agri Edu Rise installed!");
+      deferredPrompt=null;
+      const b=document.getElementById("pwaInstallBanner"); if(b) b.remove();
+    });
+  };
+
+  window.addEventListener("appinstalled",()=>{
+    const b=document.getElementById("pwaInstallBanner"); if(b) b.remove();
+    toast("✅ App installed successfully!");
+  });
+})();
 </script>
 
 </body>
