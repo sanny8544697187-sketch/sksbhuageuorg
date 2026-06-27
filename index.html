@@ -24,7 +24,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Agri Edu Rise"/>
-  <link rel="manifest" href="#" id="pwaManifestLink"/>
+  <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
+  <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png"/>
+  <link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png"/>
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"/>
+  <link rel="shortcut icon" href="./icons/icon-96.png"/>
+  <link rel="manifest" href="./manifest.json"/>
   <title>Agri Edu Rise — Agriculture e-Learning v10</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -2359,15 +2364,45 @@ function renderQuizQuestion(){
   const diffBadge=q.difficulty?`<span style="background:#F3E5F5;color:#7B1FA2;font-size:9px;padding:2px 8px;border-radius:50px;font-weight:700;text-transform:capitalize;margin-left:6px;">${escapeHTML(q.difficulty)}</span>`:'';
   const isMixed=quizSubj.startsWith("Mixed");
 
+  // ── Render question text (handle match-the-following column blocks) ──
+  function renderQText(rawQ){
+    if(!rawQ) return '';
+    const parts=rawQ.split('\n');
+    let html='<div style="font-weight:700;font-size:15px;line-height:1.6;margin-bottom:4px;">'+escapeHTML(parts[0])+'</div>';
+    let col1=[],col2=[];
+    parts.slice(1).forEach(p=>{
+      const c1=p.match(/^\[Column I\]\s*(.+)/);
+      const c2=p.match(/^\[Column II\]\s*(.+)/);
+      if(c1) col1=c1[1].split('|').map(s=>s.trim());
+      else if(c2) col2=c2[1].split('|').map(s=>s.trim());
+      else if(p.trim()) html+='<div style="font-size:13px;color:#555;margin-top:4px;">'+escapeHTML(p)+'</div>';
+    });
+    if(col1.length){
+      html+=`<div style="margin-top:12px;overflow-x:auto;">
+        <table style="border-collapse:collapse;font-size:13px;width:100%;max-width:480px;">
+          <thead><tr>
+            <th style="background:#0F3D23;color:white;padding:7px 12px;border-radius:8px 0 0 0;text-align:left;font-size:12px;">Column I</th>
+            <th style="background:#1B6B3A;color:white;padding:7px 12px;border-radius:0 8px 0 0;text-align:left;font-size:12px;">Column II</th>
+          </tr></thead>
+          <tbody>${col1.map((c,ci)=>`<tr style="background:${ci%2?"#F8FBF8":"#fff"};">
+            <td style="padding:7px 12px;border:1px solid #E0EAE0;font-weight:600;">${escapeHTML(c)}</td>
+            <td style="padding:7px 12px;border:1px solid #E0EAE0;">${col2[ci]?escapeHTML(col2[ci]):'—'}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>`;
+    }
+    return html;
+  }
+
   el.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-      <div style="font-size:13px;font-weight:600;color:#777;">${escapeHTML(quizSubj)}${isMixed&&q.subj?` · <span style="color:#0F3D23;">${escapeHTML(q.subj)}</span>`:''} · Q${quizIdx+1} of ${quizQs.length}${diffBadge}</div>
+      <div style="font-size:13px;font-weight:600;color:#777;">${escapeHTML(quizSubj)}${isMixed&&q.subj?` · <span style="color:#0F3D23;">${escapeHTML(q.subj)}</span>`:''} · Q${quizIdx+1} of ${quizQs.length}${diffBadge}${q.isMatchType?'<span style="background:#EDE7F6;color:#5E35B1;font-size:9px;padding:1px 7px;border-radius:50px;font-weight:700;margin-left:6px;">🔀 MATCH</span>':''}</div>
       ${quizTimerEnabled?`<div id="quizTimerDisplay" style="font-weight:800;font-size:14px;color:${quizTimeLeft<30?"#E53935":"#0F3D23"};background:#F2F5F2;padding:4px 12px;border-radius:50px;">${fmtTimer(quizTimeLeft)}</div>`:''}
     </div>
     <div style="background:#E8F5E9;border-radius:50px;overflow:hidden;height:8px;margin-bottom:14px;"><div style="height:100%;background:#00B050;width:${((quizIdx)/quizQs.length)*100}%;transition:width .3s;"></div></div>
     <div id="quizNav" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;"></div>
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:20px;">
-      <div style="font-weight:700;font-size:16px;line-height:1.55;">${escapeHTML(q.q)}</div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;">
+      <div style="flex:1;min-width:0;">${renderQText(q.q)}</div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
         <button onclick="toggleSaveQuizQ('${escapeHTML(q.subj||quizSubj)}',quizQs[${quizIdx}])" title="Save question" style="background:${isQuizQSaved(q.subj||quizSubj,q)?"#00B050":"#F2F5F2"};color:${isQuizQSaved(q.subj||quizSubj,q)?"white":"#777"};border:none;cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📌</button>
         <button onclick="toggleFlag()" title="Flag for review" style="background:${quizFlagged[quizIdx]?"#FFF3E0":"#F2F5F2"};color:${quizFlagged[quizIdx]?"#f59e0b":"#777"};border:none;cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🚩</button>
@@ -4192,20 +4227,34 @@ async function handleQuizDocument(input){
 
 function renderParsedDocPreview(status, btn){
   if(_parsedPdfQuestions.length===0){
-    status.innerHTML+=`<div style="color:#E53935;font-size:13px;margin-top:8px;">⚠️ No questions found. Check the format — each question must start with <strong>Q.</strong> and options with <strong>A. B. C. D.</strong> and answer as <strong>ANS: A</strong>. (For OCR results, double-check the source image is clear and well-lit.)</div>`;
+    status.innerHTML+=`<div style="color:#E53935;font-size:13px;margin-top:8px;">⚠️ No questions found. Supported formats:<br>
+      <code style="font-size:11px;background:#F2F5F2;padding:2px 6px;border-radius:4px;">Q. question text<br>A. option&nbsp; B. option&nbsp; C. option&nbsp; D. option<br>ANS: B&nbsp; EXP: explanation</code><br>
+      For Match-the-Following, include column pairs like <code style="font-size:11px;">A. item1 &nbsp;1. item2</code> between the question and options.<br>
+      If OCR output is garbled, try a clearer scan or higher resolution photo.</div>`;
     return;
   }
   const fallbackSubj=document.getElementById("pdfQuizSubject").value;
   const detectedCount=_parsedPdfQuestions.filter(q=>q.subject).length;
-  status.innerHTML+=`<div style="color:#00B050;font-size:13px;font-weight:600;margin-top:8px;">✅ Found ${_parsedPdfQuestions.length} question(s) · 🤖 ${detectedCount}/${_parsedPdfQuestions.length} subject(s) auto-detected</div>
-    <div style="background:#E8F5E9;border-radius:10px;padding:12px;margin-top:8px;max-height:280px;overflow-y:auto;">
+  const matchCount=_parsedPdfQuestions.filter(q=>q.isMatchType).length;
+  status.innerHTML+=`<div style="color:#00B050;font-size:13px;font-weight:600;margin-top:8px;">
+    ✅ Found ${_parsedPdfQuestions.length} question(s)
+    ${matchCount?`<span style="background:#EDE7F6;color:#5E35B1;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:700;margin-left:6px;">🔀 ${matchCount} Match-type</span>`:''}
+    · 🤖 ${detectedCount}/${_parsedPdfQuestions.length} subjects auto-detected
+  </div>
+    <div style="background:#E8F5E9;border-radius:10px;padding:12px;margin-top:8px;max-height:300px;overflow-y:auto;">
       ${_parsedPdfQuestions.map((q,i)=>{
         const tagColor=q.subjectSource==="heading"?"#00B050":q.subjectSource==="auto"?"#1565C0":"#c9690a";
-        const tagLabel=q.subjectSource==="heading"?"📌 From document heading":q.subjectSource==="auto"?"🤖 Auto-detected":"❓ Not detected — using fallback";
-        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
-          <div style="flex:1;font-size:12px;">
-            <strong>Q${i+1}:</strong> ${escapeHTML(q.q.slice(0,80))}${q.q.length>80?"…":""}
-            <div style="margin-top:3px;font-size:10px;color:${tagColor};font-weight:600;">${tagLabel}</div>
+        const tagLabel=q.subjectSource==="heading"?"📌 Heading":q.subjectSource==="auto"?"🤖 Auto":"❓ Fallback";
+        // Show first line only (before any \n column data)
+        const preview=q.q.split('\n')[0].slice(0,90);
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:9px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
+          <div style="flex:1;font-size:12px;min-width:0;">
+            <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
+              ${q.isMatchType?'<span style="background:#EDE7F6;color:#5E35B1;font-size:9px;padding:1px 6px;border-radius:50px;font-weight:700;flex-shrink:0;">🔀 MATCH</span>':''}
+              <strong style="flex-shrink:0;">Q${i+1}:</strong>
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(preview)}${q.q.length>90?"…":""}</span>
+            </div>
+            <div style="font-size:10px;color:${tagColor};font-weight:600;">${tagLabel} · Ans: ${["A","B","C","D"][q.ans]||"?"} · ${q.opts.length} opts</div>
           </div>
           <select class="inp" style="width:auto;font-size:11px;padding:4px 6px;flex-shrink:0;" onchange="_parsedPdfQuestions[${i}].subject=this.value;_parsedPdfQuestions[${i}].subjectSource='manual';">
             ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
@@ -4213,7 +4262,7 @@ function renderParsedDocPreview(status, btn){
         </div>`;
       }).join("")}
     </div>
-    <div style="font-size:11px;color:#777;margin-top:8px;">Double-check the subject tag next to each question — change the dropdown if a question was misclassified, then add to the Quiz Bank.</div>`;
+    <div style="font-size:11px;color:#777;margin-top:8px;">Review each question's subject dropdown — adjust if misclassified, then click <strong>Parse & Add to Quiz Bank</strong>.</div>`;
   btn.disabled=false;
 }
 
@@ -4247,75 +4296,192 @@ function autoDetectSubject(qText, opts){
   return bestScore>0 ? bestSubj : null;
 }
 
-// Parses raw text (from native PDF extraction, OCR, or a hand-pasted block) into
-// structured questions. Tolerant of common OCR noise: stray spaces around punctuation,
-// "(A)"/"a)"/"A:" option markers, and "Answer:"/"Ans:" variants.
+// ═══════════════════════════════════════════════════════════════
+// UNIVERSAL QUESTION PARSER — v2
+// Handles:
+//  • Standard MCQ   : Q. / A. / B. / C. / D. / ANS: / EXP:
+//  • Match Following: detects column pairs, merges into question
+//  • Assertion-Reason, Statement types (stored as MCQ)
+//  • Heavy OCR noise: smart quotes, non-breaking spaces, mid-word
+//    line-breaks, mixed case option markers, 1-based ANS numbers
+// ═══════════════════════════════════════════════════════════════
 function parsePdfQuizText(text){
   const questions=[];
-  // Normalise line breaks + collapse repeated whitespace that OCR often introduces
-  const lines=text.replace(/\r/g,"").split("\n")
-    .map(l=>l.replace(/\s+/g," ").trim()).filter(Boolean);
-  let i=0;
-  let headingSubject=null;
 
+  // ── 1. PRE-PROCESS raw text ─────────────────────────────────
+  const clean=text
+    .replace(/\r\n?/g,'\n')
+    .replace(/\t/g,' ')
+    .replace(/\u00a0|\u200b|\u200c|\u200d/g,' ')   // nbsp / zero-width
+    .replace(/['']/g,"'").replace(/[""]/g,'"')      // smart → straight quotes
+    .replace(/–|—/g,'-')                            // em/en dash → hyphen
+    .replace(/-\n([a-z])/g,'$1')                    // OCR hyphen word-wrap
+    .replace(/[ ]{2,}/g,' ');                       // collapse multiple spaces
+
+  const rawLines=clean.split('\n').map(l=>l.trim());
+
+  // ── 2. PRE-SCAN: join orphaned lines into their logical owner
+  //    (OCR often splits "Q. What is" + "NPK?" across two lines)
+  const lines=[];
+  for(let r=0;r<rawLines.length;r++){
+    const cur=rawLines[r];
+    if(!cur){ lines.push(''); continue; }
+    // If previous non-blank line ended without sentence-terminator
+    // AND current line has no structural marker → merge up
+    if(lines.length>0){
+      const prev=lines[lines.length-1];
+      const prevIsBlank=!prev.trim();
+      const curHasMarker=
+        /^(?:Q(?:uestion)?\.?\s*\d|\d+[.)]\s)/i.test(cur) ||
+        /^\(?[A-Da-d]\)?[.):]\s/i.test(cur) ||
+        /^(?:ANS|ANSWER|EXP|Exp|Ans|Answer|Reason|Hint|Sol)/i.test(cur) ||
+        /^(?:Subject|Section|Topic|Unit|Chapter)\s*[:\-]/i.test(cur);
+      if(!prevIsBlank && !curHasMarker && prev.length>0 &&
+         !/[.!?:]\s*$/.test(prev)){
+        lines[lines.length-1]=prev+' '+cur;
+        continue;
+      }
+    }
+    lines.push(cur);
+  }
+
+  // ── 3. Compiled regex patterns ───────────────────────────────
+  const RE_SUBJ =/^(?:Subject|Section|Topic|Unit|Chapter)\s*[:\-–]\s*(.+)/i;
+  // Q., Q.1, Q1., Ques., Question 1., 1. , 1) 
+  const RE_QSTART=/^(?:Q(?:uestion|ues)?\.?\s*(\d+)\s*[.):\s]?\s*|(\d+)\s*[.)]\s+)(.+)/i;
+  // A. / (A) / A) / A: / a. — also catches i. ii. iii. for numbered lists inside match
+  const RE_OPT  =/^\(?([A-Da-d])\)?[.):\-\s]\s*(.+)/;
+  // ANS: A  / Answer: (B) / Ans B / Ans-C / ANS.D / Correct Answer: A / Ans: 2 (1-based)
+  const RE_ANS  =/^(?:Ans(?:wer)?|ANS|Correct\s*(?:Ans(?:wer)?|Option)?|Key)\s*[.:)\-\s]+\(?([A-Da-d1-4])\)?/i;
+  // EXP: / Explanation: / Reason: / Hint: / Solution: / Note:
+  const RE_EXP  =/^(?:Exp(?:lanation)?|Reason|Hint|Sol(?:ution)?|Note|Exp\.)\s*[.:)\-\s]+(.+)/i;
+  // Column header lines to skip
+  const RE_COLHDR=/^(?:Column|List|Set|Group)\s*[I1II2]/i;
+  // Match-the-following column pair on ONE line: "A. text   1. text"
+  const RE_PAIR  =/^([A-Da-d])[.)]\s+(.+?)\s{2,}(\d+)[.)]\s+(.+)/;
+  // Standalone numbered column-2 item: "1. Nitrogen" "ii. Rice"
+  const RE_COL2  =/^(?:\d+|[ivxIVX]+)[.)]\s+(.+)/;
+
+  const OPT_LETTERS=['A','B','C','D'];
+  let headingSubject=null, i=0;
+
+  // ── 4. Main parse loop ────────────────────────────────────────
   while(i<lines.length){
     const line=lines[i];
+    if(!line){ i++; continue; }
 
-    // Detect subject heading: "Subject: Agronomy" or "-- Agronomy --"
-    const subjHeadMatch=line.match(/^(?:Subject|Section|Topic)\s*[:\-–]\s*(.+)/i);
-    if(subjHeadMatch){
-      headingSubject=normalizeSubjectName(subjHeadMatch[1])||subjHeadMatch[1].trim();
+    // ── 4a. Subject heading ──────────────────────────────────
+    const sh=line.match(RE_SUBJ);
+    if(sh){
+      headingSubject=normalizeSubjectName(sh[1])||sh[1].trim();
       i++; continue;
     }
 
-    // Detect question line — handles Q1, Q.1, 1., Q:, Question 1 etc.
-    const qMatch=line.match(/^(?:Q(?:uestion)?\.?\s*\d*[.):\s]?\s*|\d+[.)]\s+)(.+)/i);
-    if(!qMatch){ i++; continue; }
-    let qText=qMatch[1].trim();
-    // Sometimes the question continues on the next line (no option prefix yet)
+    // ── 4b. Question start ───────────────────────────────────
+    const qm=line.match(RE_QSTART);
+    if(!qm){ i++; continue; }
+    let qText=qm[3].trim();
     i++;
-    while(i<lines.length && !lines[i].match(/^\(?[A-Da-d]\)?[.):]\s/i) && !lines[i].match(/^(?:Q(?:uestion)?\.?\s*\d*[.):\s]|\d+[.)]\s+)/i) && !lines[i].match(/^(?:ANS|ANSWER|EXP)/i)){
-      const cont=lines[i].trim();
-      if(!cont){ i++; break; } // blank line = end of question text
-      qText+=" "+cont; i++;
+
+    // Match-the-following detection (early, so we can handle columns)
+    const isMatch=/match\s+(?:the\s+)?(?:following|column|list)|arrange\s+match/i.test(qText);
+    const col1=[], col2=[], col2Extra=[];
+
+    // ── 4c. Absorb question body lines ──────────────────────
+    while(i<lines.length){
+      const nxt=lines[i];
+      // Hard stops
+      if(!nxt){ i++; break; }
+      if(nxt.match(RE_OPT))   break;
+      if(nxt.match(RE_ANS))   break;
+      if(nxt.match(RE_EXP))   break;
+      if(nxt.match(RE_QSTART)) break;
+
+      // Skip column header lines
+      if(nxt.match(RE_COLHDR)){ i++; continue; }
+
+      // Match-type: inline pair "A. item1   1. item2"
+      if(isMatch){
+        const pair=nxt.match(RE_PAIR);
+        if(pair){ col1.push(pair[2].trim()); col2.push(pair[4].trim()); i++; continue; }
+        // Standalone col-2 numbered item (split across lines in OCR)
+        const c2=nxt.match(RE_COL2);
+        if(c2 && col1.length>0){ col2Extra.push(c2[1].trim()); i++; continue; }
+        // Standalone col-1 letter item "A. Nitrogen"
+        const c1=nxt.match(/^([A-Da-d])[.)]\s+(.+)/);
+        if(c1 && !col2Extra.length && col2.length===0){
+          col1.push(c1[2].trim()); i++; continue;
+        }
+        // Fill col2 from numbered extras when col1 was collected first
+        if(col2Extra.length && col1.length && !col2.length){
+          col2Extra.forEach(v=>col2.push(v));
+          col2Extra.length=0;
+        }
+      }
+
+      qText+=' '+nxt; i++;
     }
-    if(qText.length<4){ continue; }
 
-    const opts=[]; let ansIdx=-1; let exp="";
-    const optLetters=["A","B","C","D"];
+    if(qText.trim().length<4) continue;
 
-    // Read options — tolerant of (A), A., A), A: markers; also handles "a)" lowercase
+    // Embed column data into qText for match questions
+    if(isMatch && col1.length){
+      const merged=col2.length?col2:col2Extra;
+      qText+='\n[Column I] '+col1.map((c,ci)=>String.fromCharCode(65+ci)+'. '+c).join(' | ');
+      if(merged.length)
+        qText+='\n[Column II] '+merged.map((c,ci)=>(ci+1)+'. '+c).join(' | ');
+    }
+
+    // ── 4d. Options ──────────────────────────────────────────
+    const opts=[];
     while(i<lines.length && opts.length<4){
       const ol=lines[i];
-      // Match option start: (A), A., A), A:  — case insensitive
-      const optM=ol.match(/^\(?([A-Da-d])\)?[.).:\s]\s*(.+)/);
-      if(optM){
-        opts.push(optM[2].trim()); i++;
-      } else {
-        // Option text may continue on next line if no prefix — append if we're mid-options
-        if(opts.length>0 && !ol.match(/^(?:ANS|ANSWER|EXP|Q\.)/i)){
-          opts[opts.length-1]+=" "+ol; i++;
-        } else break;
-      }
+      if(!ol){ i++; break; }
+      const om=ol.match(RE_OPT);
+      if(om){
+        opts.push(om[2].trim()); i++;
+        // Absorb wrapped option continuation
+        while(i<lines.length){
+          const cl=lines[i];
+          if(!cl||cl.match(RE_OPT)||cl.match(RE_ANS)||cl.match(RE_EXP)||cl.match(RE_QSTART)) break;
+          opts[opts.length-1]+=' '+cl; i++;
+        }
+      } else break;
     }
-    if(opts.length<2){ continue; }
+    if(opts.length<2) continue;
 
-    // Read ANS / ANSWER line — handles "ANS: A", "Answer: (B)", "Ans. C"
-    while(i<lines.length){
+    // ── 4e. Answer + Explanation ─────────────────────────────
+    let ansIdx=-1, exp='', safeBreak=0;
+    while(i<lines.length && safeBreak<8){
+      safeBreak++;
       const al=lines[i];
-      const ansM=al.match(/^(?:ANS(?:WER)?)[.:)\s]+\(?([A-Da-d])\)?/i);
-      const expM=al.match(/^(?:EXP(?:LANATION)?|REASON|HINT)[.:)\s]+(.+)/i);
-      if(ansM){ ansIdx=optLetters.indexOf(ansM[1].toUpperCase()); i++; }
-      else if(expM){ exp=expM[1].trim(); i++; }
-      else break;
+      if(!al){ i++; break; }
+      const am=al.match(RE_ANS);
+      const em=al.match(RE_EXP);
+      if(am){
+        const token=am[1].toUpperCase();
+        ansIdx=OPT_LETTERS.indexOf(token);
+        // Handle "ANS: 2" (1-based number)
+        if(ansIdx===-1){const n=parseInt(token);if(n>=1&&n<=4)ansIdx=n-1;}
+        i++;
+      } else if(em){
+        exp=em[1].trim(); i++;
+        // Multi-line explanation
+        while(i<lines.length){
+          const cl=lines[i];
+          if(!cl||cl.match(RE_QSTART)||cl.match(RE_OPT)||cl.match(RE_ANS)) break;
+          exp+=' '+cl; i++;
+        }
+      } else break;
     }
     if(ansIdx===-1) ansIdx=0;
 
     const autoSubj=headingSubject||autoDetectSubject(qText,opts);
     questions.push({
-      q:qText, opts, ans:ansIdx, exp:exp||"", premium:false,
+      q:qText.trim(), opts, ans:ansIdx, exp:exp||'', premium:false,
       subject:autoSubj,
-      subjectSource:headingSubject?"heading":(autoSubj?"auto":"none")
+      subjectSource:headingSubject?'heading':(autoSubj?'auto':'none'),
+      isMatchType:isMatch
     });
   }
   return questions;
@@ -4352,16 +4518,22 @@ function renderBulkPreview(){
   const status=document.getElementById("bulkParseStatus");
   const btn=document.getElementById("bulkAddBtn");
   if(_bulkParsedQuestions.length===0){
-    status.innerHTML=`<div style="color:#E53935;font-size:13px;">⚠️ No questions detected. Make sure each question starts with <strong>Q.</strong>, options with <strong>A./B./C./D.</strong>, and answer as <strong>ANS: A</strong>.</div>`;
+    status.innerHTML=`<div style="color:#E53935;font-size:13px;">⚠️ No questions detected. Supported format:<br>
+      <code style="font-size:11px;">Q. question text<br>A. opt&nbsp; B. opt&nbsp; C. opt&nbsp; D. opt<br>ANS: B&nbsp; EXP: explanation</code><br>
+      For Match-the-Following: add column pairs between the question and options.</div>`;
     btn.disabled=true; return;
   }
   const fallbackSubj=document.getElementById("bulkFallbackSubject").value;
   const detectedCount=_bulkParsedQuestions.filter(q=>q.subject).length;
-  status.innerHTML=`<div style="color:#00B050;font-size:13px;font-weight:600;">✅ Found ${_bulkParsedQuestions.length} question(s) · 🤖 ${detectedCount}/${_bulkParsedQuestions.length} subject(s) auto-detected</div>
+  const matchCount=_bulkParsedQuestions.filter(q=>q.isMatchType).length;
+  status.innerHTML=`<div style="color:#00B050;font-size:13px;font-weight:600;">✅ Found ${_bulkParsedQuestions.length} question(s) ${matchCount?`· 🔀 ${matchCount} Match-type`:''} · 🤖 ${detectedCount}/${_bulkParsedQuestions.length} auto-detected</div>
     <div style="background:#E8F5E9;border-radius:10px;padding:12px;margin-top:8px;max-height:240px;overflow-y:auto;">
       ${_bulkParsedQuestions.map((q,i)=>`
         <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
-          <div style="flex:1;font-size:12px;"><strong>Q${i+1}:</strong> ${escapeHTML(q.q.slice(0,80))}${q.q.length>80?"…":""}</div>
+          <div style="flex:1;font-size:12px;min-width:0;">
+            ${q.isMatchType?'<span style="background:#EDE7F6;color:#5E35B1;font-size:9px;padding:1px 5px;border-radius:50px;font-weight:700;margin-right:4px;">🔀</span>':''}
+            <strong>Q${i+1}:</strong> ${escapeHTML(q.q.split('\n')[0].slice(0,80))}${q.q.length>80?"…":""}
+          </div>
           <select class="inp" style="width:auto;font-size:11px;padding:4px 6px;flex-shrink:0;" onchange="_bulkParsedQuestions[${i}].subject=this.value;">
             ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
           </select>
@@ -5323,109 +5495,126 @@ function resetPlan2(){
 function syncPlannerToTab(){}
 
 // ═══════════════════════════════════════════════════════════════
-// PWA — Progressive Web App setup
+// PWA — Service Worker Registration & Install Prompt
 // ═══════════════════════════════════════════════════════════════
 (function initPWA(){
-  // Inline manifest injected as blob URL so no external file is needed
-  const manifest={
-    name:"Agri Edu Rise",
-    short_name:"AgriEdu",
-    description:"Agriculture e-Learning Portal — Notes, Quizzes, AI Professor",
-    start_url:"./",
-    display:"standalone",
-    background_color:"#F2F5F2",
-    theme_color:"#0F3D23",
-    orientation:"portrait-primary",
-    icons:[
-      {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230F3D23'/%3E%3Ctext y='130' x='96' text-anchor='middle' font-size='120'%3E🌾%3C/text%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml"},
-      {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230F3D23'/%3E%3Ctext y='360' x='256' text-anchor='middle' font-size='320'%3E🌾%3C/text%3E%3C/svg%3E",sizes:"512x512",type:"image/svg+xml"}
-    ],
-    categories:["education"],
-    shortcuts:[
-      {name:"Daily Quiz",short_name:"Quiz",url:"./#daily",description:"Take today's quiz"},
-      {name:"Study Resources",short_name:"Resources",url:"./#subjects",description:"Browse study materials"}
-    ]
-  };
 
-  // Inject manifest blob
-  try{
-    const blob=new Blob([JSON.stringify(manifest)],{type:"application/manifest+json"});
-    const url=URL.createObjectURL(blob);
-    const link=document.getElementById("pwaManifestLink");
-    if(link) link.href=url;
-  }catch(e){ console.warn("Manifest injection failed:",e); }
-
-  // Register inline service worker via blob for offline caching
-  if("serviceWorker" in navigator){
-    const swCode=`
-const CACHE="agri-edu-rise-v1";
-const OFFLINE_URLS=["/"];
-self.addEventListener("install",e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(OFFLINE_URLS)).catch(()=>{}));
-  self.skipWaiting();
-});
-self.addEventListener("activate",e=>{
-  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-self.addEventListener("fetch",e=>{
-  if(e.request.method!=="GET") return;
-  e.respondWith(
-    fetch(e.request).then(r=>{
-      if(r&&r.status===200){
-        const rc=r.clone();
-        caches.open(CACHE).then(c=>c.put(e.request,rc));
-      }
-      return r;
-    }).catch(()=>caches.match(e.request))
-  );
-});`;
-    try{
-      const swBlob=new Blob([swCode],{type:"application/javascript"});
-      const swUrl=URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl,{scope:"./"})
-        .then(()=>console.log("✅ Agri Edu Rise SW registered"))
-        .catch(e=>console.warn("SW register failed:",e));
-    }catch(e){ console.warn("SW blob failed:",e); }
+  // Register external sw.js (blob-based SW cannot intercept navigation)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then(reg => {
+          console.log('[PWA] SW registered, scope:', reg.scope);
+          reg.addEventListener('updatefound', () => {
+            const nw = reg.installing;
+            nw.addEventListener('statechange', () => {
+              if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdateBanner(reg);
+              }
+            });
+          });
+        })
+        .catch(e => console.warn('[PWA] SW registration failed:', e));
+    });
   }
 
-  // PWA Install prompt
-  let deferredPrompt=null;
-  window.addEventListener("beforeinstallprompt",e=>{
-    e.preventDefault(); deferredPrompt=e;
-    showInstallBanner();
+  // Update available banner
+  function showUpdateBanner(reg) {
+    if (document.getElementById('pwaUpdateBanner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'pwaUpdateBanner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#0F3D23;color:white;'
+      + 'padding:10px 16px;display:flex;align-items:center;justify-content:space-between;'
+      + 'z-index:99999;font-size:13px;font-weight:600;box-shadow:0 2px 12px rgba(0,0,0,.3);';
+    banner.innerHTML =
+      '<span>🌾 New version available!</span>'
+      + '<button onclick="(function(){if(reg.waiting)reg.waiting.postMessage({type:\'SKIP_WAITING\'});location.reload();})()" '
+      + 'style="background:#00B050;border:none;color:white;padding:6px 14px;border-radius:8px;'
+      + 'font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">Update Now</button>';
+    document.body.prepend(banner);
+  }
+
+  // Offline / online indicator
+  function setOnlineStatus() {
+    const isOnline = navigator.onLine;
+    let bar = document.getElementById('pwaOfflineBar');
+    if (!isOnline) {
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'pwaOfflineBar';
+        bar.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#E53935;color:white;'
+          + 'text-align:center;padding:7px;font-size:12px;font-weight:700;z-index:99998;';
+        bar.textContent = '📶 You are offline — showing cached content';
+        document.body.prepend(bar);
+      }
+    } else {
+      if (bar) bar.remove();
+    }
+  }
+  window.addEventListener('online',  setOnlineStatus);
+  window.addEventListener('offline', setOnlineStatus);
+  setOnlineStatus();
+
+  // Install prompt
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!localStorage.getItem('bhu:pwaDeclined')) setTimeout(showInstallBanner, 4000);
   });
 
-  function showInstallBanner(){
-    if(document.getElementById("pwaInstallBanner")) return;
-    const banner=document.createElement("div");
-    banner.id="pwaInstallBanner";
-    banner.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;padding:14px 20px;border-radius:18px;display:flex;align-items:center;gap:12px;z-index:9998;box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:360px;width:calc(100% - 32px);animation:msgIn .3s ease both;";
-    banner.innerHTML=`
-      <div style="font-size:28px;flex-shrink:0;">🌾</div>
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:700;font-size:13px;">Install Agri Edu Rise</div>
-        <div style="font-size:11px;opacity:.75;margin-top:2px;">Add to home screen for offline access</div>
-      </div>
-      <button onclick="installPWA()" style="background:#00B050;border:none;color:white;font-weight:700;padding:7px 14px;border-radius:10px;cursor:pointer;font-size:12px;font-family:inherit;flex-shrink:0;">Install</button>
-      <button onclick="document.getElementById('pwaInstallBanner').remove()" style="background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">✕</button>`;
+  function showInstallBanner() {
+    if (document.getElementById('pwaInstallBanner')) return;
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    const banner = document.createElement('div');
+    banner.id = 'pwaInstallBanner';
+    banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'
+      + 'background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;padding:14px 18px;'
+      + 'border-radius:18px;display:flex;align-items:center;gap:12px;z-index:9998;'
+      + 'box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:360px;width:calc(100% - 32px);animation:msgIn .3s ease both;';
+    banner.innerHTML =
+      '<div style="font-size:28px;flex-shrink:0;">🌾</div>'
+      + '<div style="flex:1;min-width:0;">'
+      +   '<div style="font-weight:700;font-size:13px;">Install Agri Edu Rise</div>'
+      +   '<div style="font-size:11px;opacity:.75;margin-top:2px;">Works offline · No App Store needed</div>'
+      + '</div>'
+      + '<button onclick="installPWA()" style="background:#00B050;border:none;color:white;'
+      +   'font-weight:700;padding:7px 14px;border-radius:10px;cursor:pointer;font-size:12px;'
+      +   'font-family:inherit;flex-shrink:0;">Install</button>'
+      + '<button onclick="document.getElementById(\'pwaInstallBanner\').remove();'
+      +   'localStorage.setItem(\'bhu:pwaDeclined\',\'1\');" '
+      +   'style="background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;'
+      +   'border-radius:50%;cursor:pointer;font-size:16px;flex-shrink:0;'
+      +   'display:flex;align-items:center;justify-content:center;">✕</button>';
     document.body.appendChild(banner);
   }
 
-  window.installPWA=function(){
-    if(!deferredPrompt) return;
+  window.installPWA = function() {
+    if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(r=>{
-      if(r.outcome==="accepted") toast("🌾 Agri Edu Rise installed!");
-      deferredPrompt=null;
-      const b=document.getElementById("pwaInstallBanner"); if(b) b.remove();
+    deferredPrompt.userChoice.then(result => {
+      if (result.outcome === 'accepted') toast('🌾 Agri Edu Rise installed!');
+      deferredPrompt = null;
+      const b = document.getElementById('pwaInstallBanner');
+      if (b) b.remove();
     });
   };
 
-  window.addEventListener("appinstalled",()=>{
-    const b=document.getElementById("pwaInstallBanner"); if(b) b.remove();
-    toast("✅ App installed successfully!");
+  window.addEventListener('appinstalled', () => {
+    const b = document.getElementById('pwaInstallBanner');
+    if (b) b.remove();
+    toast('✅ Installed! Launch from your home screen.');
   });
+
+  // Deep-link support: ?section=daily  (used by manifest shortcuts)
+  const urlParams = new URLSearchParams(window.location.search);
+  const targetSection = urlParams.get('section');
+  if (targetSection) {
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { if(typeof setSection==='function') setSection(targetSection); }, 700);
+    });
+  }
+
 })();
 </script>
 
