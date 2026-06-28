@@ -1,0 +1,77 @@
+{
+  "name": "Agri Edu Rise",
+  "short_name": "AgriEdu",
+  "description": "Agriculture e-Learning Portal — Notes, Quizzes, AI Professor",
+  "start_url": "./",
+  "id": "./",
+  "display": "standalone",
+  "background_color": "#F2F5F2",
+  "theme_color": "#0F3D23",
+  "orientation": "portrait-primary",
+  "lang": "en-IN",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "icons/icon-72.png",
+      "type": "image/png",
+      "sizes": "72x72",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "type": "image/png",
+      "sizes": "96x96",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "type": "image/png",
+      "sizes": "128x128",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Daily Quiz",
+      "short_name": "Daily",
+      "url": "./?section=daily",
+      "description": "Take today's quiz and keep your streak",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Study Resources",
+      "short_name": "Subjects",
+      "url": "./?section=subjects",
+      "description": "Browse notes, PDFs and videos",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "PYQ Bank",
+      "short_name": "PYQ",
+      "url": "./?section=pyq",
+      "description": "Previous Year Questions",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Ask AI Professor",
+      "short_name": "AI Chat",
+      "url": "./?section=chat",
+      "description": "Instant AI-powered doubt solving",
+      "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
