@@ -1,40 +1,18 @@
 [build]
-  command = "echo 'No build step needed'"
   publish = "."
-  functions = "functions"
+  command = "echo 'Static site - no build needed'"
 
 [functions]
-  directory = "functions"
+  directory = "netlify/functions"
   node_bundler = "esbuild"
 
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Service-Worker-Allowed = "/"
 
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
-
-# ✅ HTML files - never cache
-[[headers]]
-  for = "/*.html"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate, max-age=0"
-
-# ✅ Static assets - cache forever (1 year)
-[[headers]]
-  for = "/**/*.{js,css,jpg,jpeg,png,gif,svg,woff,woff2,eot,ttf,otf,webp,ico,mp4,webm}"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-# ✅ JSON data files - cache for 5 minutes
-[[headers]]
-  for = "/**/*.json"
-  [headers.values]
-    Cache-Control = "public, max-age=300"
+    X-Frame-Options = "SAMEORIGIN"
