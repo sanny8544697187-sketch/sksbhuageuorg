@@ -1465,7 +1465,7 @@ const RES_TYPES = ["All","PDF","Video","Link","Notes","PYQ","PPT"];
 // CONFIG
 // ═══════════════════════════════════════════════════════════════
 // AI endpoint — set to "" to use Gemini directly (recommended for all deployments)
-const AI_ENDPOINT = "";
+const AI_ENDPOINT = "/.netlify/functions/ai";
 
 // ═══════════════════════════════════════════════════════════════
 // INDEXEDDB — large file storage (replaces localStorage for files)
@@ -2364,45 +2364,15 @@ function renderQuizQuestion(){
   const diffBadge=q.difficulty?`<span style="background:#F3E5F5;color:#7B1FA2;font-size:9px;padding:2px 8px;border-radius:50px;font-weight:700;text-transform:capitalize;margin-left:6px;">${escapeHTML(q.difficulty)}</span>`:'';
   const isMixed=quizSubj.startsWith("Mixed");
 
-  // ── Render question text (handle match-the-following column blocks) ──
-  function renderQText(rawQ){
-    if(!rawQ) return '';
-    const parts=rawQ.split('\n');
-    let html='<div style="font-weight:700;font-size:15px;line-height:1.6;margin-bottom:4px;">'+escapeHTML(parts[0])+'</div>';
-    let col1=[],col2=[];
-    parts.slice(1).forEach(p=>{
-      const c1=p.match(/^\[Column I\]\s*(.+)/);
-      const c2=p.match(/^\[Column II\]\s*(.+)/);
-      if(c1) col1=c1[1].split('|').map(s=>s.trim());
-      else if(c2) col2=c2[1].split('|').map(s=>s.trim());
-      else if(p.trim()) html+='<div style="font-size:13px;color:#555;margin-top:4px;">'+escapeHTML(p)+'</div>';
-    });
-    if(col1.length){
-      html+=`<div style="margin-top:12px;overflow-x:auto;">
-        <table style="border-collapse:collapse;font-size:13px;width:100%;max-width:480px;">
-          <thead><tr>
-            <th style="background:#0F3D23;color:white;padding:7px 12px;border-radius:8px 0 0 0;text-align:left;font-size:12px;">Column I</th>
-            <th style="background:#1B6B3A;color:white;padding:7px 12px;border-radius:0 8px 0 0;text-align:left;font-size:12px;">Column II</th>
-          </tr></thead>
-          <tbody>${col1.map((c,ci)=>`<tr style="background:${ci%2?"#F8FBF8":"#fff"};">
-            <td style="padding:7px 12px;border:1px solid #E0EAE0;font-weight:600;">${escapeHTML(c)}</td>
-            <td style="padding:7px 12px;border:1px solid #E0EAE0;">${col2[ci]?escapeHTML(col2[ci]):'—'}</td>
-          </tr>`).join('')}</tbody>
-        </table>
-      </div>`;
-    }
-    return html;
-  }
-
   el.innerHTML=`
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-      <div style="font-size:13px;font-weight:600;color:#777;">${escapeHTML(quizSubj)}${isMixed&&q.subj?` · <span style="color:#0F3D23;">${escapeHTML(q.subj)}</span>`:''} · Q${quizIdx+1} of ${quizQs.length}${diffBadge}${q.isMatchType?'<span style="background:#EDE7F6;color:#5E35B1;font-size:9px;padding:1px 7px;border-radius:50px;font-weight:700;margin-left:6px;">🔀 MATCH</span>':''}</div>
+      <div style="font-size:13px;font-weight:600;color:#777;">${escapeHTML(quizSubj)}${isMixed&&q.subj?` · <span style="color:#0F3D23;">${escapeHTML(q.subj)}</span>`:''} · Q${quizIdx+1} of ${quizQs.length}${diffBadge}</div>
       ${quizTimerEnabled?`<div id="quizTimerDisplay" style="font-weight:800;font-size:14px;color:${quizTimeLeft<30?"#E53935":"#0F3D23"};background:#F2F5F2;padding:4px 12px;border-radius:50px;">${fmtTimer(quizTimeLeft)}</div>`:''}
     </div>
     <div style="background:#E8F5E9;border-radius:50px;overflow:hidden;height:8px;margin-bottom:14px;"><div style="height:100%;background:#00B050;width:${((quizIdx)/quizQs.length)*100}%;transition:width .3s;"></div></div>
     <div id="quizNav" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;"></div>
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:16px;">
-      <div style="flex:1;min-width:0;">${renderQText(q.q)}</div>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:20px;">
+      <div style="font-weight:700;font-size:16px;line-height:1.55;">${escapeHTML(q.q)}</div>
       <div style="display:flex;gap:4px;flex-shrink:0;">
         <button onclick="toggleSaveQuizQ('${escapeHTML(q.subj||quizSubj)}',quizQs[${quizIdx}])" title="Save question" style="background:${isQuizQSaved(q.subj||quizSubj,q)?"#00B050":"#F2F5F2"};color:${isQuizQSaved(q.subj||quizSubj,q)?"white":"#777"};border:none;cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📌</button>
         <button onclick="toggleFlag()" title="Flag for review" style="background:${quizFlagged[quizIdx]?"#FFF3E0":"#F2F5F2"};color:${quizFlagged[quizIdx]?"#f59e0b":"#777"};border:none;cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🚩</button>
@@ -2569,59 +2539,40 @@ async function sendAI(){
   msgs.push({role:"assistant", isTyping:true});
   renderChat(); aiLoading = true;
 
-  // Build message history (Gemini-style contents)
-  let raw = msgs.filter(m=>!m.isTyping&&m.content).slice(-10)
-    .map(m=>({role:m.role==="user"?"user":"model", parts:[{text:m.content}]}));
-  while(raw.length && raw[0].role==="model") raw.shift();
-  const contents=[];
-  for(const t of raw){
-    if(contents.length && contents[contents.length-1].role===t.role)
-      contents[contents.length-1].parts[0].text+="\n"+t.parts[0].text;
-    else contents.push(t);
+  // Build Anthropic-format messages (alternating user/assistant, no Gemini parts)
+  const raw = msgs
+    .filter(m => !m.isTyping && m.content)
+    .slice(-10)
+    .map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.content }));
+  while(raw.length && raw[0].role === "assistant") raw.shift();
+  const messages = [];
+  for(const m of raw){
+    if(messages.length && messages[messages.length-1].role === m.role)
+      messages[messages.length-1].content += "\n" + m.content;
+    else messages.push({...m});
   }
 
-  let reply=null;
+  let reply = null;
+  try{
+    const r = await fetch(AI_ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ messages })
+    });
+    if(r.ok){
+      const d = await r.json();
+      reply = d.content || null;
+      if(d.error) console.warn("AI err:", d.error);
+    }
+  } catch(e){ console.warn("AI fetch failed:", e.message); }
 
-  // ── 1. Try OpenRouter via Netlify function ─────────────────────
-  if(AI_ENDPOINT){
-    try{
-      const r=await fetch(AI_ENDPOINT,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({contents})
-      });
-      if(r.ok){
-        const d=await r.json();
-        if(!d.error) reply=d.candidates?.[0]?.content?.parts?.[0]?.text||null;
-        else console.warn("OpenRouter err:",d.error);
-      }
-    } catch(e){ console.warn("Netlify AI unreachable:",e.message); }
-  }
-
-  // ── 2. Fallback → Gemini 1.5 Flash (direct) ───────────────────
-  if(!reply){
-    try{
-      const res=await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_cfg}`,
-        {method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({
-            system_instruction:{parts:[{text:AI_SYS}]},
-            contents,
-            generationConfig:{maxOutputTokens:1000,temperature:0.7}
-          })
-        }
-      );
-      const data=await res.json();
-      if(!data.error) reply=data.candidates?.[0]?.content?.parts?.[0]?.text||null;
-      else console.warn("Gemini err:",data.error);
-    } catch(e){ console.warn("Gemini failed:",e.message); }
-  }
-
-  msgs=msgs.filter(m=>!m.isTyping);
-  msgs.push({role:"assistant",
-    content:reply||"⚠️ Couldn't get a response right now. Check your internet connection and try again.",
-    time:fmtTime()});
-  aiLoading=false; renderChat();
+  msgs = msgs.filter(m => !m.isTyping);
+  msgs.push({
+    role: "assistant",
+    content: reply || "⚠️ AI Professor is temporarily unavailable. Please try again in a moment.",
+    time: fmtTime()
+  });
+  aiLoading = false; renderChat();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -2698,25 +2649,19 @@ async function askAIForDoubt(qId){
 
 // ── Shared AI Professor caller (used by both main chat & community) ──
 async function callAIProfessor(userText){
-  const contents=[{role:"user",parts:[{text:userText}]}];
-  let reply=null;
-  if(AI_ENDPOINT){
-    try{
-      const r=await fetch(AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents})});
-      if(r.ok){ const d=await r.json(); if(!d.error) reply=d.candidates?.[0]?.content?.parts?.[0]?.text||null; }
-    } catch(e){ console.warn("Netlify AI unreachable:",e.message); }
-  }
-  if(!reply){
-    try{
-      const res=await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_cfg}`,
-        {method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({system_instruction:{parts:[{text:AI_SYS}]},contents,generationConfig:{maxOutputTokens:1000,temperature:0.7}})}
-      );
-      const data=await res.json();
-      if(!data.error) reply=data.candidates?.[0]?.content?.parts?.[0]?.text||null;
-    } catch(e){ console.warn("Gemini failed:",e.message); }
-  }
+  let reply = null;
+  try{
+    const r = await fetch(AI_ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ messages: [{ role:"user", content: userText }] })
+    });
+    if(r.ok){
+      const d = await r.json();
+      reply = d.content || null;
+      if(d.error) console.warn("AI Professor err:", d.error);
+    }
+  } catch(e){ console.warn("AI Professor fetch failed:", e.message); }
   return reply;
 }
 
@@ -4227,34 +4172,20 @@ async function handleQuizDocument(input){
 
 function renderParsedDocPreview(status, btn){
   if(_parsedPdfQuestions.length===0){
-    status.innerHTML+=`<div style="color:#E53935;font-size:13px;margin-top:8px;">⚠️ No questions found. Supported formats:<br>
-      <code style="font-size:11px;background:#F2F5F2;padding:2px 6px;border-radius:4px;">Q. question text<br>A. option&nbsp; B. option&nbsp; C. option&nbsp; D. option<br>ANS: B&nbsp; EXP: explanation</code><br>
-      For Match-the-Following, include column pairs like <code style="font-size:11px;">A. item1 &nbsp;1. item2</code> between the question and options.<br>
-      If OCR output is garbled, try a clearer scan or higher resolution photo.</div>`;
+    status.innerHTML+=`<div style="color:#E53935;font-size:13px;margin-top:8px;">⚠️ No questions found. Check the format — each question must start with <strong>Q.</strong> and options with <strong>A. B. C. D.</strong> and answer as <strong>ANS: A</strong>. (For OCR results, double-check the source image is clear and well-lit.)</div>`;
     return;
   }
   const fallbackSubj=document.getElementById("pdfQuizSubject").value;
   const detectedCount=_parsedPdfQuestions.filter(q=>q.subject).length;
-  const matchCount=_parsedPdfQuestions.filter(q=>q.isMatchType).length;
-  status.innerHTML+=`<div style="color:#00B050;font-size:13px;font-weight:600;margin-top:8px;">
-    ✅ Found ${_parsedPdfQuestions.length} question(s)
-    ${matchCount?`<span style="background:#EDE7F6;color:#5E35B1;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:700;margin-left:6px;">🔀 ${matchCount} Match-type</span>`:''}
-    · 🤖 ${detectedCount}/${_parsedPdfQuestions.length} subjects auto-detected
-  </div>
-    <div style="background:#E8F5E9;border-radius:10px;padding:12px;margin-top:8px;max-height:300px;overflow-y:auto;">
+  status.innerHTML+=`<div style="color:#00B050;font-size:13px;font-weight:600;margin-top:8px;">✅ Found ${_parsedPdfQuestions.length} question(s) · 🤖 ${detectedCount}/${_parsedPdfQuestions.length} subject(s) auto-detected</div>
+    <div style="background:#E8F5E9;border-radius:10px;padding:12px;margin-top:8px;max-height:280px;overflow-y:auto;">
       ${_parsedPdfQuestions.map((q,i)=>{
         const tagColor=q.subjectSource==="heading"?"#00B050":q.subjectSource==="auto"?"#1565C0":"#c9690a";
-        const tagLabel=q.subjectSource==="heading"?"📌 Heading":q.subjectSource==="auto"?"🤖 Auto":"❓ Fallback";
-        // Show first line only (before any \n column data)
-        const preview=q.q.split('\n')[0].slice(0,90);
-        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:9px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
-          <div style="flex:1;font-size:12px;min-width:0;">
-            <div style="display:flex;align-items:center;gap:5px;margin-bottom:3px;">
-              ${q.isMatchType?'<span style="background:#EDE7F6;color:#5E35B1;font-size:9px;padding:1px 6px;border-radius:50px;font-weight:700;flex-shrink:0;">🔀 MATCH</span>':''}
-              <strong style="flex-shrink:0;">Q${i+1}:</strong>
-              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(preview)}${q.q.length>90?"…":""}</span>
-            </div>
-            <div style="font-size:10px;color:${tagColor};font-weight:600;">${tagLabel} · Ans: ${["A","B","C","D"][q.ans]||"?"} · ${q.opts.length} opts</div>
+        const tagLabel=q.subjectSource==="heading"?"📌 From document heading":q.subjectSource==="auto"?"🤖 Auto-detected":"❓ Not detected — using fallback";
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
+          <div style="flex:1;font-size:12px;">
+            <strong>Q${i+1}:</strong> ${escapeHTML(q.q.slice(0,80))}${q.q.length>80?"…":""}
+            <div style="margin-top:3px;font-size:10px;color:${tagColor};font-weight:600;">${tagLabel}</div>
           </div>
           <select class="inp" style="width:auto;font-size:11px;padding:4px 6px;flex-shrink:0;" onchange="_parsedPdfQuestions[${i}].subject=this.value;_parsedPdfQuestions[${i}].subjectSource='manual';">
             ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
@@ -4262,7 +4193,7 @@ function renderParsedDocPreview(status, btn){
         </div>`;
       }).join("")}
     </div>
-    <div style="font-size:11px;color:#777;margin-top:8px;">Review each question's subject dropdown — adjust if misclassified, then click <strong>Parse & Add to Quiz Bank</strong>.</div>`;
+    <div style="font-size:11px;color:#777;margin-top:8px;">Double-check the subject tag next to each question — change the dropdown if a question was misclassified, then add to the Quiz Bank.</div>`;
   btn.disabled=false;
 }
 
@@ -4296,192 +4227,75 @@ function autoDetectSubject(qText, opts){
   return bestScore>0 ? bestSubj : null;
 }
 
-// ═══════════════════════════════════════════════════════════════
-// UNIVERSAL QUESTION PARSER — v2
-// Handles:
-//  • Standard MCQ   : Q. / A. / B. / C. / D. / ANS: / EXP:
-//  • Match Following: detects column pairs, merges into question
-//  • Assertion-Reason, Statement types (stored as MCQ)
-//  • Heavy OCR noise: smart quotes, non-breaking spaces, mid-word
-//    line-breaks, mixed case option markers, 1-based ANS numbers
-// ═══════════════════════════════════════════════════════════════
+// Parses raw text (from native PDF extraction, OCR, or a hand-pasted block) into
+// structured questions. Tolerant of common OCR noise: stray spaces around punctuation,
+// "(A)"/"a)"/"A:" option markers, and "Answer:"/"Ans:" variants.
 function parsePdfQuizText(text){
   const questions=[];
+  // Normalise line breaks + collapse repeated whitespace that OCR often introduces
+  const lines=text.replace(/\r/g,"").split("\n")
+    .map(l=>l.replace(/\s+/g," ").trim()).filter(Boolean);
+  let i=0;
+  let headingSubject=null;
 
-  // ── 1. PRE-PROCESS raw text ─────────────────────────────────
-  const clean=text
-    .replace(/\r\n?/g,'\n')
-    .replace(/\t/g,' ')
-    .replace(/\u00a0|\u200b|\u200c|\u200d/g,' ')   // nbsp / zero-width
-    .replace(/['']/g,"'").replace(/[""]/g,'"')      // smart → straight quotes
-    .replace(/–|—/g,'-')                            // em/en dash → hyphen
-    .replace(/-\n([a-z])/g,'$1')                    // OCR hyphen word-wrap
-    .replace(/[ ]{2,}/g,' ');                       // collapse multiple spaces
-
-  const rawLines=clean.split('\n').map(l=>l.trim());
-
-  // ── 2. PRE-SCAN: join orphaned lines into their logical owner
-  //    (OCR often splits "Q. What is" + "NPK?" across two lines)
-  const lines=[];
-  for(let r=0;r<rawLines.length;r++){
-    const cur=rawLines[r];
-    if(!cur){ lines.push(''); continue; }
-    // If previous non-blank line ended without sentence-terminator
-    // AND current line has no structural marker → merge up
-    if(lines.length>0){
-      const prev=lines[lines.length-1];
-      const prevIsBlank=!prev.trim();
-      const curHasMarker=
-        /^(?:Q(?:uestion)?\.?\s*\d|\d+[.)]\s)/i.test(cur) ||
-        /^\(?[A-Da-d]\)?[.):]\s/i.test(cur) ||
-        /^(?:ANS|ANSWER|EXP|Exp|Ans|Answer|Reason|Hint|Sol)/i.test(cur) ||
-        /^(?:Subject|Section|Topic|Unit|Chapter)\s*[:\-]/i.test(cur);
-      if(!prevIsBlank && !curHasMarker && prev.length>0 &&
-         !/[.!?:]\s*$/.test(prev)){
-        lines[lines.length-1]=prev+' '+cur;
-        continue;
-      }
-    }
-    lines.push(cur);
-  }
-
-  // ── 3. Compiled regex patterns ───────────────────────────────
-  const RE_SUBJ =/^(?:Subject|Section|Topic|Unit|Chapter)\s*[:\-–]\s*(.+)/i;
-  // Q., Q.1, Q1., Ques., Question 1., 1. , 1) 
-  const RE_QSTART=/^(?:Q(?:uestion|ues)?\.?\s*(\d+)\s*[.):\s]?\s*|(\d+)\s*[.)]\s+)(.+)/i;
-  // A. / (A) / A) / A: / a. — also catches i. ii. iii. for numbered lists inside match
-  const RE_OPT  =/^\(?([A-Da-d])\)?[.):\-\s]\s*(.+)/;
-  // ANS: A  / Answer: (B) / Ans B / Ans-C / ANS.D / Correct Answer: A / Ans: 2 (1-based)
-  const RE_ANS  =/^(?:Ans(?:wer)?|ANS|Correct\s*(?:Ans(?:wer)?|Option)?|Key)\s*[.:)\-\s]+\(?([A-Da-d1-4])\)?/i;
-  // EXP: / Explanation: / Reason: / Hint: / Solution: / Note:
-  const RE_EXP  =/^(?:Exp(?:lanation)?|Reason|Hint|Sol(?:ution)?|Note|Exp\.)\s*[.:)\-\s]+(.+)/i;
-  // Column header lines to skip
-  const RE_COLHDR=/^(?:Column|List|Set|Group)\s*[I1II2]/i;
-  // Match-the-following column pair on ONE line: "A. text   1. text"
-  const RE_PAIR  =/^([A-Da-d])[.)]\s+(.+?)\s{2,}(\d+)[.)]\s+(.+)/;
-  // Standalone numbered column-2 item: "1. Nitrogen" "ii. Rice"
-  const RE_COL2  =/^(?:\d+|[ivxIVX]+)[.)]\s+(.+)/;
-
-  const OPT_LETTERS=['A','B','C','D'];
-  let headingSubject=null, i=0;
-
-  // ── 4. Main parse loop ────────────────────────────────────────
   while(i<lines.length){
     const line=lines[i];
-    if(!line){ i++; continue; }
 
-    // ── 4a. Subject heading ──────────────────────────────────
-    const sh=line.match(RE_SUBJ);
-    if(sh){
-      headingSubject=normalizeSubjectName(sh[1])||sh[1].trim();
+    // Detect subject heading: "Subject: Agronomy" or "-- Agronomy --"
+    const subjHeadMatch=line.match(/^(?:Subject|Section|Topic)\s*[:\-–]\s*(.+)/i);
+    if(subjHeadMatch){
+      headingSubject=normalizeSubjectName(subjHeadMatch[1])||subjHeadMatch[1].trim();
       i++; continue;
     }
 
-    // ── 4b. Question start ───────────────────────────────────
-    const qm=line.match(RE_QSTART);
-    if(!qm){ i++; continue; }
-    let qText=qm[3].trim();
+    // Detect question line — handles Q1, Q.1, 1., Q:, Question 1 etc.
+    const qMatch=line.match(/^(?:Q(?:uestion)?\.?\s*\d*[.):\s]?\s*|\d+[.)]\s+)(.+)/i);
+    if(!qMatch){ i++; continue; }
+    let qText=qMatch[1].trim();
+    // Sometimes the question continues on the next line (no option prefix yet)
     i++;
-
-    // Match-the-following detection (early, so we can handle columns)
-    const isMatch=/match\s+(?:the\s+)?(?:following|column|list)|arrange\s+match/i.test(qText);
-    const col1=[], col2=[], col2Extra=[];
-
-    // ── 4c. Absorb question body lines ──────────────────────
-    while(i<lines.length){
-      const nxt=lines[i];
-      // Hard stops
-      if(!nxt){ i++; break; }
-      if(nxt.match(RE_OPT))   break;
-      if(nxt.match(RE_ANS))   break;
-      if(nxt.match(RE_EXP))   break;
-      if(nxt.match(RE_QSTART)) break;
-
-      // Skip column header lines
-      if(nxt.match(RE_COLHDR)){ i++; continue; }
-
-      // Match-type: inline pair "A. item1   1. item2"
-      if(isMatch){
-        const pair=nxt.match(RE_PAIR);
-        if(pair){ col1.push(pair[2].trim()); col2.push(pair[4].trim()); i++; continue; }
-        // Standalone col-2 numbered item (split across lines in OCR)
-        const c2=nxt.match(RE_COL2);
-        if(c2 && col1.length>0){ col2Extra.push(c2[1].trim()); i++; continue; }
-        // Standalone col-1 letter item "A. Nitrogen"
-        const c1=nxt.match(/^([A-Da-d])[.)]\s+(.+)/);
-        if(c1 && !col2Extra.length && col2.length===0){
-          col1.push(c1[2].trim()); i++; continue;
-        }
-        // Fill col2 from numbered extras when col1 was collected first
-        if(col2Extra.length && col1.length && !col2.length){
-          col2Extra.forEach(v=>col2.push(v));
-          col2Extra.length=0;
-        }
-      }
-
-      qText+=' '+nxt; i++;
+    while(i<lines.length && !lines[i].match(/^\(?[A-Da-d]\)?[.):]\s/i) && !lines[i].match(/^(?:Q(?:uestion)?\.?\s*\d*[.):\s]|\d+[.)]\s+)/i) && !lines[i].match(/^(?:ANS|ANSWER|EXP)/i)){
+      const cont=lines[i].trim();
+      if(!cont){ i++; break; } // blank line = end of question text
+      qText+=" "+cont; i++;
     }
+    if(qText.length<4){ continue; }
 
-    if(qText.trim().length<4) continue;
+    const opts=[]; let ansIdx=-1; let exp="";
+    const optLetters=["A","B","C","D"];
 
-    // Embed column data into qText for match questions
-    if(isMatch && col1.length){
-      const merged=col2.length?col2:col2Extra;
-      qText+='\n[Column I] '+col1.map((c,ci)=>String.fromCharCode(65+ci)+'. '+c).join(' | ');
-      if(merged.length)
-        qText+='\n[Column II] '+merged.map((c,ci)=>(ci+1)+'. '+c).join(' | ');
-    }
-
-    // ── 4d. Options ──────────────────────────────────────────
-    const opts=[];
+    // Read options — tolerant of (A), A., A), A: markers; also handles "a)" lowercase
     while(i<lines.length && opts.length<4){
       const ol=lines[i];
-      if(!ol){ i++; break; }
-      const om=ol.match(RE_OPT);
-      if(om){
-        opts.push(om[2].trim()); i++;
-        // Absorb wrapped option continuation
-        while(i<lines.length){
-          const cl=lines[i];
-          if(!cl||cl.match(RE_OPT)||cl.match(RE_ANS)||cl.match(RE_EXP)||cl.match(RE_QSTART)) break;
-          opts[opts.length-1]+=' '+cl; i++;
-        }
-      } else break;
+      // Match option start: (A), A., A), A:  — case insensitive
+      const optM=ol.match(/^\(?([A-Da-d])\)?[.).:\s]\s*(.+)/);
+      if(optM){
+        opts.push(optM[2].trim()); i++;
+      } else {
+        // Option text may continue on next line if no prefix — append if we're mid-options
+        if(opts.length>0 && !ol.match(/^(?:ANS|ANSWER|EXP|Q\.)/i)){
+          opts[opts.length-1]+=" "+ol; i++;
+        } else break;
+      }
     }
-    if(opts.length<2) continue;
+    if(opts.length<2){ continue; }
 
-    // ── 4e. Answer + Explanation ─────────────────────────────
-    let ansIdx=-1, exp='', safeBreak=0;
-    while(i<lines.length && safeBreak<8){
-      safeBreak++;
+    // Read ANS / ANSWER line — handles "ANS: A", "Answer: (B)", "Ans. C"
+    while(i<lines.length){
       const al=lines[i];
-      if(!al){ i++; break; }
-      const am=al.match(RE_ANS);
-      const em=al.match(RE_EXP);
-      if(am){
-        const token=am[1].toUpperCase();
-        ansIdx=OPT_LETTERS.indexOf(token);
-        // Handle "ANS: 2" (1-based number)
-        if(ansIdx===-1){const n=parseInt(token);if(n>=1&&n<=4)ansIdx=n-1;}
-        i++;
-      } else if(em){
-        exp=em[1].trim(); i++;
-        // Multi-line explanation
-        while(i<lines.length){
-          const cl=lines[i];
-          if(!cl||cl.match(RE_QSTART)||cl.match(RE_OPT)||cl.match(RE_ANS)) break;
-          exp+=' '+cl; i++;
-        }
-      } else break;
+      const ansM=al.match(/^(?:ANS(?:WER)?)[.:)\s]+\(?([A-Da-d])\)?/i);
+      const expM=al.match(/^(?:EXP(?:LANATION)?|REASON|HINT)[.:)\s]+(.+)/i);
+      if(ansM){ ansIdx=optLetters.indexOf(ansM[1].toUpperCase()); i++; }
+      else if(expM){ exp=expM[1].trim(); i++; }
+      else break;
     }
     if(ansIdx===-1) ansIdx=0;
 
     const autoSubj=headingSubject||autoDetectSubject(qText,opts);
     questions.push({
-      q:qText.trim(), opts, ans:ansIdx, exp:exp||'', premium:false,
+      q:qText, opts, ans:ansIdx, exp:exp||"", premium:false,
       subject:autoSubj,
-      subjectSource:headingSubject?'heading':(autoSubj?'auto':'none'),
-      isMatchType:isMatch
+      subjectSource:headingSubject?"heading":(autoSubj?"auto":"none")
     });
   }
   return questions;
@@ -4518,22 +4332,16 @@ function renderBulkPreview(){
   const status=document.getElementById("bulkParseStatus");
   const btn=document.getElementById("bulkAddBtn");
   if(_bulkParsedQuestions.length===0){
-    status.innerHTML=`<div style="color:#E53935;font-size:13px;">⚠️ No questions detected. Supported format:<br>
-      <code style="font-size:11px;">Q. question text<br>A. opt&nbsp; B. opt&nbsp; C. opt&nbsp; D. opt<br>ANS: B&nbsp; EXP: explanation</code><br>
-      For Match-the-Following: add column pairs between the question and options.</div>`;
+    status.innerHTML=`<div style="color:#E53935;font-size:13px;">⚠️ No questions detected. Make sure each question starts with <strong>Q.</strong>, options with <strong>A./B./C./D.</strong>, and answer as <strong>ANS: A</strong>.</div>`;
     btn.disabled=true; return;
   }
   const fallbackSubj=document.getElementById("bulkFallbackSubject").value;
   const detectedCount=_bulkParsedQuestions.filter(q=>q.subject).length;
-  const matchCount=_bulkParsedQuestions.filter(q=>q.isMatchType).length;
-  status.innerHTML=`<div style="color:#00B050;font-size:13px;font-weight:600;">✅ Found ${_bulkParsedQuestions.length} question(s) ${matchCount?`· 🔀 ${matchCount} Match-type`:''} · 🤖 ${detectedCount}/${_bulkParsedQuestions.length} auto-detected</div>
+  status.innerHTML=`<div style="color:#00B050;font-size:13px;font-weight:600;">✅ Found ${_bulkParsedQuestions.length} question(s) · 🤖 ${detectedCount}/${_bulkParsedQuestions.length} subject(s) auto-detected</div>
     <div style="background:#E8F5E9;border-radius:10px;padding:12px;margin-top:8px;max-height:240px;overflow-y:auto;">
       ${_bulkParsedQuestions.map((q,i)=>`
         <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;${i>0?"border-top:1px solid #c8e6c9":""}">
-          <div style="flex:1;font-size:12px;min-width:0;">
-            ${q.isMatchType?'<span style="background:#EDE7F6;color:#5E35B1;font-size:9px;padding:1px 5px;border-radius:50px;font-weight:700;margin-right:4px;">🔀</span>':''}
-            <strong>Q${i+1}:</strong> ${escapeHTML(q.q.split('\n')[0].slice(0,80))}${q.q.length>80?"…":""}
-          </div>
+          <div style="flex:1;font-size:12px;"><strong>Q${i+1}:</strong> ${escapeHTML(q.q.slice(0,80))}${q.q.length>80?"…":""}</div>
           <select class="inp" style="width:auto;font-size:11px;padding:4px 6px;flex-shrink:0;" onchange="_bulkParsedQuestions[${i}].subject=this.value;">
             ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}" ${(q.subject||fallbackSubj)===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}
           </select>
