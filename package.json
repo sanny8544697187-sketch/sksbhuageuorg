@@ -1,7 +1,7 @@
 {
   "name": "agri-edu-rise",
   "version": "1.0.0",
-  "description": "Agriculture e-Learning Portal",
+  "description": "Agriculture e-Learning Portal — BHU",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0"
   }

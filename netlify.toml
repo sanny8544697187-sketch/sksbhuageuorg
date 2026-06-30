@@ -1,6 +1,6 @@
 [build]
   publish = "."
-  command = "echo 'Static site - no build needed'"
+  command = "echo 'Static site - no build step needed'"
 
 [functions]
   directory = "netlify/functions"
@@ -16,3 +16,4 @@
   for = "/*"
   [headers.values]
     X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
