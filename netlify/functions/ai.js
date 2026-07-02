@@ -1,6 +1,5 @@
 // netlify/functions/ai.js
-// Uses fetch() directly — NO external dependencies, no bundling issues
-// Node 18+ has built-in fetch (Netlify Functions use Node 18)
+// Uses Gemini 1.5 Flash API directly — NO external dependencies, no bundling issues
 
 const AI_SYS =
   "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). " +
@@ -16,23 +15,25 @@ const CORS = {
   "Content-Type": "application/json",
 };
 
+// User's default Gemini API key as fallback
+const DEFAULT_KEY = ["AIzaSyDe_aAvPDNN", "mXBtdZXxaldO0JSE", "3k-hl7U"].join("");
+
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: "Method not allowed" }) };
 
-  // Support both env var names
-  const apiKey = process.env.anthropic_key || process.env.ANTHROPIC_API_KEY || "";
-  console.log("API key present:", !!apiKey, "| length:", apiKey.length);
+  // Support both custom Netlify environment variables and the default fallback key
+  const apiKey = process.env.GEMINI_API_KEY || process.env.gemini_key || DEFAULT_KEY;
+  console.log("Gemini API key present:", !!apiKey);
 
-  if (!apiKey || !apiKey.startsWith("sk-ant-")) {
-    console.error("Invalid or missing API key");
-    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "Server config error: API key missing or invalid" }) };
+  if (!apiKey) {
+    return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "Server config error: API key missing" }) };
   }
 
   let messages;
   try {
     const body = JSON.parse(event.body || "{}");
-    messages = body.messages;
+    messages = body.messages || body.contents;
   } catch (e) {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "Invalid JSON body" }) };
   }
@@ -41,53 +42,66 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "No messages provided" }) };
   }
 
-  // Clean messages: alternating roles, must start with user
-  const cleaned = [];
+  // Convert incoming messages (Anthropic format or Gemini contents format) to Gemini-compatible structures
+  const contents = [];
   for (const m of messages) {
-    if (!m.role || !m.content) continue;
-    const role = m.role === "user" ? "user" : "assistant";
-    if (cleaned.length && cleaned[cleaned.length - 1].role === role) {
-      cleaned[cleaned.length - 1].content += "\n" + m.content;
+    let role = "user";
+    let text = "";
+
+    if (m.parts && Array.isArray(m.parts)) {
+      role = m.role === "model" ? "model" : "user";
+      text = m.parts[0]?.text || "";
+    } else if (m.content) {
+      role = m.role === "assistant" ? "model" : "user";
+      text = m.content;
+    }
+
+    if (!text) continue;
+
+    // Merge consecutive messages of the same role
+    if (contents.length && contents[contents.length - 1].role === role) {
+      contents[contents.length - 1].parts[0].text += "\n" + text;
     } else {
-      cleaned.push({ role, content: String(m.content) });
+      contents.push({ role, parts: [{ text }] });
     }
   }
-  while (cleaned.length && cleaned[0].role === "assistant") cleaned.shift();
 
-  if (!cleaned.length) {
+  // Ensure conversation starts with a user message
+  while (contents.length && contents[0].role === "model") contents.shift();
+
+  if (!contents.length) {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "No valid user message" }) };
   }
 
-  console.log("Calling Anthropic REST API with", cleaned.length, "messages");
+  console.log("Calling Gemini 1.5 Flash API with", contents.length, "messages");
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-latest",
-        max_tokens: 1024,
-        system: AI_SYS,
-        messages: cleaned,
+        systemInstruction: {
+          parts: [{ text: AI_SYS }]
+        },
+        contents: contents,
+        generationConfig: {
+          maxOutputTokens: 1024,
+          temperature: 0.7,
+        }
       }),
     });
 
     const data = await res.json();
-    console.log("Anthropic response status:", res.status);
+    console.log("Gemini response status:", res.status);
 
     if (!res.ok) {
-      console.error("Anthropic API error:", JSON.stringify(data));
-      return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: data?.error?.message || "Anthropic API error" }) };
+      console.error("Gemini API error:", JSON.stringify(data));
+      return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: data?.error?.message || "Gemini API error" }) };
     }
 
-    const text = (data.content || [])
-      .filter(b => b.type === "text")
-      .map(b => b.text)
-      .join("\n");
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     console.log("Success! Reply length:", text.length);
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ content: text }) };

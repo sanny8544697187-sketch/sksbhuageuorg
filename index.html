@@ -2553,18 +2553,47 @@ async function sendAI(){
   }
 
   let reply = null;
-  try{
-    const r = await fetch(AI_ENDPOINT, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ messages })
-    });
-    if(r.ok){
-      const d = await r.json();
-      reply = d.content || null;
-      if(d.error) console.warn("AI err:", d.error);
-    }
-  } catch(e){ console.warn("AI fetch failed:", e.message); }
+
+  // ── 1. Try serverless backend function ──
+  if(AI_ENDPOINT){
+    try{
+      const r = await fetch(AI_ENDPOINT, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ messages })
+      });
+      if(r.ok){
+        const d = await r.json();
+        reply = d.content || null;
+        if(d.error) console.warn("AI err:", d.error);
+      }
+    } catch(e){ console.warn("AI fetch failed:", e.message); }
+  }
+
+  // ── 2. Fallback → Gemini 1.5 Flash (direct client-side call) ──
+  if(!reply){
+    try{
+      const contents = messages.map(m => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }]
+      }));
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_cfg}`,
+        {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: AI_SYS }] },
+            contents,
+            generationConfig: { maxOutputTokens: 1024, temperature: 0.7 }
+          })
+        }
+      );
+      const data = await res.json();
+      if(!data.error) reply = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+      else console.warn("Gemini direct err:", data.error);
+    } catch(e){ console.warn("Gemini direct failed:", e.message); }
+  }
 
   msgs = msgs.filter(m => !m.isTyping);
   msgs.push({
@@ -2650,18 +2679,39 @@ async function askAIForDoubt(qId){
 // ── Shared AI Professor caller (used by both main chat & community) ──
 async function callAIProfessor(userText){
   let reply = null;
-  try{
-    const r = await fetch(AI_ENDPOINT, {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ messages: [{ role:"user", content: userText }] })
-    });
-    if(r.ok){
-      const d = await r.json();
-      reply = d.content || null;
-      if(d.error) console.warn("AI Professor err:", d.error);
-    }
-  } catch(e){ console.warn("AI Professor fetch failed:", e.message); }
+  if(AI_ENDPOINT){
+    try{
+      const r = await fetch(AI_ENDPOINT, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ messages: [{ role:"user", content: userText }] })
+      });
+      if(r.ok){
+        const d = await r.json();
+        reply = d.content || null;
+        if(d.error) console.warn("AI Professor err:", d.error);
+      }
+    } catch(e){ console.warn("AI Professor fetch failed:", e.message); }
+  }
+  if(!reply){
+    try{
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_cfg}`,
+        {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: AI_SYS }] },
+            contents: [{ role: "user", parts: [{ text: userText }] }],
+            generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+          })
+        }
+      );
+      const data = await res.json();
+      if(!data.error) reply = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+      else console.warn("Gemini direct err:", data.error);
+    } catch(e){ console.warn("Gemini direct failed:", e.message); }
+  }
   return reply;
 }
 
