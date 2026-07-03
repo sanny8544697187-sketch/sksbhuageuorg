@@ -1,5 +1,5 @@
 // netlify/functions/ai.js
-// Uses Gemini 1.5 Flash API directly — NO external dependencies, no bundling issues
+// Uses Gemini 2.5 Flash API directly — NO external dependencies, no bundling issues
 
 const AI_SYS =
   "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). " +
@@ -11,20 +11,20 @@ const AI_SYS =
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Headers": "Content-Type, X-Gemini-Key",
   "Content-Type": "application/json",
 };
 
-// User's default Gemini API key as fallback
-const DEFAULT_KEY = ["AIzaSyDe_aAvPDNN", "mXBtdZXxaldO0JSE", "3k-hl7U"].join("");
+// API key is configured via Netlify env var: GEMINI_API_KEY
 
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers: CORS, body: "" };
   if (event.httpMethod !== "POST") return { statusCode: 405, headers: CORS, body: JSON.stringify({ error: "Method not allowed" }) };
 
-  // Support both custom Netlify environment variables and the default fallback key
-  const apiKey = process.env.GEMINI_API_KEY || process.env.gemini_key || DEFAULT_KEY;
-  console.log("Gemini API key present:", !!apiKey);
+  // Support custom header from client-side config or server env var
+  const clientKey = event.headers["x-gemini-key"] || event.headers["X-Gemini-Key"];
+  const apiKey = clientKey || process.env.GEMINI_API_KEY || process.env.gemini_key;
+  console.log("Gemini API key source:", clientKey ? "client-header" : "server-env");
 
   if (!apiKey) {
     return { statusCode: 500, headers: CORS, body: JSON.stringify({ error: "Server config error: API key missing" }) };
@@ -73,10 +73,10 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers: CORS, body: JSON.stringify({ error: "No valid user message" }) };
   }
 
-  console.log("Calling Gemini 1.5 Flash API with", contents.length, "messages");
+  console.log("Calling Gemini 2.5 Flash API with", contents.length, "messages");
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
