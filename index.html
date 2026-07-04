@@ -352,6 +352,7 @@
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
@@ -384,6 +385,32 @@ try {
     <button class="close-modal" onclick="closeLogin()">&times;</button>
     <h2 style="font-size:24px;margin-bottom:8px;">Welcome Back 🌾</h2>
     <p style="color:#777;font-size:13px;margin-bottom:20px;">Login to access your agriculture learning portal</p>
+
+    <!-- Google Sign-In Button -->
+    <button id="googleSignInBtn" onclick="doGoogleLogin()" style="
+      width:100%;display:flex;align-items:center;justify-content:center;gap:12px;
+      background:#ffffff;border:1.5px solid #dadce0;border-radius:12px;
+      padding:12px 20px;font-size:14px;font-weight:600;color:#3c4043;
+      cursor:pointer;font-family:inherit;margin-bottom:18px;
+      box-shadow:0 1px 6px rgba(0,0,0,.08);transition:box-shadow .2s,background .2s;
+    " onmouseover="this.style.boxShadow='0 3px 14px rgba(0,0,0,.15)';this.style.background='#f8f9fa';"
+       onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.08)';this.style.background='#ffffff';">
+      <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <!-- Divider -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+      <div style="flex:1;height:1px;background:#e0e7e0;"></div>
+      <span style="font-size:12px;color:#999;font-weight:500;">or use email</span>
+      <div style="flex:1;height:1px;background:#e0e7e0;"></div>
+    </div>
+
     <div class="modal-tabs">
       <button id="loginTab" class="active" onclick="switchAuthTab('login')">Login</button>
       <button id="registerTab" onclick="switchAuthTab('register')">Register</button>
@@ -4510,13 +4537,95 @@ async function deleteCustomQuestion(subj,idx){
 // AUTH
 // ═══════════════════════════════════════════════════════════════
 function openLogin(){ document.getElementById("loginModal").classList.remove("hidden"); }
-function closeLogin(){ document.getElementById("loginModal").classList.add("hidden"); document.getElementById("authErr").textContent=""; document.getElementById("regErr").textContent=""; }
+function closeLogin(){
+  document.getElementById("loginModal").classList.add("hidden");
+  document.getElementById("authErr").textContent="";
+  document.getElementById("regErr").textContent="";
+}
 function switchAuthTab(t){
   loginTab=t;
   document.getElementById("loginForm").classList.toggle("hidden",t!=="login");
   document.getElementById("registerForm").classList.toggle("hidden",t!=="register");
   document.getElementById("loginTab").classList.toggle("active",t==="login");
   document.getElementById("registerTab").classList.toggle("active",t==="register");
+}
+
+// ── GOOGLE LOGIN ─────────────────────────────────────────────────
+async function doGoogleLogin(){
+  const btn = document.getElementById("googleSignInBtn");
+  const originalHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span style="font-size:13px;color:#3c4043;">⏳ Signing in…</span>';
+
+  try {
+    if(!window._fbConfigured){
+      toast("Firebase not configured. Cannot use Google login.","e");
+      return;
+    }
+    const auth     = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    const result = await auth.signInWithPopup(provider);
+    const gUser  = result.user;
+
+    // Check if this Google email is the admin
+    if(gUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()){
+      const u = {email:gUser.email, name:"Admin", isAdmin:true, year:"Administrator", roll:""};
+      currentUser = u; await sSet("bhu:session", u);
+      closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll();
+      return;
+    }
+
+    // Find or auto-create user record in usersDB
+    let found = usersDB.find(u => u.email.toLowerCase() === gUser.email.toLowerCase());
+    if(!found){
+      // First-time Google sign-in → create account automatically
+      found = {
+        id:         gUser.uid || (Date.now()+""),
+        name:       gUser.displayName || gUser.email.split("@")[0],
+        roll:       "",
+        year:       "B.Sc. Ag. Year 1",
+        email:      gUser.email.toLowerCase(),
+        password:   "",          // no password for Google users
+        joinedAt:   new Date().toISOString(),
+        subPlan:    null,
+        subExpiry:  null,
+        authProvider: "google",
+        photoURL:   gUser.photoURL || "",
+      };
+      usersDB = [...usersDB, found];
+      await sSet("bhu:users", usersDB);
+      toast(`Welcome to KrishiGyan, ${found.name}! 🎉`);
+    } else {
+      // Update photo URL on every Google login
+      if(gUser.photoURL && found.photoURL !== gUser.photoURL){
+        usersDB = usersDB.map(u => u.id===found.id ? {...u, photoURL:gUser.photoURL} : u);
+        found   = {...found, photoURL:gUser.photoURL};
+        await sSet("bhu:users", usersDB);
+      }
+      toast(`Welcome back, ${found.name}! 🎓`);
+    }
+
+    const sess = {...found, isAdmin:false};
+    currentUser = sess;
+    await sSet("bhu:session", sess);
+    closeLogin();
+    renderAll();
+
+  } catch(err){
+    console.error("[Google Login]", err);
+    if(err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request"){
+      // User just closed the popup — no toast needed
+    } else if(err.code === "auth/popup-blocked"){
+      toast("Popup was blocked. Please allow popups for this site and try again.","e");
+    } else {
+      toast("Google sign-in failed: " + (err.message||err.code||"Unknown error"),"e");
+    }
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = originalHTML;
+  }
 }
 
 async function doLogin(){
@@ -4557,6 +4666,8 @@ async function doRegister(){
 }
 
 async function doLogout(){
+  // Sign out of Firebase Auth if user logged in via Google
+  try{ if(window._fbConfigured) await firebase.auth().signOut(); } catch(e){}
   currentUser=null; await sDel("bhu:session"); toast("Logged out."); renderAll();
   if(section==="admin") setSection("home");
 }
@@ -4572,11 +4683,21 @@ function openPay(){
 async function doPay(planId){
   const u=currentUser; if(!u){closePayModal();openLogin();return;}
   const ok=await loadRazorpay();
-  if(!ok){toast("Payment gateway failed.","e");return;}
+  if(!ok){toast("Payment gateway failed. Please check your internet connection.","e");return;}
   const plan=PLANS[planId];
-  const rzp=new window.Razorpay({
-    key:RAZORPAY_KEY,amount:plan.price*100,currency:"INR",
-    name:"BHU Agriculture Portal",description:`${plan.label} Premium`,
+
+  // Use dynamic origin so this works on any domain (old URL, Netlify, custom domain, PWA)
+  const siteOrigin = window.location.origin;
+
+  const rzpOptions={
+    key:RAZORPAY_KEY,
+    amount:plan.price*100,
+    currency:"INR",
+    name:"BHU Agriculture Portal",
+    description:`${plan.label} Premium`,
+    // callback_url must match a domain whitelisted in your Razorpay Dashboard → Settings → Website/App Details
+    callback_url: `${siteOrigin}/`,
+    redirect: false,   // keep it as a popup (important for PWA standalone mode)
     handler:async function(res){
       const exp=expiryDate(planId);
       usersDB=usersDB.map(x=>x.id===u.id?{...x,subPlan:planId,subExpiry:exp,payId:res.razorpay_payment_id}:x);
@@ -4587,9 +4708,29 @@ async function doPay(planId){
     },
     prefill:{name:u.name,email:u.email},
     theme:{color:"#00B050"},
-    modal:{ondismiss:()=>{}},
-  });
-  rzp.open();
+    modal:{
+      ondismiss:()=>{},
+      // Prevent Razorpay from closing the PWA when modal is dismissed
+      escape: true,
+      animation: true,
+    },
+    notes:{
+      source: siteOrigin,
+      plan: planId,
+    },
+  };
+
+  try {
+    const rzp = new window.Razorpay(rzpOptions);
+    rzp.on("payment.failed", function(response){
+      console.error("[Razorpay] Payment failed:", response.error);
+      toast(`Payment failed: ${response.error.description || "Unknown error"}`, "e");
+    });
+    rzp.open();
+  } catch(err) {
+    console.error("[Razorpay] Could not open checkout:", err);
+    toast("Could not open payment window. Please disable any popup blocker and try again.", "e");
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
