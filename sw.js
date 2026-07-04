@@ -1,13 +1,13 @@
 // ═══════════════════════════════════════════════════════════
-// AGRI EDU RISE — Service Worker  v2.0
+// AGRI EDU RISE — Service Worker  v2.1
 // Strategy:
 //   • App shell (HTML + fonts)    → Cache-first  (offline capable)
 //   • Firebase / API calls        → Network-first (skip SW)
 //   • Images / CDN scripts        → Stale-while-revalidate
 // ═══════════════════════════════════════════════════════════
 
-const CACHE_NAME    = 'agri-edu-rise-v4';
-const DYNAMIC_CACHE = 'agri-edu-rise-dynamic-v4';
+const CACHE_NAME    = 'agri-edu-rise-v5';
+const DYNAMIC_CACHE = 'agri-edu-rise-dynamic-v5';
 
 // Resources pre-cached on install (app shell)
 const PRECACHE_URLS = [
