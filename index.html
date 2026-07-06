@@ -546,7 +546,7 @@ try {
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
         <div><strong id="statResources">0</strong><span>Resources</span></div>
         <div><strong id="statStudents">0</strong><span>Students</span></div>
-        <div><strong id="statQuestions">0</strong><span>Q&As</span></div>
+        <div><strong id="statQuestions">0</strong><span>Quizzers</span></div>
       </div>
     </div>
 
@@ -1348,8 +1348,8 @@ const RAZORPAY_KEY       = "rzp_live_SxOPLwrDUzQWx9";
 
 // Free tier limits
 const FREE_QUIZ_PER_DAY = 10;   // max Qs in practice per day
-const FREE_PYQ_REVEALS  = 3;    // max PYQ answer reveals per day
-const FREE_DOUBTS       = 2;    // max community doubts per account
+const FREE_PYQ_REVEALS  = 1;    // max PYQ answer reveals per day
+const FREE_DOUBTS       = 10;    // max community doubts per account
 
 const PLANS = {
   monthly:{ id:"monthly", label:"Monthly",  price:19,  period:"month" },
@@ -1434,13 +1434,6 @@ let QUIZ_BANK = {
     {q:"NPK stands for:",opts:["Nitrogen Phosphorus Potassium","Nitrogen Potash Kalium","Nutrients Phosphorus Kalium","None"],ans:0,exp:"N = Nitrogen, P = Phosphorus, K = Potassium (Kalium in Latin).",premium:true},
     {q:"Kharif crops are sown in:",opts:["March–April","October–November","June–July","January–February"],ans:2,exp:"Kharif crops are sown at the start of the rainy season (June–July) and harvested in autumn.",premium:true},
   ],
-  "Soil Science":[
-    {q:"Ideal soil pH range for most crops:",opts:["4.0–5.0","5.5–7.5","8.0–9.0","3.0–4.0"],ans:1,exp:"Most crops grow optimally at pH 5.5–7.5.",premium:false},
-    {q:"Which soil type has the highest water holding capacity?",opts:["Sandy soil","Clay soil","Loamy soil","Silty soil"],ans:1,exp:"Clay has very fine particles with large surface area, holding more water.",premium:false},
-    {q:"Humus is formed from:",opts:["Minerals","Decomposed organic matter","Rock particles","Chemical fertilizers"],ans:1,exp:"Humus is stable organic matter resulting from decomposition of plant and animal material.",premium:true},
-    {q:"Rhizobium bacteria fix atmospheric nitrogen in:",opts:["Wheat","Maize","Legumes","Rice"],ans:2,exp:"Rhizobium fixes N₂ in root nodules of leguminous plants.",premium:true},
-    {q:"Soil salinity is primarily caused by:",opts:["Natural leaching","Waterlogging alone","Excess irrigation without drainage","Wind erosion"],ans:2,exp:"Salts accumulate when irrigation water is applied without adequate drainage.",premium:true},
-  ],
   "Plant Pathology":[
     {q:"Bordeaux mixture is primarily used to control:",opts:["Insect pests","Fungal diseases","Bacterial diseases","Nematodes"],ans:1,exp:"Bordeaux mixture (CuSO₄ + lime) is a classic protectant copper fungicide.",premium:false},
     {q:"Late blight of potato is caused by:",opts:["Fusarium sp.","Phytophthora infestans","Alternaria solani","Pythium sp."],ans:1,exp:"Phytophthora infestans caused the Irish Potato Famine of the 1840s.",premium:false},
@@ -1469,13 +1462,7 @@ let QUIZ_BANK = {
     {q:"The 'T&V' system in extension stands for:",opts:["Training & Visits","Technology & Villages","Transfer & Verify","Teaching & Validation"],ans:0,exp:"Training & Visit (T&V) system was introduced in India in the 1970s by World Bank.",premium:true},
     {q:"ATMA stands for:",opts:["Agricultural Technology Management Agency","Advanced Training for Modern Agriculture","Agri Technology Marketing Authority","Agricultural Technician Management Act"],ans:0,exp:"ATMA (Agricultural Technology Management Agency) operates at district level.",premium:true},
   ],
-  "Dairy Science & Food Tech":[
-    {q:"Which enzyme is responsible for coagulation of milk during cheese making?",opts:["Lipase","Rennet (Rennin)","Amylase","Protease"],ans:1,exp:"Rennet contains chymosin which cleaves κ-casein, causing milk coagulation for cheese making.",premium:false},
-    {q:"Normal pH of fresh cow milk is:",opts:["5.5–6.0","6.5–6.7","7.0–7.2","4.5–5.0"],ans:1,exp:"Fresh cow milk has a pH of 6.5–6.7, slightly acidic due to dissolved CO₂ and casein.",premium:false},
-    {q:"UHT treatment of milk is done at:",opts:["72°C for 15 sec","63°C for 30 min","135–150°C for 2–4 sec","100°C for 10 min"],ans:2,exp:"UHT (Ultra High Temperature) processing at 135–150°C for 2–4 seconds gives shelf-stable milk.",premium:true},
-    {q:"Buffalo milk fat content compared to cow milk is approximately:",opts:["2–3% vs 1%","6–8% vs 3.5%","10% vs 8%","Equal fat content"],ans:1,exp:"Buffalo milk contains 6–8% fat whereas cow milk has 3–4%, making buffalo milk richer.",premium:true},
-    {q:"HTST pasteurisation conditions are:",opts:["100°C for 5 min","72°C for 15 seconds","63°C for 30 minutes","85°C for 1 min"],ans:1,exp:"HTST (High Temperature Short Time) uses 72°C for 15 seconds — standard commercial pasteurisation.",premium:true},
-  ],
+ 
 };
 // Immutable snapshot of the built-in bank — admin-added (custom/PDF/OCR/bulk) questions are
 // always re-merged on top of this snapshot, so edits/deletes never corrupt or duplicate data.
@@ -1863,7 +1850,7 @@ function renderHome(){
   document.getElementById("statResources").textContent=approved.length;
   document.getElementById("statStudents").textContent=usersDB.length;
   document.getElementById("statSubjects").textContent=getSubjects().length;
-  document.getElementById("statQuestions").textContent=questions.length;
+  document.getElementById("statQuestions").textContent=Object.values(QUIZ_BANK).reduce((s,a)=>s+a.length,0);
   const qrcEl=document.getElementById("quickResCount"); if(qrcEl) qrcEl.textContent=approved.length+" file"+(approved.length===1?"":"s");
 
   // User bar
@@ -2646,7 +2633,7 @@ function toggleMCQFields(){
   document.getElementById("mcqFields").style.display=checked?"block":"none";
 }
 
-async function postDoubt(){
+async function _origPostDoubtImpl(){
   const u=currentUser; if(!u){openLogin();return;}
   const title=document.getElementById("qTitle").value.trim();
   const subj=document.getElementById("qSubject").value;
@@ -5414,18 +5401,17 @@ function syncAnalyticsToTab(){
 }
 
 // Premium gate for doubts posting
-const _origPostDoubt=postDoubt;
 async function postDoubt(){
   if(!currentUser){ openLogin(); return; }
   if(!isSubActive(currentUser)){
     // Free users: max 2 posts total
     const myQs=questions.filter(q=>q.authorEmail===currentUser.email);
     if(myQs.length>=2){
-      toast("⭐ Free limit: 2 doubts. Upgrade to post unlimited questions!","e");
+      toast("⭐ Free limit: 10 doubts. Upgrade to post unlimited questions!","e");
       setTimeout(()=>openPay(),800); return;
     }
   }
-  await _origPostDoubt();
+   await _origPostDoubtImpl();
 }
 
 // Premium gate on planner generate
@@ -5563,32 +5549,53 @@ function syncPlannerToTab(){}
     if (!localStorage.getItem('bhu:pwaDeclined')) setTimeout(showInstallBanner, 4000);
   });
 
-  function showInstallBanner() {
+   function showInstallBanner() {
     if (document.getElementById('pwaInstallBanner')) return;
     if (window.matchMedia('(display-mode: standalone)').matches) return;
     const banner = document.createElement('div');
     banner.id = 'pwaInstallBanner';
-    banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'
-      + 'background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;padding:14px 18px;'
-      + 'border-radius:18px;display:flex;align-items:center;gap:12px;z-index:9998;'
-      + 'box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:360px;width:calc(100% - 32px);animation:msgIn .3s ease both;';
+    banner.style.cssText = 'position:fixed;bottom:88px;left:16px;'
+      + 'background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;padding:16px 18px;'
+      + 'border-radius:20px;display:flex;align-items:center;gap:12px;z-index:9998;'
+      + 'border:1px solid rgba(255,255,255,.18);'
+      + 'box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 4px rgba(0,176,80,.15);'
+      + 'max-width:320px;width:calc(100% - 32px);animation:msgIn .35s ease both,pwaGlow 2.4s ease-in-out infinite;';
     banner.innerHTML =
-      '<div style="font-size:28px;flex-shrink:0;">🌾</div>'
-      + '<div style="flex:1;min-width:0;">'
-      +   '<div style="font-weight:700;font-size:13px;">Install Agri Edu Rise</div>'
-      +   '<div style="font-size:11px;opacity:.75;margin-top:2px;">Works offline · No App Store needed</div>'
+      '<div style="position:relative;flex-shrink:0;">'
+      +   '<div style="width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:24px;">🌾</div>'
+      +   '<div style="position:absolute;top:-6px;right:-6px;background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:8px;white-space:nowrap;">FREE</div>'
       + '</div>'
-      + '<button onclick="installPWA()" style="background:#00B050;border:none;color:white;'
-      +   'font-weight:700;padding:7px 14px;border-radius:10px;cursor:pointer;font-size:12px;'
-      +   'font-family:inherit;flex-shrink:0;">Install</button>'
+      + '<div style="flex:1;min-width:0;">'
+      +   '<div style="font-weight:800;font-size:13.5px;line-height:1.2;">📲 Install Agri Edu Rise</div>'
+      +   '<div style="font-size:10.5px;color:#f59e0b;font-weight:700;margin-top:3px;">⭐⭐⭐⭐⭐ 4.9 · Works Offline</div>'
+      + '</div>'
       + '<button onclick="document.getElementById(\'pwaInstallBanner\').remove();'
       +   'localStorage.setItem(\'bhu:pwaDeclined\',\'1\');" '
-      +   'style="background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;'
-      +   'border-radius:50%;cursor:pointer;font-size:16px;flex-shrink:0;'
+      +   'style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,.15);border:none;color:white;width:22px;height:22px;'
+      +   'border-radius:50%;cursor:pointer;font-size:12px;flex-shrink:0;line-height:1;'
       +   'display:flex;align-items:center;justify-content:center;">✕</button>';
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'position:absolute;bottom:-14px;left:16px;right:16px;';
+    banner.style.position = 'fixed';
+    banner.appendChild(btnRow);
+    // Full-width install CTA below the row
+    const installBtn = document.createElement('button');
+    installBtn.textContent = '⬇️ Install Now — It\'s Free';
+    installBtn.onclick = installPWA;
+    installBtn.style.cssText = 'position:absolute;left:16px;right:16px;bottom:-14px;'
+      + 'background:linear-gradient(90deg,#00B050,#1B9E4B);border:none;color:white;'
+      + 'font-weight:800;padding:9px 0;border-radius:11px;cursor:pointer;font-size:12.5px;'
+      + 'font-family:inherit;box-shadow:0 6px 16px rgba(0,176,80,.5);';
+    banner.style.paddingBottom = '30px';
+    banner.appendChild(installBtn);
+    if (!document.getElementById('pwaGlowKeyframes')) {
+      const st = document.createElement('style');
+      st.id = 'pwaGlowKeyframes';
+      st.textContent = '@keyframes pwaGlow{0%,100%{box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 4px rgba(0,176,80,.15);}50%{box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 8px rgba(0,176,80,.05);}}';
+      document.head.appendChild(st);
+    }
     document.body.appendChild(banner);
   }
-
   window.installPWA = function() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
