@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// AGRI EDU RISE — Service Worker  v2.1
+// AGRI EDU RISE — Service Worker  v2.0
 // Strategy:
 //   • App shell (HTML + fonts)    → Cache-first  (offline capable)
 //   • Firebase / API calls        → Network-first (skip SW)

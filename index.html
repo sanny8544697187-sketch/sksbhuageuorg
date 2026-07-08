@@ -24,7 +24,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Agri Edu Rise"/>
-<link rel="icon" href="./favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
   <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png"/>
   <link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png"/>
@@ -353,7 +352,6 @@
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
@@ -386,32 +384,6 @@ try {
     <button class="close-modal" onclick="closeLogin()">&times;</button>
     <h2 style="font-size:24px;margin-bottom:8px;">Welcome Back 🌾</h2>
     <p style="color:#777;font-size:13px;margin-bottom:20px;">Login to access your agriculture learning portal</p>
-
-    <!-- Google Sign-In Button -->
-    <button id="googleSignInBtn" onclick="doGoogleLogin()" style="
-      width:100%;display:flex;align-items:center;justify-content:center;gap:12px;
-      background:#ffffff;border:1.5px solid #dadce0;border-radius:12px;
-      padding:12px 20px;font-size:14px;font-weight:600;color:#3c4043;
-      cursor:pointer;font-family:inherit;margin-bottom:18px;
-      box-shadow:0 1px 6px rgba(0,0,0,.08);transition:box-shadow .2s,background .2s;
-    " onmouseover="this.style.boxShadow='0 3px 14px rgba(0,0,0,.15)';this.style.background='#f8f9fa';"
-       onmouseout="this.style.boxShadow='0 1px 6px rgba(0,0,0,.08)';this.style.background='#ffffff';">
-      <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-      </svg>
-      Continue with Google
-    </button>
-
-    <!-- Divider -->
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
-      <div style="flex:1;height:1px;background:#e0e7e0;"></div>
-      <span style="font-size:12px;color:#999;font-weight:500;">or use email</span>
-      <div style="flex:1;height:1px;background:#e0e7e0;"></div>
-    </div>
-
     <div class="modal-tabs">
       <button id="loginTab" class="active" onclick="switchAuthTab('login')">Login</button>
       <button id="registerTab" onclick="switchAuthTab('register')">Register</button>
@@ -521,6 +493,7 @@ try {
     <button id="navSubjects"   class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
     <button id="navQuiz"       class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
     <button id="navPyq"        class="btn btn-ghost" onclick="setSection('pyq')">📋 PYQ</button>
+    <button id="navGames"      class="btn btn-ghost" onclick="setSection('games')">🎮 Games</button>
     <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
     <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
     <button id="navUpload"     class="btn btn-ghost hidden admin-only" onclick="setSection('upload')">⬆️ Upload</button>
@@ -546,7 +519,7 @@ try {
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
         <div><strong id="statResources">0</strong><span>Resources</span></div>
         <div><strong id="statStudents">0</strong><span>Students</span></div>
-        <div><strong id="statQuestions">0</strong><span>Quizzers</span></div>
+        <div><strong id="statQuestions">0</strong><span>Q&As</span></div>
       </div>
     </div>
 
@@ -1273,11 +1246,8 @@ try {
 
     <!-- ── MCQ TAB ── -->
     <div id="ptab_mcq_content">
-    <!-- Subject cards — same UX as Quiz's "Choose a Subject" -->
-    <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px;">Choose a Subject</div>
-    <div id="pyqSubjectChips" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;"></div>
     <!-- Filters -->
-    <div class="card" id="pyqFiltersCard" style="padding:14px 16px;margin-bottom:16px;display:none;">
+    <div class="card" style="padding:14px 16px;margin-bottom:16px;">
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <div style="flex:1;min-width:120px;">
           <label class="lbl" style="font-size:10px;">Exam</label>
@@ -1286,22 +1256,28 @@ try {
             <option value="ICAR JRF">ICAR JRF</option>
             <option value="IBPS AFO">IBPS AFO</option>
             <option value="NABARD">NABARD</option>
-            <option value="BHU Entrance">BHU Entrance</option>
-            <option value="IARI">IARI</option>
-            <option value="State PSC Agriculture">State PSC Agriculture</option>
-            <option value="Other">Other</option>
           </select>
         </div>
         <div style="flex:1;min-width:120px;">
           <label class="lbl" style="font-size:10px;">Year</label>
           <select id="pyqYearFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
             <option value="All">All Years</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+            <option value="2021">2021</option>
           </select>
         </div>
         <div style="flex:1;min-width:120px;">
           <label class="lbl" style="font-size:10px;">Subject</label>
-          <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="pyqChipSubject=this.value;renderPYQ()">
+          <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
             <option value="All">All Subjects</option>
+            <option value="Agronomy">Agronomy</option>
+            <option value="Soil Science">Soil Science</option>
+            <option value="Genetics & Plant Breeding">Genetics</option>
+            <option value="Plant Pathology">Plant Pathology</option>
+            <option value="Entomology">Entomology</option>
+            <option value="Horticulture">Horticulture</option>
           </select>
         </div>
       </div>
@@ -1322,6 +1298,16 @@ try {
 
   </section>
 
+  <!-- GAMES -->
+  <section id="games" class="section fu">
+    <div class="section-title">🎮 Games</div>
+    <div class="section-subtitle">Blitz · True/False Lightning · Weekly Battle · 1v1 Duel</div>
+    <!-- Hub grid: shown when no game is active -->
+    <div id="gamesHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:4px;"></div>
+    <!-- Game play area: shown when a game is running -->
+    <div id="gameArea" style="display:none;"></div>
+  </section>
+
 </main>
 
 <!-- BOTTOM NAV -->
@@ -1329,6 +1315,7 @@ try {
   <button id="bnHome"        class="active" onclick="setSection('home')"><span>🏠</span><span>Home</span></button>
   <button id="bnSubjects"    onclick="setSection('subjects')"><span>📚</span><span>Subjects</span></button>
   <button id="bnQuiz"        onclick="setSection('quiz')"><span>🧠</span><span>Quiz</span></button>
+  <button id="bnGames"       onclick="setSection('games')"><span>🎮</span><span>Games</span></button>
   <button id="bnChat"        onclick="setSection('chat')"><span>💬</span><span>Doubts</span></button>
   <button id="bnProfile"     onclick="setSection('profile')"><span>👤</span><span>Profile</span></button>
 </nav>
@@ -1345,8 +1332,8 @@ const RAZORPAY_KEY       = "rzp_live_SxOPLwrDUzQWx9";
 
 // Free tier limits
 const FREE_QUIZ_PER_DAY = 10;   // max Qs in practice per day
-const FREE_PYQ_REVEALS  = 1;    // max PYQ answer reveals per day
-const FREE_DOUBTS       = 10;    // max community doubts per account
+const FREE_PYQ_REVEALS  = 3;    // max PYQ answer reveals per day
+const FREE_DOUBTS       = 2;    // max community doubts per account
 
 const PLANS = {
   monthly:{ id:"monthly", label:"Monthly",  price:19,  period:"month" },
@@ -1357,51 +1344,48 @@ const DEFAULT_SUBJECTS = [
   { id:"s1",  name:"Agronomy", icon:"🌾", cat:"core", badge:"Popular",
     desc:"Crop production, soil management, weed management and agricultural practices for optimal yield.",
     topics:["Crop Production","Weed Management","Irrigation Systems","Tillage Systems"], tags:["crops","soil","yield","agronomy"]},
-  { id:"s2",  name:"Plant Sciences", icon:"🌱", cat:"science", badge:"",
-    desc:"Plant biology, physiology, biochemistry and the fundamental science of plant life.",
-    topics:["Plant Physiology","Plant Biochemistry","Plant Anatomy","Photosynthesis"], tags:["plant","physiology","biochemistry","biology"]},
-  { id:"s3",  name:"Soil Sciences", icon:"🪨", cat:"science", badge:"",
-    desc:"Physical, chemical and biological properties of soils and agricultural chemistry applications.",
-    topics:["Soil Chemistry","Soil Fertility","Soil Physics","Agricultural Chemicals"], tags:["soil","nutrients","pH","chemistry"]},
-  { id:"s4",  name:"Plant Biotechnology", icon:"🧬", cat:"science", badge:"New",
-    desc:"Genetic engineering, tissue culture, molecular breeding and biotech tools applied to crops.",
-    topics:["Genetic Engineering","Tissue Culture","Molecular Markers","GM Crops"], tags:["biotechnology","genetic engineering","tissue culture","molecular"]},
-  { id:"s5",  name:"Genetics & Plant Breeding", icon:"🧬", cat:"science", badge:"Popular",
+  { id:"s2",  name:"Entomology", icon:"🐛", cat:"applied", badge:"",
+    desc:"Insects affecting agriculture, pest biology and integrated pest management strategies.",
+    topics:["Insect Pests","IPM","Beneficial Insects","Pesticide Management"], tags:["insects","IPM","biocontrol","pest"]},
+  { id:"s3",  name:"Horticulture", icon:"🍎", cat:"applied", badge:"",
+    desc:"Cultivating fruits, vegetables, flowers and ornamental plants with post-harvest technology.",
+    topics:["Fruit Science","Vegetable Production","Floriculture","Post-harvest Tech"], tags:["fruits","flowers","vegetables","horticulture"]},
+  { id:"s4",  name:"Genetics & Plant Breeding", icon:"🧬", cat:"science", badge:"Popular",
     desc:"Heredity, variation and genetic improvement of crop plants through classical and molecular approaches.",
     topics:["Mendelian Genetics","Hybridization","Mutation Breeding","Molecular Markers"], tags:["genetics","DNA","heredity","breeding"]},
+  { id:"s5",  name:"Plant Biochemistry", icon:"🔭", cat:"science", badge:"",
+    desc:"Biochemical processes in plants including metabolism, enzyme kinetics and molecular functions.",
+    topics:["Photosynthesis","Respiration","Plant Hormones","Enzyme Kinetics"], tags:["biochemistry","metabolism","enzymes","plant"]},
   { id:"s6",  name:"Plant Pathology", icon:"🔬", cat:"applied", badge:"",
     desc:"Plant diseases, causative agents and integrated disease management strategies.",
     topics:["Fungal Diseases","Bacterial Diseases","Virus Diseases","IDM Strategies"], tags:["disease","fungi","pathogen","pathology"]},
-  { id:"s7",  name:"Entomology & Nematology", icon:"🐛", cat:"applied", badge:"",
-    desc:"Insects and nematodes affecting agriculture, pest biology and integrated pest management strategies.",
-    topics:["Insect Pests","Plant Nematodes","IPM","Beneficial Insects"], tags:["insects","nematodes","IPM","biocontrol","pest"]},
-  { id:"s8",  name:"Horticulture", icon:"🍎", cat:"applied", badge:"",
-    desc:"Cultivating fruits, vegetables, flowers and ornamental plants with post-harvest technology.",
-    topics:["Fruit Science","Vegetable Production","Floriculture","Post-harvest Tech"], tags:["fruits","flowers","vegetables","horticulture"]},
-  { id:"s9",  name:"Agri Engineering & Technology", icon:"⚙️", cat:"core", badge:"",
+  { id:"s7",  name:"Soil Sciences & Agricultural Chemistry", icon:"🪨", cat:"science", badge:"",
+    desc:"Physical, chemical and biological properties of soils and agricultural chemistry applications.",
+    topics:["Soil Chemistry","Soil Fertility","Soil Physics","Agricultural Chemicals"], tags:["soil","nutrients","pH","chemistry"]},
+  { id:"s8",  name:"Animal Husbandry & Dairy Tech", icon:"🐄", cat:"applied", badge:"New",
+    desc:"Animal production systems, dairy processing, food technology and value-added product development.",
+    topics:["Animal Production","Dairy Processing","Livestock Management","Quality Control"], tags:["dairy","animal","livestock","food","processing"]},
+  { id:"s9",  name:"Agricultural Engineering", icon:"⚙️", cat:"core", badge:"",
     desc:"Farm machinery, irrigation engineering, food processing technology and rural infrastructure.",
-    topics:["Farm Machinery","Irrigation Engineering","Processing Technology","Rural Infrastructure"], tags:["engineering","machinery","irrigation","technology"]},
+    topics:["Farm Machinery","Irrigation Engineering","Food Technology","Rural Infrastructure"], tags:["engineering","machinery","irrigation","technology"]},
   { id:"s10", name:"Agricultural Economics", icon:"📊", cat:"applied", badge:"",
     desc:"Economic principles applied to farming, marketing, trade policy and rural development.",
     topics:["Farm Finance","Ag Marketing","Demand & Supply","Agribusiness Management"], tags:["economics","market","policy","finance"]},
-  { id:"s11", name:"Statistics", icon:"📈", cat:"science", badge:"",
+  { id:"s11", name:"Statistical Methods", icon:"📈", cat:"science", badge:"",
     desc:"Statistical techniques, research design and quantitative data analysis in agricultural sciences.",
     topics:["Basic Statistics","Research Design","Data Analysis","Hypothesis Testing"], tags:["statistics","research","data","methods"]},
-  { id:"s12", name:"Agricultural Extension", icon:"📣", cat:"applied", badge:"",
+  { id:"s12", name:"Extension Education", icon:"📣", cat:"applied", badge:"",
     desc:"Transferring agricultural knowledge and innovations to farming communities effectively.",
     topics:["Extension Methods","Rural Communication","FLD & Demonstrations","Farmers Training"], tags:["extension","communication","rural","education"]},
-  { id:"s13", name:"Dairy Sciences", icon:"🐄", cat:"applied", badge:"",
-    desc:"Dairy animal production, breeds, management and milk production systems.",
-    topics:["Dairy Animal Management","Breeds & Breeding","Milk Production","Livestock Nutrition"], tags:["dairy","animal","livestock","milk"]},
-  { id:"s14", name:"Dairy Technology", icon:"🥛", cat:"applied", badge:"New",
-    desc:"Milk processing, dairy product manufacture, quality control and dairy plant operations.",
-    topics:["Milk Processing","Dairy Products","Quality Control","Dairy Plant Engineering"], tags:["dairy","technology","milk processing","quality"]},
-  { id:"s15", name:"Food Science & Technology", icon:"🍚", cat:"applied", badge:"New",
-    desc:"Food processing, preservation, quality control and value-added food product development.",
-    topics:["Food Processing","Food Preservation","Food Quality Control","Food Packaging"], tags:["food","processing","preservation","technology"]},
-  { id:"s16", name:"Others", icon:"📚", cat:"core", badge:"",
-    desc:"Agricultural meteorology, environmental studies, extension methods and other miscellaneous topics.",
-    topics:["Agri-Entrepreneurship","Organic Farming","Environmental Science","General Awareness"], tags:["others","general","miscellaneous"]},
+  { id:"s13", name:"Agricultural Meteorology", icon:"🌦️", cat:"science", badge:"",
+    desc:"Weather, climate patterns and their effects on crop production and agricultural planning.",
+    topics:["Weather Forecasting","Climate Change","Rainfall Analysis","Evapotranspiration"], tags:["weather","climate","forecast","meteorology"]},
+  { id:"s14", name:"Environmental Studies & Disaster Management", icon:"🌍", cat:"science", badge:"",
+    desc:"Environmental science, sustainability, pollution control and disaster preparedness in agriculture.",
+    topics:["Environmental Science","Pollution Control","Disaster Management","Climate Adaptation"], tags:["environment","disaster","ecology","sustainability"]},
+  { id:"s15", name:"Additional Courses", icon:"📚", cat:"core", badge:"New",
+    desc:"Skill enhancement, entrepreneurship, organic farming and specialised short courses for agriculture graduates.",
+    topics:["Agri-Entrepreneurship","Organic Farming","Food Processing","Rural Development"], tags:["skill","startup","additional","courses"]},
 ];
 
 let activeSubjects = []; // loaded from Firebase/localStorage; falls back to DEFAULT_SUBJECTS
@@ -1425,21 +1409,6 @@ function rebuildSubjectDropdowns(){
       sf.innerHTML+=`<button class="btn hchip btn-light" onclick="setResSub('${escapeHTML(s.name)}')" id="rsub_${s.id}" style="white-space:nowrap;padding:5px 12px;font-size:12px;">${escapeHTML(s.name)}</button>`;
     });
   }
-  // PYQ subject filter dropdown (MCQ tab)
-  const pyqSf=document.getElementById("pyqSubjectFilter");
-  if(pyqSf) pyqSf.innerHTML='<option value="All">All Subjects</option>'+opts;
-  // PYQ admin/bulk/paste subject selects (used by MCQ import forms)
-  ["pyqBulkSubject","pyqPasteSubject","pyqSubjAdmin","pdfQuizSubject","bulkFallbackSubject","mQuizSubj"].forEach(id=>{
-    const el=document.getElementById(id); if(!el) return;
-    const cur=el.value; el.innerHTML=opts; if(cur) el.value=cur;
-  });
-  // PYQ PDF-library subject selects
-  ["qpPdfSubject","pyqPdfSubject","pyqPdfSubjectFilter"].forEach(id=>{
-    const el=document.getElementById(id); if(!el) return;
-    const cur=el.value;
-    el.innerHTML=(id==="pyqPdfSubjectFilter"?'<option value="All">All Subjects</option>':'')+opts;
-    if(cur) el.value=cur;
-  });
 }
 let QUIZ_BANK = {
   "Agronomy":[
@@ -1448,6 +1417,13 @@ let QUIZ_BANK = {
     {q:"Which irrigation method has the highest water-use efficiency?",opts:["Flood irrigation","Furrow irrigation","Sprinkler irrigation","Drip irrigation"],ans:3,exp:"Drip irrigation delivers water directly to the root zone, minimising losses.",premium:true},
     {q:"NPK stands for:",opts:["Nitrogen Phosphorus Potassium","Nitrogen Potash Kalium","Nutrients Phosphorus Kalium","None"],ans:0,exp:"N = Nitrogen, P = Phosphorus, K = Potassium (Kalium in Latin).",premium:true},
     {q:"Kharif crops are sown in:",opts:["March–April","October–November","June–July","January–February"],ans:2,exp:"Kharif crops are sown at the start of the rainy season (June–July) and harvested in autumn.",premium:true},
+  ],
+  "Soil Science":[
+    {q:"Ideal soil pH range for most crops:",opts:["4.0–5.0","5.5–7.5","8.0–9.0","3.0–4.0"],ans:1,exp:"Most crops grow optimally at pH 5.5–7.5.",premium:false},
+    {q:"Which soil type has the highest water holding capacity?",opts:["Sandy soil","Clay soil","Loamy soil","Silty soil"],ans:1,exp:"Clay has very fine particles with large surface area, holding more water.",premium:false},
+    {q:"Humus is formed from:",opts:["Minerals","Decomposed organic matter","Rock particles","Chemical fertilizers"],ans:1,exp:"Humus is stable organic matter resulting from decomposition of plant and animal material.",premium:true},
+    {q:"Rhizobium bacteria fix atmospheric nitrogen in:",opts:["Wheat","Maize","Legumes","Rice"],ans:2,exp:"Rhizobium fixes N₂ in root nodules of leguminous plants.",premium:true},
+    {q:"Soil salinity is primarily caused by:",opts:["Natural leaching","Waterlogging alone","Excess irrigation without drainage","Wind erosion"],ans:2,exp:"Salts accumulate when irrigation water is applied without adequate drainage.",premium:true},
   ],
   "Plant Pathology":[
     {q:"Bordeaux mixture is primarily used to control:",opts:["Insect pests","Fungal diseases","Bacterial diseases","Nematodes"],ans:1,exp:"Bordeaux mixture (CuSO₄ + lime) is a classic protectant copper fungicide.",premium:false},
@@ -1477,7 +1453,13 @@ let QUIZ_BANK = {
     {q:"The 'T&V' system in extension stands for:",opts:["Training & Visits","Technology & Villages","Transfer & Verify","Teaching & Validation"],ans:0,exp:"Training & Visit (T&V) system was introduced in India in the 1970s by World Bank.",premium:true},
     {q:"ATMA stands for:",opts:["Agricultural Technology Management Agency","Advanced Training for Modern Agriculture","Agri Technology Marketing Authority","Agricultural Technician Management Act"],ans:0,exp:"ATMA (Agricultural Technology Management Agency) operates at district level.",premium:true},
   ],
- 
+  "Dairy Science & Food Tech":[
+    {q:"Which enzyme is responsible for coagulation of milk during cheese making?",opts:["Lipase","Rennet (Rennin)","Amylase","Protease"],ans:1,exp:"Rennet contains chymosin which cleaves κ-casein, causing milk coagulation for cheese making.",premium:false},
+    {q:"Normal pH of fresh cow milk is:",opts:["5.5–6.0","6.5–6.7","7.0–7.2","4.5–5.0"],ans:1,exp:"Fresh cow milk has a pH of 6.5–6.7, slightly acidic due to dissolved CO₂ and casein.",premium:false},
+    {q:"UHT treatment of milk is done at:",opts:["72°C for 15 sec","63°C for 30 min","135–150°C for 2–4 sec","100°C for 10 min"],ans:2,exp:"UHT (Ultra High Temperature) processing at 135–150°C for 2–4 seconds gives shelf-stable milk.",premium:true},
+    {q:"Buffalo milk fat content compared to cow milk is approximately:",opts:["2–3% vs 1%","6–8% vs 3.5%","10% vs 8%","Equal fat content"],ans:1,exp:"Buffalo milk contains 6–8% fat whereas cow milk has 3–4%, making buffalo milk richer.",premium:true},
+    {q:"HTST pasteurisation conditions are:",opts:["100°C for 5 min","72°C for 15 seconds","63°C for 30 minutes","85°C for 1 min"],ans:1,exp:"HTST (High Temperature Short Time) uses 72°C for 15 seconds — standard commercial pasteurisation.",premium:true},
+  ],
 };
 // Immutable snapshot of the built-in bank — admin-added (custom/PDF/OCR/bulk) questions are
 // always re-merged on top of this snapshot, so edits/deletes never corrupt or duplicate data.
@@ -1802,12 +1784,12 @@ function setSection(s){
   const el=document.getElementById(s); if(el) el.classList.add("active");
 
   // nav chips
-  ["home","subjects","quiz","pyq","chat","profile","upload","admin"].forEach(k=>{
+  ["home","subjects","quiz","pyq","games","chat","profile","upload","admin"].forEach(k=>{
     const btn=document.getElementById("nav"+k.charAt(0).toUpperCase()+k.slice(1));
     if(btn){ btn.classList.toggle("btn-primary",k===s); btn.classList.toggle("btn-ghost",k!==s); }
   });
   // bottom nav
-  ["Home","Subjects","Quiz","Chat","Profile"].forEach(k=>{
+  ["Home","Subjects","Quiz","Games","Chat","Profile"].forEach(k=>{
     const btn=document.getElementById("bn"+k); if(btn) btn.classList.toggle("active",k.toLowerCase()===s);
   });
 
@@ -1817,6 +1799,7 @@ function setSection(s){
   if(s==="admin")     renderAdmin();
   if(s==="profile")   renderProfile();
   if(s==="pyq")       renderPYQ();
+  if(s==="games")     renderGamesHub();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -1865,7 +1848,7 @@ function renderHome(){
   document.getElementById("statResources").textContent=approved.length;
   document.getElementById("statStudents").textContent=usersDB.length;
   document.getElementById("statSubjects").textContent=getSubjects().length;
-  document.getElementById("statQuestions").textContent=Object.values(QUIZ_BANK).reduce((s,a)=>s+a.length,0);
+  document.getElementById("statQuestions").textContent=questions.length;
   const qrcEl=document.getElementById("quickResCount"); if(qrcEl) qrcEl.textContent=approved.length+" file"+(approved.length===1?"":"s");
 
   // User bar
@@ -2552,7 +2535,7 @@ function clearChat(){
 }
 
 // ── AI Professor — OpenRouter (Netlify) → Gemini fallback ──────
-const _cfg = localStorage.getItem("gemini_key") || "";
+const _cfg = ["AIzaSyDe_aAvPDNN","mXBtdZXxaldO0JSE","3k-hl7U"].join("");
 const AI_SYS = "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). "+
   "You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, "+
   "Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Economics & Statistics, "+
@@ -2583,47 +2566,18 @@ async function sendAI(){
   }
 
   let reply = null;
-
-  // ── 1. Try serverless backend function ──
-  if(AI_ENDPOINT){
-    try{
-      const r = await fetch(AI_ENDPOINT, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ messages })
-      });
-      if(r.ok){
-        const d = await r.json();
-        reply = d.content || null;
-        if(d.error) console.warn("AI err:", d.error);
-      }
-    } catch(e){ console.warn("AI fetch failed:", e.message); }
-  }
-
-  // ── 2. Fallback → Gemini 1.5 Flash (direct client-side call) ──
-  if(!reply){
-    try{
-      const contents = messages.map(m => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.content }]
-      }));
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${_cfg}`,
-        {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: AI_SYS }] },
-            contents,
-            generationConfig: { maxOutputTokens: 1024, temperature: 0.7 }
-          })
-        }
-      );
-      const data = await res.json();
-      if(!data.error) reply = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-      else console.warn("Gemini direct err:", data.error);
-    } catch(e){ console.warn("Gemini direct failed:", e.message); }
-  }
+  try{
+    const r = await fetch(AI_ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ messages })
+    });
+    if(r.ok){
+      const d = await r.json();
+      reply = d.content || null;
+      if(d.error) console.warn("AI err:", d.error);
+    }
+  } catch(e){ console.warn("AI fetch failed:", e.message); }
 
   msgs = msgs.filter(m => !m.isTyping);
   msgs.push({
@@ -2648,7 +2602,7 @@ function toggleMCQFields(){
   document.getElementById("mcqFields").style.display=checked?"block":"none";
 }
 
-async function _origPostDoubtImpl(){
+async function postDoubt(){
   const u=currentUser; if(!u){openLogin();return;}
   const title=document.getElementById("qTitle").value.trim();
   const subj=document.getElementById("qSubject").value;
@@ -2709,39 +2663,18 @@ async function askAIForDoubt(qId){
 // ── Shared AI Professor caller (used by both main chat & community) ──
 async function callAIProfessor(userText){
   let reply = null;
-  if(AI_ENDPOINT){
-    try{
-      const r = await fetch(AI_ENDPOINT, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ messages: [{ role:"user", content: userText }] })
-      });
-      if(r.ok){
-        const d = await r.json();
-        reply = d.content || null;
-        if(d.error) console.warn("AI Professor err:", d.error);
-      }
-    } catch(e){ console.warn("AI Professor fetch failed:", e.message); }
-  }
-  if(!reply){
-    try{
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${_cfg}`,
-        {
-          method: "POST",
-          headers: {"Content-Type": "application/json"},
-          body: JSON.stringify({
-            systemInstruction: { parts: [{ text: AI_SYS }] },
-            contents: [{ role: "user", parts: [{ text: userText }] }],
-            generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
-          })
-        }
-      );
-      const data = await res.json();
-      if(!data.error) reply = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
-      else console.warn("Gemini direct err:", data.error);
-    } catch(e){ console.warn("Gemini direct failed:", e.message); }
-  }
+  try{
+    const r = await fetch(AI_ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ messages: [{ role:"user", content: userText }] })
+    });
+    if(r.ok){
+      const d = await r.json();
+      reply = d.content || null;
+      if(d.error) console.warn("AI Professor err:", d.error);
+    }
+  } catch(e){ console.warn("AI Professor fetch failed:", e.message); }
   return reply;
 }
 
@@ -3163,7 +3096,7 @@ async function renderAdmin(){
           </div>
           <div><label class="lbl">Year</label>
             <select id="pyqBulkYear" class="inp">
-              ${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option value="${y}">${y}</option>`).join("")}
+              ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
             </select>
           </div>
           <div><label class="lbl">Default Subject</label>
@@ -3194,7 +3127,7 @@ async function renderAdmin(){
           </div>
           <div><label class="lbl">Year</label>
             <select id="pyqPasteYear" class="inp">
-              ${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option value="${y}">${y}</option>`).join("")}
+              ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
             </select>
           </div>
           <div><label class="lbl">Default Subject</label>
@@ -3228,7 +3161,7 @@ async function renderAdmin(){
             </div>
             <div><label class="lbl">Year *</label>
               <select id="pyqYear" class="inp">
-                ${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option value="${y}">${y}</option>`).join("")}
+                ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
               </select>
             </div>
             <div><label class="lbl">Subject *</label>
@@ -3588,55 +3521,15 @@ function renderAdminPYQList(){
 let pyqRevealedIds = {};
 const _pyqFreeReveals = {};
 
-let pyqChipSubject=""; // empty = no subject chosen yet → list stays hidden
-function setPYQChipSubject(name){
-  pyqChipSubject=name;
-  const dd=document.getElementById("pyqSubjectFilter"); if(dd) dd.value=name;
-  renderPYQ();
-}
-function renderPYQSubjectChips(){
-  const el=document.getElementById("pyqSubjectChips"); if(!el) return;
-  const subs=getSubjects();
-  const countFor=name=>pyqData.filter(q=>name==="All"||q.subject===name).length;
-  el.innerHTML=`<button class="btn hchip ${pyqChipSubject==="All"?"btn-primary":"btn-light"}" onclick="setPYQChipSubject('All')" style="font-size:13px;padding:8px 16px;">All <span style="opacity:.65;font-weight:400;">(${countFor("All")})</span></button>`+
-    subs.map(s=>`<button class="btn hchip ${pyqChipSubject===s.name?"btn-primary":"btn-light"}" onclick="setPYQChipSubject('${escapeHTML(s.name)}')" style="font-size:13px;padding:8px 16px;">${s.icon} ${escapeHTML(s.name)} <span style="opacity:.65;font-weight:400;">(${countFor(s.name)})</span></button>`).join("");
-}
-function populatePYQYearFilter(){
-  const el=document.getElementById("pyqYearFilter"); if(!el) return;
-  const cur=el.value||"All";
-  const yrs=[...new Set(pyqData.map(q=>String(q.year)).filter(Boolean))].sort((a,b)=>b-a);
-  const fallback=Array.from({length:18},(_,i)=>String(2027-i)); // 2010–2027 fallback if bank is empty
-  const list=yrs.length?yrs:fallback;
-  el.innerHTML='<option value="All">All Years</option>'+list.map(y=>`<option value="${y}">${y}</option>`).join("");
-  el.value=cur;
-}
 function renderPYQ(){
   const u=currentUser;
   const isPrem=isSubActive(u);
-  renderPYQSubjectChips();
-  populatePYQYearFilter();
-  const listEl  = document.getElementById("pyqList");
-  const countEl = document.getElementById("pyqCount");
-  const filtersCard = document.getElementById("pyqFiltersCard");
-  if(!listEl) return;
-
-  // Nothing chosen yet — hide filters/list/questions and prompt the user to pick a subject first
-  if(!pyqChipSubject){
-    const oldBanner=document.getElementById("pyqPremBanner"); if(oldBanner) oldBanner.remove();
-    if(filtersCard) filtersCard.style.display="none";
-    if(countEl) countEl.textContent="";
-    listEl.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
-      <div style="font-size:44px;margin-bottom:10px;">📋</div>
-      <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Select a subject above to view PYQs</div>
-      <div style="color:#777;font-size:13px;">Pick a subject (or "All") from the cards above to browse previous year questions.</div>
-    </div>`;
-    return;
-  }
-  if(filtersCard) filtersCard.style.display="block";
-
   const examF   = (document.getElementById("pyqExamFilter")?.value||"All");
   const yearF   = (document.getElementById("pyqYearFilter")?.value||"All");
-  const subjF   = pyqChipSubject!=="All" ? pyqChipSubject : (document.getElementById("pyqSubjectFilter")?.value||"All");
+  const subjF   = (document.getElementById("pyqSubjectFilter")?.value||"All");
+  const listEl  = document.getElementById("pyqList");
+  const countEl = document.getElementById("pyqCount");
+  if(!listEl) return;
 
   // Premium banner above PYQ list
   const today=new Date().toISOString().split("T")[0];
@@ -4010,10 +3903,7 @@ function renderPYQPdfLibrary(){
             <select id="qpPdfExam" class="inp"><option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option><option>BHU Entrance</option><option>Other</option></select>
           </div>
           <div><label class="lbl">Year</label>
-            <select id="qpPdfYear" class="inp">${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option>${y}</option>`).join('')}</select>
-          </div>
-          <div><label class="lbl">Subject</label>
-            <select id="qpPdfSubject" class="inp">${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join('')}</select>
+            <select id="qpPdfYear" class="inp">${[2025,2024,2023,2022,2021,2020,2019].map(y=>`<option>${y}</option>`).join('')}</select>
           </div>
           <div><label class="lbl">Drive / Direct Link</label><input id="qpPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
         </div>
@@ -4027,15 +3917,6 @@ function renderPYQPdfLibrary(){
       </div>`;
   }
 
-  const subs=getSubjects();
-  const countFor=name=>pyqPdfs.filter(p=>name==="All"||(p.subject||"Others")===name).length;
-  const chipsHtml=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;overflow-x:auto;">
-    <button class="btn hchip ${pyqPdfChipSubject==="All"?"btn-primary":"btn-light"}" onclick="setPYQPdfChipSubject('All')" style="font-size:12px;padding:6px 14px;white-space:nowrap;">All (${countFor("All")})</button>
-    ${subs.map(s=>`<button class="btn hchip ${pyqPdfChipSubject===s.name?"btn-primary":"btn-light"}" onclick="setPYQPdfChipSubject('${escapeHTML(s.name)}')" style="font-size:12px;padding:6px 14px;white-space:nowrap;">${s.icon} ${escapeHTML(s.name)} (${countFor(s.name)})</button>`).join("")}
-  </div>`;
-
-  const filteredPdfs=pyqPdfs.filter(p=>pyqPdfChipSubject==="All"||(p.subject||"Others")===pyqPdfChipSubject);
-
   if(!pyqPdfs.length){
     el.innerHTML=adminUploadHtml+`<div class="card" style="padding:44px;text-align:center;">
       <div style="font-size:44px;margin-bottom:12px;">📄</div>
@@ -4043,17 +3924,15 @@ function renderPYQPdfLibrary(){
       <div style="color:#777;font-size:13px;">Admin can upload complete PYQ papers as PDFs for students to download.</div>
     </div>`; return;
   }
-  el.innerHTML=adminUploadHtml+chipsHtml+`
-    <div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${filteredPdfs.length})</div>
-    ${filteredPdfs.length===0?`<div style="text-align:center;color:#777;padding:30px;font-size:13px;">No PDF papers for this subject yet.</div>`:''}
-    ${filteredPdfs.map(p=>`
+  el.innerHTML=adminUploadHtml+`
+    <div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${pyqPdfs.length})</div>
+    ${pyqPdfs.map(p=>`
       <div class="res-card hov-card">
         <div class="res-icon" style="background:#FFEBEE;">📄</div>
         <div class="res-info">
           <div class="res-title">${escapeHTML(p.title)}</div>
           <div class="res-meta">
             <span style="background:#F3E5F5;color:#7B1FA2;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:700;margin-right:4px;">${escapeHTML(p.exam||'')} ${escapeHTML(p.year||'')}</span>
-            <span style="background:#E8F5E9;color:#0F3D23;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:700;margin-right:4px;">${escapeHTML(p.subject||'Others')}</span>
             PDF Paper · ${escapeHTML(p.date||'')} · by ${escapeHTML(p.uploader||'Admin')}
           </div>
           ${p.desc?`<div class="res-desc">${escapeHTML(p.desc)}</div>`:''}
@@ -4065,8 +3944,6 @@ function renderPYQPdfLibrary(){
         </div>
       </div>`).join('')}`;
 }
-let pyqPdfChipSubject="All";
-function setPYQPdfChipSubject(name){ pyqPdfChipSubject=name; renderPYQPdfLibrary(); }
 
 // Inline PDF upload handlers for the student-facing PYQ PDF tab
 let _qpPdfFileData='', _qpPdfFile=null;
@@ -4084,13 +3961,12 @@ async function uploadQPPdfFile(){
   const title=document.getElementById('qpPdfTitle')?.value?.trim();
   const exam=document.getElementById('qpPdfExam')?.value||'ICAR JRF';
   const year=document.getElementById('qpPdfYear')?.value||'2024';
-  const subject=document.getElementById('qpPdfSubject')?.value||(getSubjects()[0]?.name||'Others');
   const link=document.getElementById('qpPdfLink')?.value?.trim();
   const desc=document.getElementById('qpPdfDesc')?.value?.trim();
   if(!title){toast('Title required.','e');return;}
   if(!link&&!_qpPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
   const id=Date.now()+'';
-  const entry={id,title,exam,year,subject,link:link||'',desc:desc||'',
+  const entry={id,title,exam,year,link:link||'',desc:desc||'',
     uploader:currentUser.name,date:fmtDate(),
     fileName:_qpPdfFile?.name||'',hasFile:!!_qpPdfFileData};
   if(_qpPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_qpPdfFileData);
@@ -4134,13 +4010,12 @@ async function uploadPYQPdfFile(){
   const title=document.getElementById('pyqPdfTitle')?.value?.trim();
   const exam=document.getElementById('pyqPdfExam')?.value||'ICAR JRF';
   const year=document.getElementById('pyqPdfYear')?.value||'2024';
-  const subject=document.getElementById('pyqPdfSubject')?.value||(getSubjects()[0]?.name||'Others');
   const link=document.getElementById('pyqPdfLink')?.value?.trim();
   const desc=document.getElementById('pyqPdfDesc')?.value?.trim();
   if(!title){toast('Title required.','e');return;}
   if(!link&&!_pyqPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
   const id=Date.now()+'';
-  const entry={id,title,exam,year,subject,link:link||'',desc:desc||'',
+  const entry={id,title,exam,year,link:link||'',desc:desc||'',
     uploader:currentUser.name,date:fmtDate(),
     fileName:_pyqPdfFile?.name||'',hasFile:!!_pyqPdfFileData};
   if(_pyqPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_pyqPdfFileData);
@@ -4168,11 +4043,8 @@ function renderAdminPYQPdfSection(){
       </div>
       <div><label class="lbl">Year</label>
         <select id="pyqPdfYear" class="inp">
-          ${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option>${y}</option>`).join('')}
+          ${[2025,2024,2023,2022,2021,2020,2019].map(y=>`<option>${y}</option>`).join('')}
         </select>
-      </div>
-      <div><label class="lbl">Subject</label>
-        <select id="pyqPdfSubject" class="inp">${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join('')}</select>
       </div>
       <div><label class="lbl">Google Drive / Direct PDF Link</label><input id="pyqPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
     </div>
@@ -4190,7 +4062,7 @@ function renderAdminPYQPdfSection(){
       <div style="margin-top:16px;font-weight:700;font-size:13px;margin-bottom:8px;">Uploaded Papers (${pyqPdfs.length})</div>
       ${pyqPdfs.map(p=>`
         <div style="background:#F8FBF8;border-radius:10px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
-          <div style="flex:1;font-size:13px;"><strong>${escapeHTML(p.title)}</strong><br><span style="font-size:11px;color:#777;">${escapeHTML(p.exam)} ${escapeHTML(p.year)} · ${escapeHTML(p.subject||'Others')} · ${escapeHTML(p.date)}</span></div>
+          <div style="flex:1;font-size:13px;"><strong>${escapeHTML(p.title)}</strong><br><span style="font-size:11px;color:#777;">${escapeHTML(p.exam)} ${escapeHTML(p.year)} · ${escapeHTML(p.date)}</span></div>
           ${p.link?`<button onclick="openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')" style="background:#E3F2FD;color:#1565C0;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">👁</button>`:''}
           <button onclick="deletePYQPdf('${p.id}')" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">🗑</button>
         </div>`).join('')}`:''}`;
@@ -4601,95 +4473,13 @@ async function deleteCustomQuestion(subj,idx){
 // AUTH
 // ═══════════════════════════════════════════════════════════════
 function openLogin(){ document.getElementById("loginModal").classList.remove("hidden"); }
-function closeLogin(){
-  document.getElementById("loginModal").classList.add("hidden");
-  document.getElementById("authErr").textContent="";
-  document.getElementById("regErr").textContent="";
-}
+function closeLogin(){ document.getElementById("loginModal").classList.add("hidden"); document.getElementById("authErr").textContent=""; document.getElementById("regErr").textContent=""; }
 function switchAuthTab(t){
   loginTab=t;
   document.getElementById("loginForm").classList.toggle("hidden",t!=="login");
   document.getElementById("registerForm").classList.toggle("hidden",t!=="register");
   document.getElementById("loginTab").classList.toggle("active",t==="login");
   document.getElementById("registerTab").classList.toggle("active",t==="register");
-}
-
-// ── GOOGLE LOGIN ─────────────────────────────────────────────────
-async function doGoogleLogin(){
-  const btn = document.getElementById("googleSignInBtn");
-  const originalHTML = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<span style="font-size:13px;color:#3c4043;">⏳ Signing in…</span>';
-
-  try {
-    if(!window._fbConfigured){
-      toast("Firebase not configured. Cannot use Google login.","e");
-      return;
-    }
-    const auth     = firebase.auth();
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: "select_account" });
-
-    const result = await auth.signInWithPopup(provider);
-    const gUser  = result.user;
-
-    // Check if this Google email is the admin
-    if(gUser.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()){
-      const u = {email:gUser.email, name:"Admin", isAdmin:true, year:"Administrator", roll:""};
-      currentUser = u; await sSet("bhu:session", u);
-      closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll();
-      return;
-    }
-
-    // Find or auto-create user record in usersDB
-    let found = usersDB.find(u => u.email.toLowerCase() === gUser.email.toLowerCase());
-    if(!found){
-      // First-time Google sign-in → create account automatically
-      found = {
-        id:         gUser.uid || (Date.now()+""),
-        name:       gUser.displayName || gUser.email.split("@")[0],
-        roll:       "",
-        year:       "B.Sc. Ag. Year 1",
-        email:      gUser.email.toLowerCase(),
-        password:   "",          // no password for Google users
-        joinedAt:   new Date().toISOString(),
-        subPlan:    null,
-        subExpiry:  null,
-        authProvider: "google",
-        photoURL:   gUser.photoURL || "",
-      };
-      usersDB = [...usersDB, found];
-      await sSet("bhu:users", usersDB);
-      toast(`Welcome to KrishiGyan, ${found.name}! 🎉`);
-    } else {
-      // Update photo URL on every Google login
-      if(gUser.photoURL && found.photoURL !== gUser.photoURL){
-        usersDB = usersDB.map(u => u.id===found.id ? {...u, photoURL:gUser.photoURL} : u);
-        found   = {...found, photoURL:gUser.photoURL};
-        await sSet("bhu:users", usersDB);
-      }
-      toast(`Welcome back, ${found.name}! 🎓`);
-    }
-
-    const sess = {...found, isAdmin:false};
-    currentUser = sess;
-    await sSet("bhu:session", sess);
-    closeLogin();
-    renderAll();
-
-  } catch(err){
-    console.error("[Google Login]", err);
-    if(err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request"){
-      // User just closed the popup — no toast needed
-    } else if(err.code === "auth/popup-blocked"){
-      toast("Popup was blocked. Please allow popups for this site and try again.","e");
-    } else {
-      toast("Google sign-in failed: " + (err.message||err.code||"Unknown error"),"e");
-    }
-  } finally {
-    btn.disabled  = false;
-    btn.innerHTML = originalHTML;
-  }
 }
 
 async function doLogin(){
@@ -4730,8 +4520,6 @@ async function doRegister(){
 }
 
 async function doLogout(){
-  // Sign out of Firebase Auth if user logged in via Google
-  try{ if(window._fbConfigured) await firebase.auth().signOut(); } catch(e){}
   currentUser=null; await sDel("bhu:session"); toast("Logged out."); renderAll();
   if(section==="admin") setSection("home");
 }
@@ -4747,21 +4535,11 @@ function openPay(){
 async function doPay(planId){
   const u=currentUser; if(!u){closePayModal();openLogin();return;}
   const ok=await loadRazorpay();
-  if(!ok){toast("Payment gateway failed. Please check your internet connection.","e");return;}
+  if(!ok){toast("Payment gateway failed.","e");return;}
   const plan=PLANS[planId];
-
-  // Use dynamic origin so this works on any domain (old URL, Netlify, custom domain, PWA)
-  const siteOrigin = window.location.origin;
-
-  const rzpOptions={
-    key:RAZORPAY_KEY,
-    amount:plan.price*100,
-    currency:"INR",
-    name:"BHU Agriculture Portal",
-    description:`${plan.label} Premium`,
-    // callback_url must match a domain whitelisted in your Razorpay Dashboard → Settings → Website/App Details
-    callback_url: `${siteOrigin}/`,
-    redirect: false,   // keep it as a popup (important for PWA standalone mode)
+  const rzp=new window.Razorpay({
+    key:RAZORPAY_KEY,amount:plan.price*100,currency:"INR",
+    name:"BHU Agriculture Portal",description:`${plan.label} Premium`,
     handler:async function(res){
       const exp=expiryDate(planId);
       usersDB=usersDB.map(x=>x.id===u.id?{...x,subPlan:planId,subExpiry:exp,payId:res.razorpay_payment_id}:x);
@@ -4772,29 +4550,9 @@ async function doPay(planId){
     },
     prefill:{name:u.name,email:u.email},
     theme:{color:"#00B050"},
-    modal:{
-      ondismiss:()=>{},
-      // Prevent Razorpay from closing the PWA when modal is dismissed
-      escape: true,
-      animation: true,
-    },
-    notes:{
-      source: siteOrigin,
-      plan: planId,
-    },
-  };
-
-  try {
-    const rzp = new window.Razorpay(rzpOptions);
-    rzp.on("payment.failed", function(response){
-      console.error("[Razorpay] Payment failed:", response.error);
-      toast(`Payment failed: ${response.error.description || "Unknown error"}`, "e");
-    });
-    rzp.open();
-  } catch(err) {
-    console.error("[Razorpay] Could not open checkout:", err);
-    toast("Could not open payment window. Please disable any popup blocker and try again.", "e");
-  }
+    modal:{ondismiss:()=>{}},
+  });
+  rzp.open();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -5477,17 +5235,18 @@ function syncAnalyticsToTab(){
 }
 
 // Premium gate for doubts posting
+const _origPostDoubt=postDoubt;
 async function postDoubt(){
   if(!currentUser){ openLogin(); return; }
   if(!isSubActive(currentUser)){
     // Free users: max 2 posts total
     const myQs=questions.filter(q=>q.authorEmail===currentUser.email);
     if(myQs.length>=2){
-      toast("⭐ Free limit: 10 doubts. Upgrade to post unlimited questions!","e");
+      toast("⭐ Free limit: 2 doubts. Upgrade to post unlimited questions!","e");
       setTimeout(()=>openPay(),800); return;
     }
   }
-   await _origPostDoubtImpl();
+  await _origPostDoubt();
 }
 
 // Premium gate on planner generate
@@ -5625,53 +5384,32 @@ function syncPlannerToTab(){}
     if (!localStorage.getItem('bhu:pwaDeclined')) setTimeout(showInstallBanner, 4000);
   });
 
-   function showInstallBanner() {
+  function showInstallBanner() {
     if (document.getElementById('pwaInstallBanner')) return;
     if (window.matchMedia('(display-mode: standalone)').matches) return;
     const banner = document.createElement('div');
     banner.id = 'pwaInstallBanner';
-    banner.style.cssText = 'position:fixed;bottom:88px;left:16px;'
-      + 'background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;padding:16px 18px;'
-      + 'border-radius:20px;display:flex;align-items:center;gap:12px;z-index:9998;'
-      + 'border:1px solid rgba(255,255,255,.18);'
-      + 'box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 4px rgba(0,176,80,.15);'
-      + 'max-width:320px;width:calc(100% - 32px);animation:msgIn .35s ease both,pwaGlow 2.4s ease-in-out infinite;';
+    banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'
+      + 'background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;padding:14px 18px;'
+      + 'border-radius:18px;display:flex;align-items:center;gap:12px;z-index:9998;'
+      + 'box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:360px;width:calc(100% - 32px);animation:msgIn .3s ease both;';
     banner.innerHTML =
-      '<div style="position:relative;flex-shrink:0;">'
-      +   '<div style="width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:24px;">🌾</div>'
-      +   '<div style="position:absolute;top:-6px;right:-6px;background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:8px;font-weight:800;padding:2px 5px;border-radius:8px;white-space:nowrap;">FREE</div>'
-      + '</div>'
+      '<div style="font-size:28px;flex-shrink:0;">🌾</div>'
       + '<div style="flex:1;min-width:0;">'
-      +   '<div style="font-weight:800;font-size:13.5px;line-height:1.2;">📲 Install Agri Edu Rise</div>'
-      +   '<div style="font-size:10.5px;color:#f59e0b;font-weight:700;margin-top:3px;">⭐⭐⭐⭐⭐ 4.9 · Works Offline</div>'
+      +   '<div style="font-weight:700;font-size:13px;">Install Agri Edu Rise</div>'
+      +   '<div style="font-size:11px;opacity:.75;margin-top:2px;">Works offline · No App Store needed</div>'
       + '</div>'
+      + '<button onclick="installPWA()" style="background:#00B050;border:none;color:white;'
+      +   'font-weight:700;padding:7px 14px;border-radius:10px;cursor:pointer;font-size:12px;'
+      +   'font-family:inherit;flex-shrink:0;">Install</button>'
       + '<button onclick="document.getElementById(\'pwaInstallBanner\').remove();'
       +   'localStorage.setItem(\'bhu:pwaDeclined\',\'1\');" '
-      +   'style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,.15);border:none;color:white;width:22px;height:22px;'
-      +   'border-radius:50%;cursor:pointer;font-size:12px;flex-shrink:0;line-height:1;'
+      +   'style="background:rgba(255,255,255,.15);border:none;color:white;width:28px;height:28px;'
+      +   'border-radius:50%;cursor:pointer;font-size:16px;flex-shrink:0;'
       +   'display:flex;align-items:center;justify-content:center;">✕</button>';
-    const btnRow = document.createElement('div');
-    btnRow.style.cssText = 'position:absolute;bottom:-14px;left:16px;right:16px;';
-    banner.style.position = 'fixed';
-    banner.appendChild(btnRow);
-    // Full-width install CTA below the row
-    const installBtn = document.createElement('button');
-    installBtn.textContent = '⬇️ Install Now — It\'s Free';
-    installBtn.onclick = installPWA;
-    installBtn.style.cssText = 'position:absolute;left:16px;right:16px;bottom:-14px;'
-      + 'background:linear-gradient(90deg,#00B050,#1B9E4B);border:none;color:white;'
-      + 'font-weight:800;padding:9px 0;border-radius:11px;cursor:pointer;font-size:12.5px;'
-      + 'font-family:inherit;box-shadow:0 6px 16px rgba(0,176,80,.5);';
-    banner.style.paddingBottom = '30px';
-    banner.appendChild(installBtn);
-    if (!document.getElementById('pwaGlowKeyframes')) {
-      const st = document.createElement('style');
-      st.id = 'pwaGlowKeyframes';
-      st.textContent = '@keyframes pwaGlow{0%,100%{box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 4px rgba(0,176,80,.15);}50%{box-shadow:0 12px 36px rgba(0,0,0,.4),0 0 0 8px rgba(0,176,80,.05);}}';
-      document.head.appendChild(st);
-    }
     document.body.appendChild(banner);
   }
+
   window.installPWA = function() {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
@@ -5697,6 +5435,498 @@ function syncPlannerToTab(){}
       setTimeout(() => { if(typeof setSection==='function') setSection(targetSection); }, 700);
     });
   }
+
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// GAMES MODULE — Blitz · True/False Lightning · Weekly Battle · 1v1 Duel
+// Uses existing sGet/sSet (Firestore-backed) so scores sync across devices.
+// ═══════════════════════════════════════════════════════════════
+
+function getAllQuizQuestions(){
+  let all=[];
+  Object.entries(QUIZ_BANK).forEach(([subj,qs])=>{
+    qs.forEach(q=>all.push({...q,subj}));
+  });
+  return all;
+}
+function shuffleArr(a){ return [...a].sort(()=>Math.random()-.5); }
+
+// ── XP helper ───────────────────────────────────────────────────
+async function addGameXP(amount, gameType){
+  if(!currentUser) return;
+  const key="bhu:gamexp";
+  let data=await sGet(key)||{};
+  const email=currentUser.email;
+  if(!data[email]) data[email]={xp:0,games:{}};
+  data[email].xp=(data[email].xp||0)+amount;
+  data[email].games[gameType]=(data[email].games[gameType]||0)+1;
+  await sSet(key,data);
+}
+
+// ── Shared score save ────────────────────────────────────────────
+async function saveGameScore(gameKey, score){
+  if(!currentUser) return;
+  const storeKey = gameKey.startsWith("battle_") ? "bhu:"+gameKey : "bhu:gamescores_"+gameKey;
+  let data=await sGet(storeKey)||{};
+  const prevBest=(data[currentUser.email]?.score)||0;
+  data[currentUser.email]={name:currentUser.name,score:Math.max(prevBest,score),lastScore:score,updatedAt:new Date().toISOString()};
+  await sSet(storeKey,data);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GAMES HUB
+// ═══════════════════════════════════════════════════════════════
+function renderGamesHub(){
+  const hub=document.getElementById("gamesHub"); if(!hub) return;
+  const area=document.getElementById("gameArea");
+  if(area){ area.style.display="none"; area.innerHTML=""; }
+  hub.style.display="grid";
+  const featured=getFeaturedSubject();
+  hub.innerHTML=`
+    <div class="card hov-card" style="padding:20px;cursor:pointer;text-align:center;" onclick="startBlitz()">
+      <div style="font-size:34px;margin-bottom:8px;">⚡</div>
+      <div style="font-weight:800;font-size:15px;margin-bottom:3px;">60s Blitz</div>
+      <div style="font-size:11px;color:#777;">Answer as many as you can in 60 seconds</div>
+    </div>
+    <div class="card hov-card" style="padding:20px;cursor:pointer;text-align:center;" onclick="startTFLightning()">
+      <div style="font-size:34px;margin-bottom:8px;">🎯</div>
+      <div style="font-weight:800;font-size:15px;margin-bottom:3px;">True/False Lightning</div>
+      <div style="font-size:11px;color:#777;">20 rapid-fire True or False calls</div>
+    </div>
+    <div class="card hov-card" style="padding:20px;cursor:pointer;text-align:center;position:relative;overflow:hidden;" onclick="startWeeklyBattle()">
+      <span style="position:absolute;top:10px;right:10px;background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:9px;padding:2px 8px;border-radius:50px;font-weight:700;">THIS WEEK</span>
+      <div style="font-size:34px;margin-bottom:8px;">🏆</div>
+      <div style="font-weight:800;font-size:15px;margin-bottom:3px;">Weekly Battle</div>
+      <div style="font-size:11px;color:#777;">Featured: <strong style="color:#0F3D23;">${escapeHTML(featured)}</strong></div>
+    </div>
+    <div class="card hov-card" style="padding:20px;cursor:pointer;text-align:center;" onclick="openDuelHub()">
+      <div style="font-size:34px;margin-bottom:8px;">⚔️</div>
+      <div style="font-weight:800;font-size:15px;margin-bottom:3px;">1v1 Duel</div>
+      <div style="font-size:11px;color:#777;">Challenge a classmate head-to-head</div>
+    </div>`;
+}
+function backToGamesHub(){ renderGamesHub(); }
+
+// ═══════════════════════════════════════════════════════════════
+// 1) 60-SECOND BLITZ
+// ═══════════════════════════════════════════════════════════════
+let blitzState={qs:[],idx:0,score:0,streak:0,timer:60,interval:null,active:false};
+
+function startBlitz(){
+  if(!currentUser){ openLogin(); return; }
+  const pool=shuffleArr(getAllQuizQuestions());
+  if(!pool.length){ toast("No questions available yet.","e"); return; }
+  blitzState={qs:pool,idx:0,score:0,streak:0,timer:60,interval:null,active:true};
+  document.getElementById("gamesHub").style.display="none";
+  const area=document.getElementById("gameArea");
+  area.style.display="block";
+  renderBlitzUI();
+  blitzState.interval=setInterval(()=>{
+    blitzState.timer--;
+    const tEl=document.getElementById("blitzTimer");
+    if(tEl){ tEl.textContent=blitzState.timer; tEl.style.color=blitzState.timer<=10?"#E53935":"#0F3D23"; }
+    if(blitzState.timer<=0){ endBlitz(); }
+  },1000);
+}
+function renderBlitzUI(){
+  const area=document.getElementById("gameArea");
+  const q=blitzState.qs[blitzState.idx % blitzState.qs.length];
+  area.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <button class="btn btn-light" style="padding:6px 14px;font-size:12px;" onclick="cancelBlitz()">✕ Exit</button>
+      <div style="display:flex;gap:16px;align-items:center;">
+        <div style="text-align:center;"><div style="font-size:11px;color:#777;">Score</div><div style="font-weight:800;font-size:18px;color:#00B050;" id="blitzScore">${blitzState.score}</div></div>
+        <div style="text-align:center;"><div style="font-size:11px;color:#777;">Streak</div><div style="font-weight:800;font-size:18px;color:#f59e0b;" id="blitzStreak">🔥${blitzState.streak}</div></div>
+        <div style="text-align:center;background:#F2F5F2;border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;"><div style="font-weight:800;font-size:18px;" id="blitzTimer">${blitzState.timer}</div></div>
+      </div>
+    </div>
+    <div class="card" style="padding:24px;">
+      <div style="font-size:11px;color:#777;font-weight:700;text-transform:uppercase;margin-bottom:10px;">${escapeHTML(q.subj)}</div>
+      <div style="font-weight:700;font-size:16px;line-height:1.6;margin-bottom:18px;">${escapeHTML(q.q)}</div>
+      <div class="quiz-options" id="blitzOptions">
+        ${q.opts.map((o,i)=>`<button class="quiz-option" onclick="answerBlitz(${i})"><div class="circle"></div>${escapeHTML(o)}</button>`).join("")}
+      </div>
+    </div>`;
+}
+function answerBlitz(i){
+  if(!blitzState.active) return;
+  const q=blitzState.qs[blitzState.idx % blitzState.qs.length];
+  const correct=i===q.ans;
+  const optBtns=document.querySelectorAll("#blitzOptions .quiz-option");
+  optBtns.forEach((b,bi)=>{
+    b.disabled=true;
+    if(bi===q.ans) b.style.cssText+="border-color:#00B050;background:#E8F5E9;";
+    else if(bi===i) b.style.cssText+="border-color:#E53935;background:#FFEBEE;";
+  });
+  if(correct){
+    blitzState.streak++;
+    const mult=blitzState.streak>=5?3:blitzState.streak>=3?2:1;
+    blitzState.score+=10*mult;
+  } else {
+    blitzState.streak=0;
+  }
+  blitzState.idx++;
+  setTimeout(()=>{ if(blitzState.active) renderBlitzUI(); },350);
+}
+function cancelBlitz(){
+  clearInterval(blitzState.interval); blitzState.active=false;
+  renderGamesHub();
+}
+async function endBlitz(){
+  clearInterval(blitzState.interval); blitzState.active=false;
+  await saveGameScore("blitz", blitzState.score);
+  await addGameXP(blitzState.score, "blitz");
+  const area=document.getElementById("gameArea");
+  area.innerHTML=`
+    <div class="card" style="padding:36px;text-align:center;">
+      <div style="font-size:56px;margin-bottom:10px;">⚡</div>
+      <div style="font-size:44px;font-weight:800;color:#00B050;">${blitzState.score}</div>
+      <div style="color:#777;font-size:14px;margin:8px 0 22px;">points in 60 seconds</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="startBlitz()">Play Again</button>
+        <button class="btn btn-light" onclick="backToGamesHub()">← Games</button>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 2) TRUE/FALSE LIGHTNING
+// ═══════════════════════════════════════════════════════════════
+let tfState={items:[],idx:0,score:0,active:false};
+
+function buildTFSet(n=20){
+  const pool=shuffleArr(getAllQuizQuestions());
+  const items=[];
+  for(const q of pool){
+    if(items.length>=n) break;
+    const makeTrue=Math.random()<0.5;
+    if(makeTrue){
+      items.push({subj:q.subj,statement:`${q.q} → ${q.opts[q.ans]}`,isTrue:true});
+    } else {
+      const wrongOpts=q.opts.filter((_,i)=>i!==q.ans);
+      const wrong=wrongOpts[Math.floor(Math.random()*wrongOpts.length)];
+      if(wrong) items.push({subj:q.subj,statement:`${q.q} → ${wrong}`,isTrue:false});
+    }
+  }
+  return items;
+}
+function startTFLightning(){
+  if(!currentUser){ openLogin(); return; }
+  const items=buildTFSet(20);
+  if(!items.length){ toast("Not enough questions yet.","e"); return; }
+  tfState={items,idx:0,score:0,active:true};
+  document.getElementById("gamesHub").style.display="none";
+  document.getElementById("gameArea").style.display="block";
+  renderTFUI();
+}
+function renderTFUI(){
+  const area=document.getElementById("gameArea");
+  const it=tfState.items[tfState.idx];
+  area.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <button class="btn btn-light" style="padding:6px 14px;font-size:12px;" onclick="backToGamesHub()">✕ Exit</button>
+      <div style="font-size:13px;font-weight:700;color:#777;">Q ${tfState.idx+1} / ${tfState.items.length} · Score: <span style="color:#00B050;">${tfState.score}</span></div>
+    </div>
+    <div style="background:#E8F5E9;border-radius:50px;height:6px;margin-bottom:18px;"><div style="height:100%;background:#00B050;border-radius:50px;width:${(tfState.idx/tfState.items.length)*100}%;transition:width .25s;"></div></div>
+    <div class="card" style="padding:28px 24px;text-align:center;">
+      <div style="font-size:11px;color:#777;font-weight:700;text-transform:uppercase;margin-bottom:14px;">${escapeHTML(it.subj)}</div>
+      <div style="font-weight:700;font-size:16px;line-height:1.6;margin-bottom:26px;">${escapeHTML(it.statement)}</div>
+      <div style="display:flex;gap:14px;justify-content:center;">
+        <button class="btn hov-btn" style="background:#00B050;color:white;padding:16px 36px;font-size:16px;border-radius:16px;" onclick="answerTF(true)">✅ TRUE</button>
+        <button class="btn hov-btn" style="background:#E53935;color:white;padding:16px 36px;font-size:16px;border-radius:16px;" onclick="answerTF(false)">❌ FALSE</button>
+      </div>
+    </div>`;
+}
+function answerTF(val){
+  const it=tfState.items[tfState.idx];
+  if(val===it.isTrue) tfState.score+=10;
+  tfState.idx++;
+  if(tfState.idx>=tfState.items.length) finishTF();
+  else renderTFUI();
+}
+async function finishTF(){
+  await saveGameScore("tflightning", tfState.score);
+  await addGameXP(tfState.score,"tflightning");
+  const pct=Math.round(tfState.score/(tfState.items.length*10)*100);
+  document.getElementById("gameArea").innerHTML=`
+    <div class="card" style="padding:36px;text-align:center;">
+      <div style="font-size:56px;margin-bottom:10px;">🎯</div>
+      <div style="font-size:44px;font-weight:800;color:#00B050;">${tfState.score}</div>
+      <div style="color:#777;font-size:14px;margin:8px 0 22px;">${pct}% accuracy</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="startTFLightning()">Play Again</button>
+        <button class="btn btn-light" onclick="backToGamesHub()">← Games</button>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 3) WEEKLY SUBJECT BATTLE
+// ═══════════════════════════════════════════════════════════════
+function getISOWeekKey(){
+  const d=new Date();
+  const target=new Date(d.valueOf());
+  const dayNr=(d.getDay()+6)%7;
+  target.setDate(target.getDate()-dayNr+3);
+  const firstThursday=new Date(target.getFullYear(),0,4);
+  const weekNum=1+Math.round(((target-firstThursday)/86400000-3+((firstThursday.getDay()+6)%7))/7);
+  return `${target.getFullYear()}-W${weekNum}`;
+}
+function getFeaturedSubject(){
+  const subs=getSubjects();
+  if(!subs.length) return "Agronomy";
+  const key=getISOWeekKey();
+  let hash=0; for(let i=0;i<key.length;i++) hash=(hash*31+key.charCodeAt(i))>>>0;
+  return subs[hash % subs.length].name;
+}
+
+let battleState={qs:[],idx:0,ans:[],score:0};
+
+function startWeeklyBattle(){
+  if(!currentUser){ openLogin(); return; }
+  const subj=getFeaturedSubject();
+  const qs=shuffleArr((QUIZ_BANK[subj]||[]).map(q=>({...q,subj})));
+  if(!qs.length){ toast("No questions for this week's subject yet.","e"); return; }
+  battleState={qs:qs.slice(0,10),idx:0,ans:[],score:0};
+  document.getElementById("gamesHub").style.display="none";
+  document.getElementById("gameArea").style.display="block";
+  renderBattleUI();
+}
+function renderBattleUI(){
+  const area=document.getElementById("gameArea");
+  const q=battleState.qs[battleState.idx];
+  area.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <button class="btn btn-light" style="padding:6px 14px;font-size:12px;" onclick="backToGamesHub()">✕ Exit</button>
+      <div style="font-size:13px;font-weight:700;color:#777;">🏆 ${escapeHTML(q.subj)} Battle · Q${battleState.idx+1}/${battleState.qs.length}</div>
+    </div>
+    <div class="card" style="padding:24px;">
+      <div style="font-weight:700;font-size:16px;line-height:1.6;margin-bottom:18px;">${escapeHTML(q.q)}</div>
+      <div class="quiz-options" id="battleOptions">
+        ${q.opts.map((o,i)=>`<button class="quiz-option" onclick="answerBattle(${i})"><div class="circle"></div>${escapeHTML(o)}</button>`).join("")}
+      </div>
+    </div>`;
+}
+function answerBattle(i){
+  const q=battleState.qs[battleState.idx];
+  if(i===q.ans) battleState.score+=10;
+  battleState.ans.push(i);
+  const optBtns=document.querySelectorAll("#battleOptions .quiz-option");
+  optBtns.forEach((b,bi)=>{
+    b.disabled=true;
+    if(bi===q.ans) b.style.cssText+="border-color:#00B050;background:#E8F5E9;";
+    else if(bi===i) b.style.cssText+="border-color:#E53935;background:#FFEBEE;";
+  });
+  setTimeout(()=>{
+    battleState.idx++;
+    if(battleState.idx>=battleState.qs.length) finishBattle();
+    else renderBattleUI();
+  },350);
+}
+async function finishBattle(){
+  const subj=getFeaturedSubject();
+  const week=getISOWeekKey();
+  await saveGameScore("battle_"+week+"_"+subj, battleState.score);
+  await addGameXP(battleState.score,"battle");
+  const rankInfo=await getBattleRank(week,subj);
+  document.getElementById("gameArea").innerHTML=`
+    <div class="card" style="padding:36px;text-align:center;">
+      <div style="font-size:56px;margin-bottom:10px;">🏆</div>
+      <div style="font-size:44px;font-weight:800;color:#00B050;">${battleState.score}/${battleState.qs.length*10}</div>
+      <div style="color:#777;font-size:14px;margin:8px 0 6px;">${escapeHTML(subj)} · This Week's Battle</div>
+      <div style="font-weight:700;font-size:15px;color:#7B1FA2;margin-bottom:22px;">Your rank: #${rankInfo.rank} of ${rankInfo.total}</div>
+      <div id="battleLeaderboard" style="text-align:left;margin-bottom:20px;"></div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-light" onclick="backToGamesHub()">← Games</button>
+      </div>
+    </div>`;
+  renderBattleLeaderboard(week,subj);
+}
+async function getBattleRank(week,subj){
+  const key="bhu:battle_"+week+"_"+subj;
+  const data=await sGet(key)||{};
+  const sorted=Object.entries(data).sort((a,b)=>b[1].score-a[1].score);
+  const idx=sorted.findIndex(([email])=>email===currentUser.email);
+  return {rank: idx===-1?sorted.length:idx+1, total: sorted.length};
+}
+async function renderBattleLeaderboard(week,subj){
+  const key="bhu:battle_"+week+"_"+subj;
+  const data=await sGet(key)||{};
+  const sorted=Object.entries(data).sort((a,b)=>b[1].score-a[1].score).slice(0,10);
+  const el=document.getElementById("battleLeaderboard"); if(!el) return;
+  if(!sorted.length){ el.innerHTML=""; return; }
+  el.innerHTML=`<div style="font-weight:700;font-size:13px;margin-bottom:8px;">This Week's Top Scores</div>`+
+    sorted.map(([email,d],i)=>`
+      <div style="display:flex;justify-content:space-between;padding:7px 12px;background:${email===currentUser.email?"#E8F5E9":"#F8FBF8"};border-radius:8px;margin-bottom:5px;font-size:12px;">
+        <span>${i+1}. ${escapeHTML(d.name||email.split("@")[0])}</span>
+        <span style="font-weight:700;color:#00B050;">${d.score}</span>
+      </div>`).join("");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 4) 1v1 DUEL (async — via Firestore)
+// ═══════════════════════════════════════════════════════════════
+let duelCache=[];
+
+async function openDuelHub(){
+  if(!currentUser){ openLogin(); return; }
+  document.getElementById("gamesHub").style.display="none";
+  const area=document.getElementById("gameArea");
+  area.style.display="block";
+  area.innerHTML=`<div style="text-align:center;padding:40px;color:#777;">Loading duels…</div>`;
+  duelCache=await sGet("bhu:duels")||[];
+  renderDuelHub();
+}
+function renderDuelHub(){
+  const area=document.getElementById("gameArea");
+  const myEmail=currentUser.email;
+  const myDuels=duelCache.filter(d=>d.challengerEmail===myEmail||d.opponentEmail===myEmail);
+  const pending=myDuels.filter(d=>d.status==="pending"&&d.opponentEmail===myEmail);
+  const waiting=myDuels.filter(d=>d.status==="pending"&&d.challengerEmail===myEmail);
+  const completed=myDuels.filter(d=>d.status==="completed").sort((a,b)=>new Date(b.completedAt)-new Date(a.completedAt));
+  const otherUsers=usersDB.filter(u=>u.email!==myEmail);
+
+  area.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <button class="btn btn-light" style="padding:6px 14px;font-size:12px;" onclick="backToGamesHub()">← Games</button>
+      <div style="font-weight:800;font-size:16px;">⚔️ 1v1 Duels</div>
+      <div style="width:60px;"></div>
+    </div>
+    <div class="card" style="padding:18px;margin-bottom:16px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px;">🆕 Challenge Someone</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <select id="duelOpponentSelect" class="inp" style="flex:1;min-width:160px;">
+          <option value="">— Select a classmate —</option>
+          ${otherUsers.map(u=>`<option value="${escapeHTML(u.email)}">${escapeHTML(u.name)}</option>`).join("")}
+        </select>
+        <button class="btn btn-primary" style="padding:9px 18px;font-size:13px;" onclick="createDuel()">Challenge →</button>
+      </div>
+    </div>
+    ${pending.length?`
+      <div style="font-weight:700;font-size:14px;margin-bottom:10px;">⏳ Duels Waiting For You (${pending.length})</div>
+      ${pending.map(d=>`
+        <div class="card" style="padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
+          <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#FF7B00,#FFB347);display:flex;align-items:center;justify-content:center;color:white;font-weight:800;flex-shrink:0;">${(d.challengerName||"?")[0].toUpperCase()}</div>
+          <div style="flex:1;"><div style="font-weight:700;font-size:13px;">${escapeHTML(d.challengerName)} challenged you!</div><div style="font-size:11px;color:#777;">Score to beat: ${d.challengerScore}/${d.total}</div></div>
+          <button class="btn btn-primary" style="padding:7px 16px;font-size:12px;" onclick="acceptDuel('${d.id}')">Accept</button>
+        </div>`).join("")}
+    `:""}
+    ${waiting.length?`
+      <div style="font-weight:700;font-size:14px;margin:16px 0 10px;">📤 Waiting for Opponent (${waiting.length})</div>
+      ${waiting.map(d=>`
+        <div class="card" style="padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;opacity:.75;">
+          <div style="width:38px;height:38px;border-radius:12px;background:#E0EAE0;display:flex;align-items:center;justify-content:center;color:#777;font-weight:800;flex-shrink:0;">${(d.opponentName||"?")[0].toUpperCase()}</div>
+          <div style="flex:1;"><div style="font-weight:700;font-size:13px;">vs ${escapeHTML(d.opponentName)}</div><div style="font-size:11px;color:#777;">Your score: ${d.challengerScore}/${d.total} · waiting…</div></div>
+        </div>`).join("")}
+    `:""}
+    ${completed.length?`
+      <div style="font-weight:700;font-size:14px;margin:16px 0 10px;">📜 Past Duels (${completed.length})</div>
+      ${completed.slice(0,8).map(d=>{
+        const iAmChallenger=d.challengerEmail===myEmail;
+        const myScore=iAmChallenger?d.challengerScore:d.opponentScore;
+        const theirScore=iAmChallenger?d.opponentScore:d.challengerScore;
+        const theirName=iAmChallenger?d.opponentName:d.challengerName;
+        const won=myScore>theirScore, tied=myScore===theirScore;
+        return `<div class="card" style="padding:12px 16px;margin-bottom:7px;display:flex;align-items:center;gap:10px;">
+          <div style="font-size:20px;">${won?"🏆":tied?"🤝":"😔"}</div>
+          <div style="flex:1;font-size:13px;"><strong>vs ${escapeHTML(theirName)}</strong> — You: ${myScore} · Them: ${theirScore}</div>
+          <div style="font-size:11px;font-weight:700;color:${won?"#00B050":tied?"#f59e0b":"#E53935"};">${won?"WON":tied?"TIED":"LOST"}</div>
+        </div>`;
+      }).join("")}
+    `:""}
+    ${!pending.length&&!waiting.length&&!completed.length?`
+      <div class="card" style="padding:40px;text-align:center;color:#777;">
+        <div style="font-size:40px;margin-bottom:10px;">⚔️</div>
+        <div style="font-weight:700;font-size:14px;">No duels yet</div>
+        <div style="font-size:12px;margin-top:4px;">Pick a classmate above to start your first duel!</div>
+      </div>`:""}
+  `;
+}
+
+async function createDuel(){
+  const opponentEmail=document.getElementById("duelOpponentSelect").value;
+  if(!opponentEmail){ toast("Select an opponent first.","e"); return; }
+  const opponent=usersDB.find(u=>u.email===opponentEmail);
+  if(!opponent){ toast("User not found.","e"); return; }
+  const pool=shuffleArr(getAllQuizQuestions()).slice(0,5);
+  if(pool.length<5){ toast("Not enough questions yet.","e"); return; }
+  duelDraft={qs:pool,idx:0,score:0,mode:"create",opponent,duelId:null};
+  renderDuelPlayUI();
+}
+async function acceptDuel(duelId){
+  const d=duelCache.find(x=>x.id===duelId); if(!d) return;
+  duelDraft={qs:d.questions,idx:0,score:0,mode:"accept",opponent:null,duelId};
+  renderDuelPlayUI();
+}
+
+let duelDraft={qs:[],idx:0,score:0,mode:"create",opponent:null,duelId:null};
+
+function renderDuelPlayUI(){
+  const area=document.getElementById("gameArea");
+  const q=duelDraft.qs[duelDraft.idx];
+  area.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;color:#777;">⚔️ Duel · Q${duelDraft.idx+1}/${duelDraft.qs.length}</div>
+    </div>
+    <div class="card" style="padding:24px;">
+      <div style="font-size:11px;color:#777;font-weight:700;text-transform:uppercase;margin-bottom:10px;">${escapeHTML(q.subj||"")}</div>
+      <div style="font-weight:700;font-size:16px;line-height:1.6;margin-bottom:18px;">${escapeHTML(q.q)}</div>
+      <div class="quiz-options" id="duelOptions">
+        ${q.opts.map((o,i)=>`<button class="quiz-option" onclick="answerDuelQ(${i})"><div class="circle"></div>${escapeHTML(o)}</button>`).join("")}
+      </div>
+    </div>`;
+}
+function answerDuelQ(i){
+  const q=duelDraft.qs[duelDraft.idx];
+  if(i===q.ans) duelDraft.score+=10;
+  const optBtns=document.querySelectorAll("#duelOptions .quiz-option");
+  optBtns.forEach((b,bi)=>{
+    b.disabled=true;
+    if(bi===q.ans) b.style.cssText+="border-color:#00B050;background:#E8F5E9;";
+    else if(bi===i) b.style.cssText+="border-color:#E53935;background:#FFEBEE;";
+  });
+  setTimeout(async ()=>{
+    duelDraft.idx++;
+    if(duelDraft.idx>=duelDraft.qs.length) await finishDuelPlay();
+    else renderDuelPlayUI();
+  },350);
+}
+async function finishDuelPlay(){
+  duelCache=await sGet("bhu:duels")||[];
+  if(duelDraft.mode==="create"){
+    const entry={
+      id:Date.now()+"_"+Math.random().toString(36).slice(2,7),
+      challengerEmail:currentUser.email, challengerName:currentUser.name,
+      opponentEmail:duelDraft.opponent.email, opponentName:duelDraft.opponent.name,
+      questions:duelDraft.qs, total:duelDraft.qs.length*10,
+      challengerScore:duelDraft.score, opponentScore:null,
+      status:"pending", createdAt:new Date().toISOString()
+    };
+    duelCache=[entry,...duelCache];
+    await sSet("bhu:duels",duelCache);
+    await addGameXP(duelDraft.score,"duel");
+    toast(`⚔️ Challenge sent to ${duelDraft.opponent.name}!`);
+  } else {
+    duelCache=duelCache.map(d=>d.id===duelDraft.duelId
+      ? {...d, opponentScore:duelDraft.score, status:"completed", completedAt:new Date().toISOString()}
+      : d);
+    await sSet("bhu:duels",duelCache);
+    await addGameXP(duelDraft.score,"duel");
+    toast("⚔️ Duel completed!");
+  }
+  const area=document.getElementById("gameArea");
+  area.innerHTML=`
+    <div class="card" style="padding:36px;text-align:center;">
+      <div style="font-size:56px;margin-bottom:10px;">⚔️</div>
+      <div style="font-size:44px;font-weight:800;color:#00B050;">${duelDraft.score}/${duelDraft.qs.length*10}</div>
+      <div style="color:#777;font-size:14px;margin:8px 0 22px;">${duelDraft.mode==="create"?"Challenge sent! Waiting for opponent…":"Duel result recorded!"}</div>
+      <button class="btn btn-light" onclick="openDuelHub()">← Back to Duels</button>
+    </div>`;
+}
+// ═══════════════════════════════════════════════════════════════
+// END GAMES MODULE
+// ═══════════════════════════════════════════════════════════════
 
 })();
 </script>
