@@ -6,8 +6,8 @@
 //   • Images / CDN scripts        → Stale-while-revalidate
 // ═══════════════════════════════════════════════════════════
 
-const CACHE_NAME    = 'agri-edu-rise-v5';
-const DYNAMIC_CACHE = 'agri-edu-rise-dynamic-v5';
+const CACHE_NAME    = 'agri-edu-rise-v6';
+const DYNAMIC_CACHE = 'agri-edu-rise-dynamic-v6';
 
 // Resources pre-cached on install (app shell)
 const PRECACHE_URLS = [

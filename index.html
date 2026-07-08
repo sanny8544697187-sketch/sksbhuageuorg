@@ -519,7 +519,7 @@ try {
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
         <div><strong id="statResources">0</strong><span>Resources</span></div>
         <div><strong id="statStudents">0</strong><span>Students</span></div>
-        <div><strong id="statQuestions">0</strong><span>Q&As</span></div>
+        <div><strong id="statQuizCount">0+</strong><span>Quiz Qs</span></div>
       </div>
     </div>
 
@@ -1237,64 +1237,78 @@ try {
     <div class="section-title">PYQ Bank 📋</div>
     <div class="section-subtitle">Previous Year Questions from ICAR JRF, AFO, NABARD with answers</div>
 
-    <!-- PYQ Sub-tabs -->
-    <div class="sub-tabs">
-      <button class="sub-tab-btn active" id="ptab_mcq" onclick="setPYQTab('mcq')">📋 MCQ Bank</button>
-      <button class="sub-tab-btn" id="ptab_pdf" onclick="setPYQTab('pdf')">📄 PDF Files</button>
-      <button class="sub-tab-btn" id="ptab_saved" onclick="setPYQTab('saved')">📌 Saved</button>
+    <div id="pyqSubjectHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:16px;">
+      <!-- Subjects will be rendered here -->
     </div>
 
-    <!-- ── MCQ TAB ── -->
-    <div id="ptab_mcq_content">
-    <!-- Filters -->
-    <div class="card" style="padding:14px 16px;margin-bottom:16px;">
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:120px;">
-          <label class="lbl" style="font-size:10px;">Exam</label>
-          <select id="pyqExamFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
-            <option value="All">All Exams</option>
-            <option value="ICAR JRF">ICAR JRF</option>
-            <option value="IBPS AFO">IBPS AFO</option>
-            <option value="NABARD">NABARD</option>
-          </select>
-        </div>
-        <div style="flex:1;min-width:120px;">
-          <label class="lbl" style="font-size:10px;">Year</label>
-          <select id="pyqYearFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
-            <option value="All">All Years</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-            <option value="2021">2021</option>
-          </select>
-        </div>
-        <div style="flex:1;min-width:120px;">
-          <label class="lbl" style="font-size:10px;">Subject</label>
-          <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
-            <option value="All">All Subjects</option>
-            <option value="Agronomy">Agronomy</option>
-            <option value="Soil Science">Soil Science</option>
-            <option value="Genetics & Plant Breeding">Genetics</option>
-            <option value="Plant Pathology">Plant Pathology</option>
-            <option value="Entomology">Entomology</option>
-            <option value="Horticulture">Horticulture</option>
-          </select>
+    <div id="pyqContentArea" style="display:none;">
+      <button class="btn btn-light" style="margin-bottom:16px;font-size:12px;padding:6px 14px;" onclick="closePYQSubject()">← Back to Subjects</button>
+      <div style="font-weight:800;font-size:18px;margin-bottom:14px;color:#0F3D23;" id="pyqActiveSubjTitle">Subject Name</div>
+
+      <!-- PYQ Sub-tabs -->
+      <div class="sub-tabs">
+        <button class="sub-tab-btn active" id="ptab_mcq" onclick="setPYQTab('mcq')">📋 MCQ Bank</button>
+        <button class="sub-tab-btn" id="ptab_pdf" onclick="setPYQTab('pdf')">📄 PDF Files</button>
+        <button class="sub-tab-btn" id="ptab_saved" onclick="setPYQTab('saved')">📌 Saved</button>
+      </div>
+
+      <!-- ── MCQ TAB ── -->
+      <div id="ptab_mcq_content">
+      <!-- Filters -->
+      <div class="card" style="padding:14px 16px;margin-bottom:16px;">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:120px;">
+            <label class="lbl" style="font-size:10px;">Exam</label>
+            <select id="pyqExamFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
+              <option value="All">All Exams</option>
+              <option value="ICAR JRF">ICAR JRF</option>
+              <option value="IBPS AFO">IBPS AFO</option>
+              <option value="NABARD">NABARD</option>
+              <option value="State PSC Agriculture">State PSC</option>
+              <option value="BHU Entrance">BHU Entrance</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:120px;">
+            <label class="lbl" style="font-size:10px;">Year</label>
+            <select id="pyqYearFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
+              <option value="All">All Years</option>
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+              <option value="2023">2023</option>
+              <option value="2022">2022</option>
+              <option value="2021">2021</option>
+              <option value="2020">2020</option>
+              <option value="2019">2019</option>
+              <option value="2018">2018</option>
+              <option value="2017">2017</option>
+              <option value="2016">2016</option>
+              <option value="2015">2015</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:120px;display:none;">
+            <!-- Subject filter hidden because it's selected from hub -->
+            <label class="lbl" style="font-size:10px;">Subject</label>
+            <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
+              <option value="All">All Subjects</option>
+            </select>
+          </div>
         </div>
       </div>
+      <div style="font-size:13px;color:#777;margin-bottom:12px;" id="pyqCount"></div>
+      <div id="pyqList"></div>
+      </div><!-- end ptab_mcq_content -->
+
+      <!-- ── PDF FILES TAB ── -->
+      <div id="ptab_pdf_content" style="display:none;">
+        <div id="pyqPdfList"></div>
+      </div><!-- end ptab_pdf_content -->
+
+      <!-- ── SAVED PYQ TAB ── -->
+      <div id="ptab_saved_content" style="display:none;">
+        <div id="savedPYQContent"></div>
+      </div><!-- end ptab_saved_content -->
     </div>
-    <div style="font-size:13px;color:#777;margin-bottom:12px;" id="pyqCount"></div>
-    <div id="pyqList"></div>
-    </div><!-- end ptab_mcq_content -->
-
-    <!-- ── PDF FILES TAB ── -->
-    <div id="ptab_pdf_content" style="display:none;">
-      <div id="pyqPdfList"></div>
-    </div><!-- end ptab_pdf_content -->
-
-    <!-- ── SAVED PYQ TAB ── -->
-    <div id="ptab_saved_content" style="display:none;">
-      <div id="savedPYQContent"></div>
-    </div><!-- end ptab_saved_content -->
 
   </section>
 
@@ -1798,7 +1812,7 @@ function setSection(s){
   if(s==="upload")    renderUpload();
   if(s==="admin")     renderAdmin();
   if(s==="profile")   renderProfile();
-  if(s==="pyq")       renderPYQ();
+  if(s==="pyq")     { document.getElementById("pyqContentArea").style.display="none"; document.getElementById("pyqSubjectHub").style.display="grid"; renderPYQHub(); }
   if(s==="games")     renderGamesHub();
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -1848,7 +1862,7 @@ function renderHome(){
   document.getElementById("statResources").textContent=approved.length;
   document.getElementById("statStudents").textContent=usersDB.length;
   document.getElementById("statSubjects").textContent=getSubjects().length;
-  document.getElementById("statQuestions").textContent=questions.length;
+  document.getElementById("statQuizCount").textContent=Object.values(QUIZ_BANK).reduce((s, arr) => s + arr.length, 0) + "+";
   const qrcEl=document.getElementById("quickResCount"); if(qrcEl) qrcEl.textContent=approved.length+" file"+(approved.length===1?"":"s");
 
   // User bar
@@ -3527,6 +3541,40 @@ function renderAdminPYQList(){
 let pyqRevealedIds = {};
 const _pyqFreeReveals = {};
 
+function renderPYQHub(){
+  const hub=document.getElementById("pyqSubjectHub"); if(!hub) return;
+  const subjects=getSubjects();
+  hub.innerHTML=subjects.map(s=>`
+    <div class="card hov-card" style="padding:16px;cursor:pointer;text-align:center;" onclick="openPYQSubject('${escapeHTML(s.name)}')">
+      <div style="font-size:32px;margin-bottom:8px;">${escapeHTML(s.icon)}</div>
+      <div style="font-weight:700;font-size:13px;color:#333;">${escapeHTML(s.name)}</div>
+      <div style="font-size:11px;color:#777;margin-top:4px;">MCQs & PDFs</div>
+    </div>`).join("");
+}
+
+function openPYQSubject(subjName){
+  document.getElementById("pyqSubjectHub").style.display="none";
+  document.getElementById("pyqContentArea").style.display="block";
+  document.getElementById("pyqActiveSubjTitle").textContent=subjName + " PYQs";
+  
+  const subjFilter=document.getElementById("pyqSubjectFilter");
+  if(subjFilter){
+    // ensure option exists
+    if(!Array.from(subjFilter.options).find(o=>o.value===subjName)){
+      const opt=document.createElement("option"); opt.value=subjName; opt.text=subjName;
+      subjFilter.add(opt);
+    }
+    subjFilter.value=subjName;
+  }
+  setPYQTab('mcq');
+}
+
+function closePYQSubject(){
+  document.getElementById("pyqContentArea").style.display="none";
+  document.getElementById("pyqSubjectHub").style.display="grid";
+  renderPYQHub();
+}
+
 function renderPYQ(){
   const u=currentUser;
   const isPrem=isSubActive(u);
@@ -3909,7 +3957,7 @@ function renderPYQPdfLibrary(){
             <select id="qpPdfExam" class="inp"><option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option><option>BHU Entrance</option><option>Other</option></select>
           </div>
           <div><label class="lbl">Year</label>
-            <select id="qpPdfYear" class="inp">${[2025,2024,2023,2022,2021,2020,2019].map(y=>`<option>${y}</option>`).join('')}</select>
+            <select id="qpPdfYear" class="inp">${[2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015].map(y=>`<option>${y}</option>`).join('')}</select>
           </div>
           <div><label class="lbl">Drive / Direct Link</label><input id="qpPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
         </div>
@@ -3923,16 +3971,20 @@ function renderPYQPdfLibrary(){
       </div>`;
   }
 
-  if(!pyqPdfs.length){
+  // Filter by subject
+  const subjF = document.getElementById("pyqSubjectFilter")?.value || "All";
+  const filteredPdfs = pyqPdfs.filter(p => subjF === "All" || p.subject === subjF);
+
+  if(!filteredPdfs.length){
     el.innerHTML=adminUploadHtml+`<div class="card" style="padding:44px;text-align:center;">
       <div style="font-size:44px;margin-bottom:12px;">📄</div>
-      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">No PDF papers uploaded yet</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">No PDF papers uploaded for this subject yet</div>
       <div style="color:#777;font-size:13px;">Admin can upload complete PYQ papers as PDFs for students to download.</div>
     </div>`; return;
   }
   el.innerHTML=adminUploadHtml+`
-    <div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${pyqPdfs.length})</div>
-    ${pyqPdfs.map(p=>`
+    <div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${filteredPdfs.length})</div>
+    ${filteredPdfs.map(p=>`
       <div class="res-card hov-card">
         <div class="res-icon" style="background:#FFEBEE;">📄</div>
         <div class="res-info">
@@ -5510,9 +5562,163 @@ function renderGamesHub(){
       <div style="font-size:34px;margin-bottom:8px;">⚔️</div>
       <div style="font-weight:800;font-size:15px;margin-bottom:3px;">1v1 Duel</div>
       <div style="font-size:11px;color:#777;">Challenge a classmate head-to-head</div>
+    </div>
+    <div class="card hov-card" style="padding:20px;cursor:pointer;text-align:center;position:relative;overflow:hidden;" onclick="startCropMatch()">
+      <span style="position:absolute;top:10px;right:10px;background:linear-gradient(90deg,#00B050,#1565C0);color:white;font-size:9px;padding:2px 8px;border-radius:50px;font-weight:700;">NEW</span>
+      <div style="font-size:34px;margin-bottom:8px;">🧩</div>
+      <div style="font-weight:800;font-size:15px;margin-bottom:3px;">Crop Match Master</div>
+      <div style="font-size:11px;color:#777;">Match crops to their scientific names/families!</div>
     </div>`;
 }
 function backToGamesHub(){ renderGamesHub(); }
+
+// ═══════════════════════════════════════════════════════════════
+// NEW) CROP MATCH MASTER
+// ═══════════════════════════════════════════════════════════════
+const CROP_MATCH_DATA = [
+  { term: "Wheat", match: "Triticum aestivum", type: "Scientific Name" },
+  { term: "Rice", match: "Oryza sativa", type: "Scientific Name" },
+  { term: "Maize", match: "Zea mays", type: "Scientific Name" },
+  { term: "Pearl Millet", match: "Pennisetum glaucum", type: "Scientific Name" },
+  { term: "Sorghum", match: "Sorghum bicolor", type: "Scientific Name" },
+  { term: "Chickpea", match: "Cicer arietinum", type: "Scientific Name" },
+  { term: "Pigeonpea", match: "Cajanus cajan", type: "Scientific Name" },
+  { term: "Groundnut", match: "Arachis hypogaea", type: "Scientific Name" },
+  { term: "Soybean", match: "Glycine max", type: "Scientific Name" },
+  { term: "Cotton", match: "Gossypium spp.", type: "Scientific Name" },
+  { term: "Sugarcane", match: "Saccharum officinarum", type: "Scientific Name" },
+  { term: "Potato", match: "Solanum tuberosum", type: "Scientific Name" },
+  { term: "Tomato", match: "Solanum lycopersicum", type: "Scientific Name" },
+  { term: "Onion", match: "Allium cepa", type: "Scientific Name" },
+  { term: "Mustard", match: "Brassica juncea", type: "Scientific Name" }
+];
+let cropMatchState = { pairs: [], selectedTerm: null, selectedMatch: null, score: 0, timer: 45, interval: null, active: false, matchedPairs: 0 };
+
+function startCropMatch() {
+  if(!currentUser){ openLogin(); return; }
+  // Select 5 random pairs
+  const pool = shuffleArr([...CROP_MATCH_DATA]).slice(0, 5);
+  let terms = pool.map(p => ({ id: p.term, text: p.term, type: 'term' }));
+  let matches = pool.map(p => ({ id: p.term, text: p.match, type: 'match' }));
+  
+  cropMatchState = {
+    terms: shuffleArr(terms),
+    matches: shuffleArr(matches),
+    selectedTerm: null,
+    selectedMatch: null,
+    score: 0,
+    timer: 45,
+    interval: null,
+    active: true,
+    matchedPairs: 0,
+    totalPairs: 5
+  };
+  
+  document.getElementById("gamesHub").style.display = "none";
+  document.getElementById("gameArea").style.display = "block";
+  renderCropMatch();
+  cropMatchState.interval = setInterval(() => {
+    if(!cropMatchState.active) return;
+    cropMatchState.timer--;
+    const tEl = document.getElementById("cmTimer");
+    if(tEl) tEl.textContent = cropMatchState.timer;
+    if(cropMatchState.timer <= 0) endCropMatch();
+  }, 1000);
+}
+
+function renderCropMatch() {
+  const area = document.getElementById("gameArea");
+  if(!cropMatchState.active) return;
+  
+  area.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.08);max-width:600px;margin:0 auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div style="font-size:24px;font-weight:800;color:#0F3D23;">🧩 Crop Match Master</div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;color:#777;text-transform:uppercase;font-weight:700;">Time Left</div>
+          <div style="font-size:26px;font-weight:800;color:${cropMatchState.timer<=10?'#E53935':'#00B050'};" id="cmTimer">${cropMatchState.timer}</div>
+        </div>
+      </div>
+      
+      <div style="font-size:14px;color:#555;margin-bottom:20px;text-align:center;">Match the Crop with its Scientific Name!</div>
+      
+      <div style="display:flex;gap:20px;">
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+          <div style="font-weight:700;font-size:12px;color:#777;text-transform:uppercase;text-align:center;">Crops</div>
+          ${cropMatchState.terms.map(t => `
+            <button class="btn ${cropMatchState.selectedTerm===t.id ? 'btn-primary' : 'btn-light'}" 
+                    style="padding:14px;font-size:14px;transition:all 0.2s;opacity:${t.matched?0:1};visibility:${t.matched?'hidden':'visible'};" 
+                    onclick="selectCropMatch('term', '${t.id}')">
+              ${escapeHTML(t.text)}
+            </button>
+          `).join('')}
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+          <div style="font-weight:700;font-size:12px;color:#777;text-transform:uppercase;text-align:center;">Scientific Names</div>
+          ${cropMatchState.matches.map(m => `
+            <button class="btn ${cropMatchState.selectedMatch===m.id ? 'btn-primary' : 'btn-light'}" 
+                    style="padding:14px;font-size:14px;transition:all 0.2s;opacity:${m.matched?0:1};visibility:${m.matched?'hidden':'visible'};" 
+                    onclick="selectCropMatch('match', '${m.id}')">
+              ${escapeHTML(m.text)}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function selectCropMatch(type, id) {
+  if(!cropMatchState.active) return;
+  if(type === 'term') cropMatchState.selectedTerm = id;
+  if(type === 'match') cropMatchState.selectedMatch = id;
+  
+  if(cropMatchState.selectedTerm && cropMatchState.selectedMatch) {
+    if(cropMatchState.selectedTerm === cropMatchState.selectedMatch) {
+      // Match!
+      cropMatchState.score += 20;
+      cropMatchState.matchedPairs++;
+      cropMatchState.terms.find(t => t.id === id).matched = true;
+      cropMatchState.matches.find(m => m.id === id).matched = true;
+      toast("✨ Correct Match!", "s");
+    } else {
+      // Wrong!
+      cropMatchState.score = Math.max(0, cropMatchState.score - 5);
+      toast("❌ Incorrect, try again!", "e");
+    }
+    cropMatchState.selectedTerm = null;
+    cropMatchState.selectedMatch = null;
+    
+    if(cropMatchState.matchedPairs >= cropMatchState.totalPairs) {
+      endCropMatch();
+      return;
+    }
+  }
+  renderCropMatch();
+}
+
+async function endCropMatch() {
+  cropMatchState.active = false;
+  clearInterval(cropMatchState.interval);
+  
+  // Save scores & XP
+  await saveGameScore("cropmatch", cropMatchState.score);
+  await addGameXP(cropMatchState.score, "cropmatch");
+  
+  const area = document.getElementById("gameArea");
+  area.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:36px 20px;text-align:center;box-shadow:0 2px 12px rgba(0,0,0,.08);max-width:500px;margin:0 auto;">
+      <div style="font-size:64px;margin-bottom:10px;">🧩</div>
+      <div style="font-size:22px;font-weight:800;color:#0F3D23;margin-bottom:10px;">Game Over!</div>
+      <div style="font-size:48px;font-weight:800;color:#00B050;margin-bottom:4px;">${cropMatchState.score}</div>
+      <div style="font-size:13px;color:#777;margin-bottom:24px;">XP Earned</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="btn btn-primary" onclick="startCropMatch()">Play Again</button>
+        <button class="btn btn-light" onclick="backToGamesHub()">Back to Games</button>
+      </div>
+    </div>
+  `;
+}
 
 // ═══════════════════════════════════════════════════════════════
 // 1) 60-SECOND BLITZ
