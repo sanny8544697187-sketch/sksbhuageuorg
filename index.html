@@ -2535,7 +2535,7 @@ function clearChat(){
 }
 
 // ── AI Professor — OpenRouter (Netlify) → Gemini fallback ──────
-const _cfg = ["AIzaSyDe_aAvPDNN","mXBtdZXxaldO0JSE","3k-hl7U"].join("");
+const _cfg = "AQ.Ab8RN6J6ERCGjxDEmMpQF9Oo7NXfjNSij8lCB1vCz3mSkm5tMQ";
 const AI_SYS = "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). "+
   "You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, "+
   "Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Economics & Statistics, "+
@@ -2569,7 +2569,10 @@ async function sendAI(){
   try{
     const r = await fetch(AI_ENDPOINT, {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "X-Gemini-Key": _cfg
+      },
       body: JSON.stringify({ messages })
     });
     if(r.ok){
@@ -2666,7 +2669,10 @@ async function callAIProfessor(userText){
   try{
     const r = await fetch(AI_ENDPOINT, {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "X-Gemini-Key": _cfg
+      },
       body: JSON.stringify({ messages: [{ role:"user", content: userText }] })
     });
     if(r.ok){
@@ -5928,7 +5934,6 @@ async function finishDuelPlay(){
 // END GAMES MODULE
 // ═══════════════════════════════════════════════════════════════
 
-})();
 </script>
 
 </body>
