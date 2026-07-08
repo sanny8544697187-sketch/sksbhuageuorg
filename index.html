@@ -1273,8 +1273,11 @@ try {
 
     <!-- ── MCQ TAB ── -->
     <div id="ptab_mcq_content">
+    <!-- Subject cards — same UX as Quiz's "Choose a Subject" -->
+    <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:12px;text-transform:uppercase;letter-spacing:.4px;">Choose a Subject</div>
+    <div id="pyqSubjectChips" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;"></div>
     <!-- Filters -->
-    <div class="card" style="padding:14px 16px;margin-bottom:16px;">
+    <div class="card" id="pyqFiltersCard" style="padding:14px 16px;margin-bottom:16px;display:none;">
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <div style="flex:1;min-width:120px;">
           <label class="lbl" style="font-size:10px;">Exam</label>
@@ -1283,28 +1286,22 @@ try {
             <option value="ICAR JRF">ICAR JRF</option>
             <option value="IBPS AFO">IBPS AFO</option>
             <option value="NABARD">NABARD</option>
+            <option value="BHU Entrance">BHU Entrance</option>
+            <option value="IARI">IARI</option>
+            <option value="State PSC Agriculture">State PSC Agriculture</option>
+            <option value="Other">Other</option>
           </select>
         </div>
         <div style="flex:1;min-width:120px;">
           <label class="lbl" style="font-size:10px;">Year</label>
           <select id="pyqYearFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
             <option value="All">All Years</option>
-            <option value="2024">2024</option>
-            <option value="2023">2023</option>
-            <option value="2022">2022</option>
-            <option value="2021">2021</option>
           </select>
         </div>
         <div style="flex:1;min-width:120px;">
           <label class="lbl" style="font-size:10px;">Subject</label>
-          <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
+          <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="pyqChipSubject=this.value;renderPYQ()">
             <option value="All">All Subjects</option>
-            <option value="Agronomy">Agronomy</option>
-            <option value="Soil Science">Soil Science</option>
-            <option value="Genetics & Plant Breeding">Genetics</option>
-            <option value="Plant Pathology">Plant Pathology</option>
-            <option value="Entomology">Entomology</option>
-            <option value="Horticulture">Horticulture</option>
           </select>
         </div>
       </div>
@@ -1360,48 +1357,51 @@ const DEFAULT_SUBJECTS = [
   { id:"s1",  name:"Agronomy", icon:"🌾", cat:"core", badge:"Popular",
     desc:"Crop production, soil management, weed management and agricultural practices for optimal yield.",
     topics:["Crop Production","Weed Management","Irrigation Systems","Tillage Systems"], tags:["crops","soil","yield","agronomy"]},
-  { id:"s2",  name:"Entomology", icon:"🐛", cat:"applied", badge:"",
-    desc:"Insects affecting agriculture, pest biology and integrated pest management strategies.",
-    topics:["Insect Pests","IPM","Beneficial Insects","Pesticide Management"], tags:["insects","IPM","biocontrol","pest"]},
-  { id:"s3",  name:"Horticulture", icon:"🍎", cat:"applied", badge:"",
-    desc:"Cultivating fruits, vegetables, flowers and ornamental plants with post-harvest technology.",
-    topics:["Fruit Science","Vegetable Production","Floriculture","Post-harvest Tech"], tags:["fruits","flowers","vegetables","horticulture"]},
-  { id:"s4",  name:"Genetics & Plant Breeding", icon:"🧬", cat:"science", badge:"Popular",
+  { id:"s2",  name:"Plant Sciences", icon:"🌱", cat:"science", badge:"",
+    desc:"Plant biology, physiology, biochemistry and the fundamental science of plant life.",
+    topics:["Plant Physiology","Plant Biochemistry","Plant Anatomy","Photosynthesis"], tags:["plant","physiology","biochemistry","biology"]},
+  { id:"s3",  name:"Soil Sciences", icon:"🪨", cat:"science", badge:"",
+    desc:"Physical, chemical and biological properties of soils and agricultural chemistry applications.",
+    topics:["Soil Chemistry","Soil Fertility","Soil Physics","Agricultural Chemicals"], tags:["soil","nutrients","pH","chemistry"]},
+  { id:"s4",  name:"Plant Biotechnology", icon:"🧬", cat:"science", badge:"New",
+    desc:"Genetic engineering, tissue culture, molecular breeding and biotech tools applied to crops.",
+    topics:["Genetic Engineering","Tissue Culture","Molecular Markers","GM Crops"], tags:["biotechnology","genetic engineering","tissue culture","molecular"]},
+  { id:"s5",  name:"Genetics & Plant Breeding", icon:"🧬", cat:"science", badge:"Popular",
     desc:"Heredity, variation and genetic improvement of crop plants through classical and molecular approaches.",
     topics:["Mendelian Genetics","Hybridization","Mutation Breeding","Molecular Markers"], tags:["genetics","DNA","heredity","breeding"]},
-  { id:"s5",  name:"Plant Biochemistry", icon:"🔭", cat:"science", badge:"",
-    desc:"Biochemical processes in plants including metabolism, enzyme kinetics and molecular functions.",
-    topics:["Photosynthesis","Respiration","Plant Hormones","Enzyme Kinetics"], tags:["biochemistry","metabolism","enzymes","plant"]},
   { id:"s6",  name:"Plant Pathology", icon:"🔬", cat:"applied", badge:"",
     desc:"Plant diseases, causative agents and integrated disease management strategies.",
     topics:["Fungal Diseases","Bacterial Diseases","Virus Diseases","IDM Strategies"], tags:["disease","fungi","pathogen","pathology"]},
-  { id:"s7",  name:"Soil Sciences & Agricultural Chemistry", icon:"🪨", cat:"science", badge:"",
-    desc:"Physical, chemical and biological properties of soils and agricultural chemistry applications.",
-    topics:["Soil Chemistry","Soil Fertility","Soil Physics","Agricultural Chemicals"], tags:["soil","nutrients","pH","chemistry"]},
-  { id:"s8",  name:"Animal Husbandry & Dairy Tech", icon:"🐄", cat:"applied", badge:"New",
-    desc:"Animal production systems, dairy processing, food technology and value-added product development.",
-    topics:["Animal Production","Dairy Processing","Livestock Management","Quality Control"], tags:["dairy","animal","livestock","food","processing"]},
-  { id:"s9",  name:"Agricultural Engineering", icon:"⚙️", cat:"core", badge:"",
+  { id:"s7",  name:"Entomology & Nematology", icon:"🐛", cat:"applied", badge:"",
+    desc:"Insects and nematodes affecting agriculture, pest biology and integrated pest management strategies.",
+    topics:["Insect Pests","Plant Nematodes","IPM","Beneficial Insects"], tags:["insects","nematodes","IPM","biocontrol","pest"]},
+  { id:"s8",  name:"Horticulture", icon:"🍎", cat:"applied", badge:"",
+    desc:"Cultivating fruits, vegetables, flowers and ornamental plants with post-harvest technology.",
+    topics:["Fruit Science","Vegetable Production","Floriculture","Post-harvest Tech"], tags:["fruits","flowers","vegetables","horticulture"]},
+  { id:"s9",  name:"Agri Engineering & Technology", icon:"⚙️", cat:"core", badge:"",
     desc:"Farm machinery, irrigation engineering, food processing technology and rural infrastructure.",
-    topics:["Farm Machinery","Irrigation Engineering","Food Technology","Rural Infrastructure"], tags:["engineering","machinery","irrigation","technology"]},
+    topics:["Farm Machinery","Irrigation Engineering","Processing Technology","Rural Infrastructure"], tags:["engineering","machinery","irrigation","technology"]},
   { id:"s10", name:"Agricultural Economics", icon:"📊", cat:"applied", badge:"",
     desc:"Economic principles applied to farming, marketing, trade policy and rural development.",
     topics:["Farm Finance","Ag Marketing","Demand & Supply","Agribusiness Management"], tags:["economics","market","policy","finance"]},
-  { id:"s11", name:"Statistical Methods", icon:"📈", cat:"science", badge:"",
+  { id:"s11", name:"Statistics", icon:"📈", cat:"science", badge:"",
     desc:"Statistical techniques, research design and quantitative data analysis in agricultural sciences.",
     topics:["Basic Statistics","Research Design","Data Analysis","Hypothesis Testing"], tags:["statistics","research","data","methods"]},
-  { id:"s12", name:"Extension Education", icon:"📣", cat:"applied", badge:"",
+  { id:"s12", name:"Agricultural Extension", icon:"📣", cat:"applied", badge:"",
     desc:"Transferring agricultural knowledge and innovations to farming communities effectively.",
     topics:["Extension Methods","Rural Communication","FLD & Demonstrations","Farmers Training"], tags:["extension","communication","rural","education"]},
-  { id:"s13", name:"Agricultural Meteorology", icon:"🌦️", cat:"science", badge:"",
-    desc:"Weather, climate patterns and their effects on crop production and agricultural planning.",
-    topics:["Weather Forecasting","Climate Change","Rainfall Analysis","Evapotranspiration"], tags:["weather","climate","forecast","meteorology"]},
-  { id:"s14", name:"Environmental Studies & Disaster Management", icon:"🌍", cat:"science", badge:"",
-    desc:"Environmental science, sustainability, pollution control and disaster preparedness in agriculture.",
-    topics:["Environmental Science","Pollution Control","Disaster Management","Climate Adaptation"], tags:["environment","disaster","ecology","sustainability"]},
-  { id:"s15", name:"Additional Courses", icon:"📚", cat:"core", badge:"New",
-    desc:"Skill enhancement, entrepreneurship, organic farming and specialised short courses for agriculture graduates.",
-    topics:["Agri-Entrepreneurship","Organic Farming","Food Processing","Rural Development"], tags:["skill","startup","additional","courses"]},
+  { id:"s13", name:"Dairy Sciences", icon:"🐄", cat:"applied", badge:"",
+    desc:"Dairy animal production, breeds, management and milk production systems.",
+    topics:["Dairy Animal Management","Breeds & Breeding","Milk Production","Livestock Nutrition"], tags:["dairy","animal","livestock","milk"]},
+  { id:"s14", name:"Dairy Technology", icon:"🥛", cat:"applied", badge:"New",
+    desc:"Milk processing, dairy product manufacture, quality control and dairy plant operations.",
+    topics:["Milk Processing","Dairy Products","Quality Control","Dairy Plant Engineering"], tags:["dairy","technology","milk processing","quality"]},
+  { id:"s15", name:"Food Science & Technology", icon:"🍚", cat:"applied", badge:"New",
+    desc:"Food processing, preservation, quality control and value-added food product development.",
+    topics:["Food Processing","Food Preservation","Food Quality Control","Food Packaging"], tags:["food","processing","preservation","technology"]},
+  { id:"s16", name:"Others", icon:"📚", cat:"core", badge:"",
+    desc:"Agricultural meteorology, environmental studies, extension methods and other miscellaneous topics.",
+    topics:["Agri-Entrepreneurship","Organic Farming","Environmental Science","General Awareness"], tags:["others","general","miscellaneous"]},
 ];
 
 let activeSubjects = []; // loaded from Firebase/localStorage; falls back to DEFAULT_SUBJECTS
@@ -1425,6 +1425,21 @@ function rebuildSubjectDropdowns(){
       sf.innerHTML+=`<button class="btn hchip btn-light" onclick="setResSub('${escapeHTML(s.name)}')" id="rsub_${s.id}" style="white-space:nowrap;padding:5px 12px;font-size:12px;">${escapeHTML(s.name)}</button>`;
     });
   }
+  // PYQ subject filter dropdown (MCQ tab)
+  const pyqSf=document.getElementById("pyqSubjectFilter");
+  if(pyqSf) pyqSf.innerHTML='<option value="All">All Subjects</option>'+opts;
+  // PYQ admin/bulk/paste subject selects (used by MCQ import forms)
+  ["pyqBulkSubject","pyqPasteSubject","pyqSubjAdmin","pdfQuizSubject","bulkFallbackSubject","mQuizSubj"].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const cur=el.value; el.innerHTML=opts; if(cur) el.value=cur;
+  });
+  // PYQ PDF-library subject selects
+  ["qpPdfSubject","pyqPdfSubject","pyqPdfSubjectFilter"].forEach(id=>{
+    const el=document.getElementById(id); if(!el) return;
+    const cur=el.value;
+    el.innerHTML=(id==="pyqPdfSubjectFilter"?'<option value="All">All Subjects</option>':'')+opts;
+    if(cur) el.value=cur;
+  });
 }
 let QUIZ_BANK = {
   "Agronomy":[
@@ -3148,7 +3163,7 @@ async function renderAdmin(){
           </div>
           <div><label class="lbl">Year</label>
             <select id="pyqBulkYear" class="inp">
-              ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
+              ${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option value="${y}">${y}</option>`).join("")}
             </select>
           </div>
           <div><label class="lbl">Default Subject</label>
@@ -3179,7 +3194,7 @@ async function renderAdmin(){
           </div>
           <div><label class="lbl">Year</label>
             <select id="pyqPasteYear" class="inp">
-              ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
+              ${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option value="${y}">${y}</option>`).join("")}
             </select>
           </div>
           <div><label class="lbl">Default Subject</label>
@@ -3213,7 +3228,7 @@ async function renderAdmin(){
             </div>
             <div><label class="lbl">Year *</label>
               <select id="pyqYear" class="inp">
-                ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
+                ${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option value="${y}">${y}</option>`).join("")}
               </select>
             </div>
             <div><label class="lbl">Subject *</label>
@@ -3573,15 +3588,55 @@ function renderAdminPYQList(){
 let pyqRevealedIds = {};
 const _pyqFreeReveals = {};
 
+let pyqChipSubject=""; // empty = no subject chosen yet → list stays hidden
+function setPYQChipSubject(name){
+  pyqChipSubject=name;
+  const dd=document.getElementById("pyqSubjectFilter"); if(dd) dd.value=name;
+  renderPYQ();
+}
+function renderPYQSubjectChips(){
+  const el=document.getElementById("pyqSubjectChips"); if(!el) return;
+  const subs=getSubjects();
+  const countFor=name=>pyqData.filter(q=>name==="All"||q.subject===name).length;
+  el.innerHTML=`<button class="btn hchip ${pyqChipSubject==="All"?"btn-primary":"btn-light"}" onclick="setPYQChipSubject('All')" style="font-size:13px;padding:8px 16px;">All <span style="opacity:.65;font-weight:400;">(${countFor("All")})</span></button>`+
+    subs.map(s=>`<button class="btn hchip ${pyqChipSubject===s.name?"btn-primary":"btn-light"}" onclick="setPYQChipSubject('${escapeHTML(s.name)}')" style="font-size:13px;padding:8px 16px;">${s.icon} ${escapeHTML(s.name)} <span style="opacity:.65;font-weight:400;">(${countFor(s.name)})</span></button>`).join("");
+}
+function populatePYQYearFilter(){
+  const el=document.getElementById("pyqYearFilter"); if(!el) return;
+  const cur=el.value||"All";
+  const yrs=[...new Set(pyqData.map(q=>String(q.year)).filter(Boolean))].sort((a,b)=>b-a);
+  const fallback=Array.from({length:18},(_,i)=>String(2027-i)); // 2010–2027 fallback if bank is empty
+  const list=yrs.length?yrs:fallback;
+  el.innerHTML='<option value="All">All Years</option>'+list.map(y=>`<option value="${y}">${y}</option>`).join("");
+  el.value=cur;
+}
 function renderPYQ(){
   const u=currentUser;
   const isPrem=isSubActive(u);
-  const examF   = (document.getElementById("pyqExamFilter")?.value||"All");
-  const yearF   = (document.getElementById("pyqYearFilter")?.value||"All");
-  const subjF   = (document.getElementById("pyqSubjectFilter")?.value||"All");
+  renderPYQSubjectChips();
+  populatePYQYearFilter();
   const listEl  = document.getElementById("pyqList");
   const countEl = document.getElementById("pyqCount");
+  const filtersCard = document.getElementById("pyqFiltersCard");
   if(!listEl) return;
+
+  // Nothing chosen yet — hide filters/list/questions and prompt the user to pick a subject first
+  if(!pyqChipSubject){
+    const oldBanner=document.getElementById("pyqPremBanner"); if(oldBanner) oldBanner.remove();
+    if(filtersCard) filtersCard.style.display="none";
+    if(countEl) countEl.textContent="";
+    listEl.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:10px;">📋</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px;">Select a subject above to view PYQs</div>
+      <div style="color:#777;font-size:13px;">Pick a subject (or "All") from the cards above to browse previous year questions.</div>
+    </div>`;
+    return;
+  }
+  if(filtersCard) filtersCard.style.display="block";
+
+  const examF   = (document.getElementById("pyqExamFilter")?.value||"All");
+  const yearF   = (document.getElementById("pyqYearFilter")?.value||"All");
+  const subjF   = pyqChipSubject!=="All" ? pyqChipSubject : (document.getElementById("pyqSubjectFilter")?.value||"All");
 
   // Premium banner above PYQ list
   const today=new Date().toISOString().split("T")[0];
@@ -3955,7 +4010,10 @@ function renderPYQPdfLibrary(){
             <select id="qpPdfExam" class="inp"><option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option><option>BHU Entrance</option><option>Other</option></select>
           </div>
           <div><label class="lbl">Year</label>
-            <select id="qpPdfYear" class="inp">${[2025,2024,2023,2022,2021,2020,2019].map(y=>`<option>${y}</option>`).join('')}</select>
+            <select id="qpPdfYear" class="inp">${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option>${y}</option>`).join('')}</select>
+          </div>
+          <div><label class="lbl">Subject</label>
+            <select id="qpPdfSubject" class="inp">${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join('')}</select>
           </div>
           <div><label class="lbl">Drive / Direct Link</label><input id="qpPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
         </div>
@@ -3969,6 +4027,15 @@ function renderPYQPdfLibrary(){
       </div>`;
   }
 
+  const subs=getSubjects();
+  const countFor=name=>pyqPdfs.filter(p=>name==="All"||(p.subject||"Others")===name).length;
+  const chipsHtml=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;overflow-x:auto;">
+    <button class="btn hchip ${pyqPdfChipSubject==="All"?"btn-primary":"btn-light"}" onclick="setPYQPdfChipSubject('All')" style="font-size:12px;padding:6px 14px;white-space:nowrap;">All (${countFor("All")})</button>
+    ${subs.map(s=>`<button class="btn hchip ${pyqPdfChipSubject===s.name?"btn-primary":"btn-light"}" onclick="setPYQPdfChipSubject('${escapeHTML(s.name)}')" style="font-size:12px;padding:6px 14px;white-space:nowrap;">${s.icon} ${escapeHTML(s.name)} (${countFor(s.name)})</button>`).join("")}
+  </div>`;
+
+  const filteredPdfs=pyqPdfs.filter(p=>pyqPdfChipSubject==="All"||(p.subject||"Others")===pyqPdfChipSubject);
+
   if(!pyqPdfs.length){
     el.innerHTML=adminUploadHtml+`<div class="card" style="padding:44px;text-align:center;">
       <div style="font-size:44px;margin-bottom:12px;">📄</div>
@@ -3976,15 +4043,17 @@ function renderPYQPdfLibrary(){
       <div style="color:#777;font-size:13px;">Admin can upload complete PYQ papers as PDFs for students to download.</div>
     </div>`; return;
   }
-  el.innerHTML=adminUploadHtml+`
-    <div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${pyqPdfs.length})</div>
-    ${pyqPdfs.map(p=>`
+  el.innerHTML=adminUploadHtml+chipsHtml+`
+    <div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${filteredPdfs.length})</div>
+    ${filteredPdfs.length===0?`<div style="text-align:center;color:#777;padding:30px;font-size:13px;">No PDF papers for this subject yet.</div>`:''}
+    ${filteredPdfs.map(p=>`
       <div class="res-card hov-card">
         <div class="res-icon" style="background:#FFEBEE;">📄</div>
         <div class="res-info">
           <div class="res-title">${escapeHTML(p.title)}</div>
           <div class="res-meta">
             <span style="background:#F3E5F5;color:#7B1FA2;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:700;margin-right:4px;">${escapeHTML(p.exam||'')} ${escapeHTML(p.year||'')}</span>
+            <span style="background:#E8F5E9;color:#0F3D23;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:700;margin-right:4px;">${escapeHTML(p.subject||'Others')}</span>
             PDF Paper · ${escapeHTML(p.date||'')} · by ${escapeHTML(p.uploader||'Admin')}
           </div>
           ${p.desc?`<div class="res-desc">${escapeHTML(p.desc)}</div>`:''}
@@ -3996,6 +4065,8 @@ function renderPYQPdfLibrary(){
         </div>
       </div>`).join('')}`;
 }
+let pyqPdfChipSubject="All";
+function setPYQPdfChipSubject(name){ pyqPdfChipSubject=name; renderPYQPdfLibrary(); }
 
 // Inline PDF upload handlers for the student-facing PYQ PDF tab
 let _qpPdfFileData='', _qpPdfFile=null;
@@ -4013,12 +4084,13 @@ async function uploadQPPdfFile(){
   const title=document.getElementById('qpPdfTitle')?.value?.trim();
   const exam=document.getElementById('qpPdfExam')?.value||'ICAR JRF';
   const year=document.getElementById('qpPdfYear')?.value||'2024';
+  const subject=document.getElementById('qpPdfSubject')?.value||(getSubjects()[0]?.name||'Others');
   const link=document.getElementById('qpPdfLink')?.value?.trim();
   const desc=document.getElementById('qpPdfDesc')?.value?.trim();
   if(!title){toast('Title required.','e');return;}
   if(!link&&!_qpPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
   const id=Date.now()+'';
-  const entry={id,title,exam,year,link:link||'',desc:desc||'',
+  const entry={id,title,exam,year,subject,link:link||'',desc:desc||'',
     uploader:currentUser.name,date:fmtDate(),
     fileName:_qpPdfFile?.name||'',hasFile:!!_qpPdfFileData};
   if(_qpPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_qpPdfFileData);
@@ -4062,12 +4134,13 @@ async function uploadPYQPdfFile(){
   const title=document.getElementById('pyqPdfTitle')?.value?.trim();
   const exam=document.getElementById('pyqPdfExam')?.value||'ICAR JRF';
   const year=document.getElementById('pyqPdfYear')?.value||'2024';
+  const subject=document.getElementById('pyqPdfSubject')?.value||(getSubjects()[0]?.name||'Others');
   const link=document.getElementById('pyqPdfLink')?.value?.trim();
   const desc=document.getElementById('pyqPdfDesc')?.value?.trim();
   if(!title){toast('Title required.','e');return;}
   if(!link&&!_pyqPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
   const id=Date.now()+'';
-  const entry={id,title,exam,year,link:link||'',desc:desc||'',
+  const entry={id,title,exam,year,subject,link:link||'',desc:desc||'',
     uploader:currentUser.name,date:fmtDate(),
     fileName:_pyqPdfFile?.name||'',hasFile:!!_pyqPdfFileData};
   if(_pyqPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_pyqPdfFileData);
@@ -4095,8 +4168,11 @@ function renderAdminPYQPdfSection(){
       </div>
       <div><label class="lbl">Year</label>
         <select id="pyqPdfYear" class="inp">
-          ${[2025,2024,2023,2022,2021,2020,2019].map(y=>`<option>${y}</option>`).join('')}
+          ${[2027,2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010].map(y=>`<option>${y}</option>`).join('')}
         </select>
+      </div>
+      <div><label class="lbl">Subject</label>
+        <select id="pyqPdfSubject" class="inp">${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join('')}</select>
       </div>
       <div><label class="lbl">Google Drive / Direct PDF Link</label><input id="pyqPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
     </div>
@@ -4114,7 +4190,7 @@ function renderAdminPYQPdfSection(){
       <div style="margin-top:16px;font-weight:700;font-size:13px;margin-bottom:8px;">Uploaded Papers (${pyqPdfs.length})</div>
       ${pyqPdfs.map(p=>`
         <div style="background:#F8FBF8;border-radius:10px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
-          <div style="flex:1;font-size:13px;"><strong>${escapeHTML(p.title)}</strong><br><span style="font-size:11px;color:#777;">${escapeHTML(p.exam)} ${escapeHTML(p.year)} · ${escapeHTML(p.date)}</span></div>
+          <div style="flex:1;font-size:13px;"><strong>${escapeHTML(p.title)}</strong><br><span style="font-size:11px;color:#777;">${escapeHTML(p.exam)} ${escapeHTML(p.year)} · ${escapeHTML(p.subject||'Others')} · ${escapeHTML(p.date)}</span></div>
           ${p.link?`<button onclick="openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')" style="background:#E3F2FD;color:#1565C0;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">👁</button>`:''}
           <button onclick="deletePYQPdf('${p.id}')" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">🗑</button>
         </div>`).join('')}`:''}`;
