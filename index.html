@@ -11,7 +11,6 @@
   ║  4. Storage → Get started → Start in test mode                  ║
   ║  5. Deploy (netlify.com/drop or your server)                    ║
   ║                                                                  ║
-  ║  Admin login: admin@bhu.ac.in / admin2025                       ║
   ╚══════════════════════════════════════════════════════════════════╝
 -->
 <html lang="en">
@@ -323,20 +322,42 @@
     body.dark .sub-tab-btn.active{background:#1B6B3A;}
 
     /* ── RESPONSIVE ── */
-    @media(max-width:600px){
-      .subject-grid{grid-template-columns:1fr 1fr!important;}
+    @media(max-width:768px){
+      .subject-grid{grid-template-columns:repeat(auto-fill, minmax(140px, 1fr))!important;}
       .quick-grid{grid-template-columns:1fr 1fr;}
+      .content{padding:12px 10px 80px;}
+    }
+    @media(max-width:600px){
       .chat-layout{flex-direction:column!important;}
       .chat-sidebar{display:none!important;}
       .header-search{display:none;}
-      .hero{padding:24px 20px;}
-      .hero h1{font-size:22px;}
-      .hero-stats{gap:16px;}
+      .hero{padding:20px 16px;}
+      .hero h1{font-size:20px;}
+      .hero-stats{gap:12px; margin-top:16px; padding-top:16px;}
+      .hero-stats strong{font-size:20px;}
       .res-card{flex-direction:column;align-items:flex-start;}
       .upload-grid{grid-template-columns:1fr;}
+      .gamesHub{grid-template-columns:repeat(auto-fill, minmax(130px, 1fr))!important;}
     }
     @media(max-width:400px){
       .subject-grid{grid-template-columns:1fr!important;}
+    }
+    
+    #pwaInstallBanner {
+      position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+      background:linear-gradient(135deg,#0F3D23,#1B6B3A); color:white; padding:14px 18px;
+      border-radius:18px; display:flex; align-items:center; gap:12px; z-index:9998;
+      box-shadow:0 8px 30px rgba(0,0,0,.35);
+      width: calc(100% - 32px); max-width: 360px;
+      animation: msgIn .3s ease both;
+    }
+    @media(min-width: 768px) {
+      #pwaInstallBanner {
+        bottom: 24px;
+        right: 24px;
+        left: auto;
+        transform: none;
+      }
     }
   </style>
 </head>
@@ -352,8 +373,12 @@
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<!-- Google AdSense Placeholder -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 
 <script>
 // ── FIREBASE CONFIG ─────────────────────────────────────────────
@@ -393,6 +418,11 @@ try {
       <div><label class="lbl">Password</label><input id="authPass" class="inp" type="password" placeholder="Enter password"></div>
       <div id="authErr" style="color:#E53935;font-size:13px;"></div>
       <button class="btn btn-primary" onclick="doLogin()">Login</button>
+      <div style="text-align:center; margin:15px 0; color:#777; font-size:13px;">OR</div>
+      <button class="btn btn-light" style="width:100%; border:1px solid #ccc; background:#fff; color:#333; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:10px;" onclick="doGoogleLogin()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" height="18" alt="Google">
+        Continue with Google
+      </button>
     </div>
     <div id="registerForm" class="login-form hidden">
       <div><label class="lbl">Full Name *</label><input id="regName" class="inp" type="text" placeholder="Enter your name"></div>
@@ -451,12 +481,6 @@ try {
       <p style="color:#777;font-size:13px;">Access all PDFs, videos, PYQ papers & full quiz banks</p>
     </div>
     <div style="display:grid;gap:12px;margin-bottom:20px;">
-      <div onclick="doPay('monthly')" class="card hov-card" style="padding:18px;cursor:pointer;border:2px solid #E0EAE0;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div><div style="font-weight:700;font-size:16px;">Monthly Plan</div><div style="font-size:13px;color:#777;margin-top:2px;">All premium content for 1 month</div></div>
-          <div style="font-size:22px;font-weight:800;color:#00B050;">₹19</div>
-        </div>
-      </div>
       <div onclick="doPay('yearly')" class="card hov-card" style="padding:18px;cursor:pointer;border:2px solid #00B050;position:relative;">
         <div style="position:absolute;top:-10px;right:14px;background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:50px;">BEST VALUE</div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -514,6 +538,7 @@ try {
       <div class="hero-actions">
         <button class="btn btn-primary" style="font-size:14px;padding:10px 22px;font-weight:700;box-shadow:0 4px 14px rgba(0,176,80,.4);" onclick="setSection('subjects')">Explore Subjects →</button>
         <button class="btn btn-white" style="font-size:14px;padding:10px 20px;" onclick="setSection('chat')">💬 Ask AI Professor</button>
+        <button class="btn btn-light" style="font-size:14px;padding:10px 20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;" onclick="shareApp()">📤 Share with Friends</button>
       </div>
       <div class="hero-stats">
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
@@ -751,7 +776,7 @@ try {
     <!-- ── PRACTICE QUIZ TAB ── -->
     <div id="qtab_quiz_content" class="quiz-container" style="max-width:660px;">
     <div id="quizStart" class="card" style="padding:24px;">
-      <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px;">Choose a Subject</div>
+      <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:14px;">Choose a Subject</div>
       <div id="quizSubjects" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
       <div id="quizPremHint"></div>
     </div>
@@ -1056,6 +1081,7 @@ try {
       <button id="atRejected" class="btn btn-light"   onclick="setAdminTab('rejected')">❌ Rejected</button>
       <button id="atUsers"    class="btn btn-light"   onclick="setAdminTab('users')">👥 Students</button>
       <button id="atSubs"     class="btn btn-light"   onclick="setAdminTab('subs')">⭐ Premium</button>
+      <button id="atOffers"   class="btn btn-light"   onclick="setAdminTab('offers')">📢 Offers</button>
       <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
       <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
@@ -1344,13 +1370,7 @@ const ADMIN_EMAIL        = "admin@bhu.ac.in";
 const ADMIN_PASS_DEFAULT = "admin2025";
 const RAZORPAY_KEY       = "rzp_live_SxOPLwrDUzQWx9";
 
-// Free tier limits
-const FREE_QUIZ_PER_DAY = 10;   // max Qs in practice per day
-const FREE_PYQ_REVEALS  = 3;    // max PYQ answer reveals per day
-const FREE_DOUBTS       = 2;    // max community doubts per account
-
 const PLANS = {
-  monthly:{ id:"monthly", label:"Monthly",  price:19,  period:"month" },
   yearly: { id:"yearly",  label:"Yearly",   price:199, period:"year"  },
 };
 
@@ -1367,9 +1387,9 @@ const DEFAULT_SUBJECTS = [
   { id:"s4",  name:"Genetics & Plant Breeding", icon:"🧬", cat:"science", badge:"Popular",
     desc:"Heredity, variation and genetic improvement of crop plants through classical and molecular approaches.",
     topics:["Mendelian Genetics","Hybridization","Mutation Breeding","Molecular Markers"], tags:["genetics","DNA","heredity","breeding"]},
-  { id:"s5",  name:"Plant Biochemistry", icon:"🔭", cat:"science", badge:"",
-    desc:"Biochemical processes in plants including metabolism, enzyme kinetics and molecular functions.",
-    topics:["Photosynthesis","Respiration","Plant Hormones","Enzyme Kinetics"], tags:["biochemistry","metabolism","enzymes","plant"]},
+  { id:"s5",  name:"Plant Physiology", icon:"🔭", cat:"science", badge:"",
+    desc:"Physiological processes in plants including metabolism, enzyme kinetics and molecular functions.",
+    topics:["Photosynthesis","Respiration","Plant Hormones","Enzyme Kinetics"], tags:["physiology","metabolism","enzymes","plant"]},
   { id:"s6",  name:"Plant Pathology", icon:"🔬", cat:"applied", badge:"",
     desc:"Plant diseases, causative agents and integrated disease management strategies.",
     topics:["Fungal Diseases","Bacterial Diseases","Virus Diseases","IDM Strategies"], tags:["disease","fungi","pathogen","pathology"]},
@@ -1475,8 +1495,6 @@ let QUIZ_BANK = {
     {q:"HTST pasteurisation conditions are:",opts:["100°C for 5 min","72°C for 15 seconds","63°C for 30 minutes","85°C for 1 min"],ans:1,exp:"HTST (High Temperature Short Time) uses 72°C for 15 seconds — standard commercial pasteurisation.",premium:true},
   ],
 };
-// Immutable snapshot of the built-in bank — admin-added (custom/PDF/OCR/bulk) questions are
-// always re-merged on top of this snapshot, so edits/deletes never corrupt or duplicate data.
 const BUILTIN_QUIZ_BANK = JSON.parse(JSON.stringify(QUIZ_BANK));
 
 const QUICK_QS = [
@@ -1490,11 +1508,10 @@ const RES_TYPES = ["All","PDF","Video","Link","Notes","PYQ","PPT"];
 // ═══════════════════════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════════════════════
-// AI endpoint — set to "" to use Gemini directly (recommended for all deployments)
 const AI_ENDPOINT = "/.netlify/functions/ai";
 
 // ═══════════════════════════════════════════════════════════════
-// INDEXEDDB — large file storage (replaces localStorage for files)
+// INDEXEDDB
 // ═══════════════════════════════════════════════════════════════
 const IDB_NAME="bhu_portal", IDB_STORE="files";
 let _idb=null;
@@ -1534,8 +1551,6 @@ async function idbDel(key){
 
 // ═══════════════════════════════════════════════════════════════
 // FIREBASE STORAGE LAYER
-// Files → Firebase Storage (if configured) OR IndexedDB (fallback)
-// Metadata/Data → Firestore (if configured) OR localStorage (fallback)
 // ═══════════════════════════════════════════════════════════════
 const fbOK = window._fbConfigured === true;
 const db   = fbOK ? window._db : null;
@@ -1547,7 +1562,7 @@ async function sGet(key) {
     if (LOCAL_KEYS.includes(key)) { const v=localStorage.getItem(key); return v?JSON.parse(v):null; }
     if (key.startsWith("bhu:file:")) {
       if(fbOK) return await st.ref("files/"+key.slice(9)).getDownloadURL();
-      return await idbGet(key); // ← IndexedDB: no size limit
+      return await idbGet(key);
     }
     if (!fbOK) { const v=localStorage.getItem(key); return v?JSON.parse(v):null; }
     const snap = await db.collection("bhu_store").doc(key.replace(/:/g,"_")).get();
@@ -1559,7 +1574,7 @@ async function sSet(key, val) {
     if (LOCAL_KEYS.includes(key)) { localStorage.setItem(key,JSON.stringify(val)); return; }
     if (key.startsWith("bhu:file:")) {
       if(fbOK){ await st.ref("files/"+key.slice(9)).putString(val,"data_url"); return; }
-      await idbSet(key,val); return; // ← IndexedDB: handles large base64 files
+      await idbSet(key,val); return;
     }
     if (!fbOK) { localStorage.setItem(key,JSON.stringify(val)); return; }
     await db.collection("bhu_store").doc(key.replace(/:/g,"_")).set({value:JSON.stringify(val),updatedAt:new Date().toISOString()});
@@ -1601,15 +1616,13 @@ let section="home",dark=false,loginTab="login",catFilter="All",resType="All",res
 let uFileData="",uploading=false,folderFiles=[],uploadMode="file";
 let quizSubj="",quizQs=[],quizAns=[],quizIdx=0,quizDone=false;
 let customQuizBank={};
-// Quiz-section upgrade state
-let quizMode="test"; // "test" (reveal at end) | "practice" (instant feedback)
+let quizMode="test";
 let quizFlagged={}, quizStartTime=null;
 let quizTimerEnabled=false, quizTimerMinutes=10, quizTimerInterval=null, quizTimeLeft=0;
-// Manual-entry upgrade state
-let editingCustomQ=null;          // {subject, idx} when editing an existing custom question
-let customQSearch="";             // search box value for the admin custom-question list
-let _parsedPdfQuestions=[];       // preview buffer for Document/OCR upload
-let _bulkParsedQuestions=[];      // preview buffer for bulk-paste entry
+let editingCustomQ=null;
+let customQSearch="";
+let _parsedPdfQuestions=[];
+let _bulkParsedQuestions=[];
 let _tesseractLoaded=false;
 let chatTab="community";
 let msgs=[{role:"assistant",content:"Namaste! 🌾 I'm your BHU AI Agriculture Professor. Ask me anything — Agronomy, Genetics, Pathology, Horticulture, Soil Science… I'm here to help you ace your exams!",time:fmtTime()}];
@@ -1622,9 +1635,6 @@ let quizPdfParsing=false;
 function fmtTime(){ return new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}); }
 function fmtDate(){ return new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"short",year:"numeric"}); }
 
-// Rebuild the live QUIZ_BANK from the immutable built-in snapshot + current custom bank.
-// Always deriving fresh (instead of mutating in place) means add/edit/delete from the
-// admin panel can never leave stale or duplicate questions behind.
 function rebuildQuizBank(){
   const merged={};
   Object.entries(BUILTIN_QUIZ_BANK).forEach(([subj,qs])=>{ merged[subj]=qs.map(q=>({...q})); });
@@ -1658,50 +1668,43 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
   if(sess){ currentUser=sess; }
 
-  // Load PYQ PDFs
   await loadPYQPdfs();
 
-  // Load custom quiz questions added by admin
   const cqb = await sGet("bhu:customquizbank");
   if(cqb){ customQuizBank=cqb; }
   rebuildQuizBank();
 
-  // Load MCQ votes
   const mv = await sGet("bhu:mcqvotes");
   if(mv) mcqVotes=mv;
 
-  document.getElementById("splash").style.display="none";
+  // Admin offer display
+  const offer = await sGet("bhu:offer");
+  const ob = document.getElementById("adminOfferBanner");
+  if(offer && ob){ ob.textContent=offer; ob.style.display="block"; }
 
-  // Populate subject dropdowns (also called after admin edits subjects)
+  document.getElementById("splash").style.display="none";
   rebuildSubjectDropdowns();
 
-  // Quick questions sidebar
   const qql=document.getElementById("quickQList");
   QUICK_QS.forEach(q=>{
     qql.innerHTML+=`<button class="btn" onclick="setAiInput('${escapeHTML(q)}')" style="display:block;width:100%;text-align:left;background:#F8FBF8;border:1px solid #E0EAE0;border-radius:9px;padding:7px 10px;font-size:12px;color:#333;cursor:pointer;font-family:inherit;margin-bottom:5px;font-weight:500;">💬 ${escapeHTML(q)}</button>`;
   });
 
-  // Cat filters
   const cf=document.getElementById("catFilters");
   CATS.forEach(c=>{
     cf.innerHTML+=`<button class="btn hchip ${c==="All"?"btn-primary":"btn-light"}" onclick="setCatFilter('${c}')" id="cat_${c}" style="white-space:nowrap;padding:7px 14px;font-size:12px;">${c}</button>`;
   });
 
-  // Type filters
   const tf=document.getElementById("typeFilters");
   RES_TYPES.forEach(t=>{
     tf.innerHTML+=`<button class="btn hchip ${t==="All"?"btn-primary":"btn-light"}" onclick="setResType('${t}')" id="rt_${t}" style="white-space:nowrap;padding:5px 12px;font-size:12px;">${t}</button>`;
   });
 
-  // Subject filters now rebuilt via rebuildSubjectDropdowns()
-
   renderAll();
   renderChat();
   renderDoubts();
-  // Auto-redirect data-redirect sections
   document.querySelectorAll(".section[data-redirect]").forEach(sec=>{
     const [targetSection, targetTab]=sec.dataset.redirect.split(":");
-    // Override active class on these standalone sections to prevent flash
     const observer=new MutationObserver(()=>{
       if(sec.classList.contains("active")){
         sec.classList.remove("active");
@@ -1717,19 +1720,15 @@ window.addEventListener("DOMContentLoaded", async () => {
     observer.observe(sec,{attributes:true,attributeFilter:["class"]});
   });
 
-  // Firebase live sync every 20s
   if(fbOK){
     syncInterval=setInterval(async()=>{
       const [nn,np,nu,nq]=await Promise.all([sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),sGet("bhu:questions")]);
       if(nn) notes=nn; if(np) pending=np; if(nu) usersDB=nu; if(nq) questions=nq;
-      // ⚠️ Do NOT call renderAll() when admin is on quiz/pyq tab — would wipe form inputs
       renderHeader(); renderHome();
       if(section==="admin"){
-        // Only update the pending badge count — don't rebuild the whole panel
         const pb=document.getElementById("pendingBadge");
         if(pb){ pb.textContent=pending.length; pb.classList.toggle("hidden",pending.length===0); }
-        if(adminTab==="pending"||adminTab==="rejected"||adminTab==="users"||adminTab==="subs"||adminTab==="settings") renderAdmin();
-        // adminTab==="quiz" and adminTab==="pyq" are left alone to preserve form inputs
+        if(adminTab==="pending"||adminTab==="rejected"||adminTab==="users"||adminTab==="subs"||adminTab==="settings"||adminTab==="offers") renderAdmin();
       } else {
         if(section==="subjects"||section==="resources") { renderSubjects(); renderResources(); }
         if(section==="upload") renderUpload();
@@ -1742,7 +1741,6 @@ window.addEventListener("DOMContentLoaded", async () => {
 // ═══════════════════════════════════════════════════════════════
 // NAV
 // ═══════════════════════════════════════════════════════════════
-// ─── Sub-tab state ───
 let activeSubjectsTab="subjects";
 let activeQuizTab="quiz";
 let activeLbTabQ="all";
@@ -1785,7 +1783,6 @@ function setLbTabQ(t){
 }
 
 function setSection(s){
-  // Redirect merged sections to their new tab homes
   if(s==="resources"){ setSection("subjects"); setTimeout(()=>setSubjectsTab("resources"),50); return; }
   if(s==="planner"){   setSection("subjects"); setTimeout(()=>setSubjectsTab("planner"),50); return; }
   if(s==="daily"){     setSection("quiz");     setTimeout(()=>setQuizTab("daily"),50); return; }
@@ -1797,12 +1794,10 @@ function setSection(s){
   document.querySelectorAll(".section").forEach(el=>el.classList.remove("active"));
   const el=document.getElementById(s); if(el) el.classList.add("active");
 
-  // nav chips
   ["home","subjects","quiz","pyq","games","chat","profile","upload","admin"].forEach(k=>{
     const btn=document.getElementById("nav"+k.charAt(0).toUpperCase()+k.slice(1));
     if(btn){ btn.classList.toggle("btn-primary",k===s); btn.classList.toggle("btn-ghost",k!==s); }
   });
-  // bottom nav
   ["Home","Subjects","Quiz","Games","Chat","Profile"].forEach(k=>{
     const btn=document.getElementById("bn"+k); if(btn) btn.classList.toggle("active",k.toLowerCase()===s);
   });
@@ -1812,14 +1807,13 @@ function setSection(s){
   if(s==="upload")    renderUpload();
   if(s==="admin")     renderAdmin();
   if(s==="profile")   renderProfile();
-  if(s==="pyq")     { document.getElementById("pyqContentArea").style.display="none"; document.getElementById("pyqSubjectHub").style.display="grid"; renderPYQHub(); }
+  if(s==="pyq")     { 
+    document.getElementById("pyqContentArea").style.display="none"; document.getElementById("pyqSubjectHub").style.display="grid"; renderPYQHub(); 
+  }
   if(s==="games")     renderGamesHub();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RENDER ALL
-// ═══════════════════════════════════════════════════════════════
 function renderAll(){
   renderHeader();
   renderHome();
@@ -1829,9 +1823,6 @@ function renderAll(){
   if(section==="profile")   renderProfile();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// HEADER
-// ═══════════════════════════════════════════════════════════════
 function renderHeader(){
   const u=currentUser;
   const huEl=document.getElementById("headerUser");
@@ -1849,14 +1840,11 @@ function renderHeader(){
     if(uploadBtn) uploadBtn.classList.toggle("hidden",!u.isAdmin);
   } else {
     huEl.innerHTML=`<button class="btn btn-white" style="font-size:12px;padding:7px 14px;" onclick="openLogin()">Login / Register</button>`;
-    const adminBtn=document.getElementById("navAdmin"); if(adminBtn) adminBtn.classList.add("hidden");
-    const uploadBtn=document.getElementById("navUpload"); if(uploadBtn) uploadBtn.classList.add("hidden");
+    const adminBtn=document.getElementById("navAdmin"); if(adminBtn) adminBtn.add("hidden");
+    const uploadBtn=document.getElementById("navUpload"); if(uploadBtn) uploadBtn.add("hidden");
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// HOME
-// ═══════════════════════════════════════════════════════════════
 function renderHome(){
   const approved=getApproved();
   document.getElementById("statResources").textContent=approved.length;
@@ -1865,7 +1853,6 @@ function renderHome(){
   document.getElementById("statQuizCount").textContent=Object.values(QUIZ_BANK).reduce((s, arr) => s + arr.length, 0) + "+";
   const qrcEl=document.getElementById("quickResCount"); if(qrcEl) qrcEl.textContent=approved.length+" file"+(approved.length===1?"":"s");
 
-  // User bar
   const u=currentUser; const isPrem=isSubActive(u);
   const ubEl=document.getElementById("userBar");
   if(u){
@@ -1883,7 +1870,6 @@ function renderHome(){
     ubEl.style.display="none";
   }
 
-  // Premium banner
   const pbEl=document.getElementById("premBannerHome");
   if(u&&!u.isAdmin&&!isPrem){
     pbEl.innerHTML=`
@@ -1894,14 +1880,13 @@ function renderHome(){
             ${["📄 Premium PDFs","🎬 All Videos","📝 PYQ Papers","🧠 Full Quizzes"].map(f=>`<span style="font-size:12px;color:#fbbf24;font-weight:600;">✓ ${f}</span>`).join("")}
           </div>
         </div>
-        <button class="btn btn-gold" style="padding:11px 22px;font-size:13px;" onclick="openPay()">Start at ₹19/month →</button>
+        <button class="btn btn-gold" style="padding:11px 22px;font-size:13px;" onclick="openPay()">Start at ₹199/year →</button>
       </div>`;
     pbEl.style.display="block";
   } else {
     pbEl.style.display="none";
   }
 
-  // Quick subjects strip
   const qsEl=document.getElementById("quickSubjects");
   if(qsEl) qsEl.innerHTML=getSubjects().map(s=>`
     <div class="card hov-card" style="padding:12px 14px;cursor:pointer;text-align:center;flex-shrink:0;min-width:80px;" onclick="setResSubAndNav('${escapeHTML(s.name)}')">
@@ -1909,7 +1894,6 @@ function renderHome(){
       <div style="font-size:11px;font-weight:700;line-height:1.2;">${escapeHTML(s.name)}</div>
       <div style="font-size:10px;color:#777;margin-top:2px;">${subCount(s.name)} files</div>
     </div>`).join("");
-
 }
 
 function setResSubAndNav(name){
@@ -1918,9 +1902,6 @@ function setResSubAndNav(name){
   setTimeout(()=>{ setSubjectsTab("resources"); renderResources(); },60);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SUBJECTS
-// ═══════════════════════════════════════════════════════════════
 function setCatFilter(cat){
   catFilter=cat;
   CATS.forEach(c=>{
@@ -1957,9 +1938,6 @@ function renderSubjects(){
     </div>`).join("");
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RESOURCES
-// ═══════════════════════════════════════════════════════════════
 function setResType(t){
   resType=t;
   RES_TYPES.forEach(k=>{ const b=document.getElementById("rt_"+k); if(b){ b.className=`btn hchip ${k===t?"btn-primary":"btn-light"}`; b.style.cssText="white-space:nowrap;padding:5px 12px;font-size:12px;"; }});
@@ -2024,24 +2002,16 @@ function resCardHTML(n){
     </div>`;
 }
 
-// ── Google Drive safe embed ─────────────────────────────────────
-// Converts any Drive share/folder/doc link → embeddable preview URL
-// so users NEVER land on drive.google.com and cannot browse other files.
 function gdriveSafeEmbed(url){
   if(!url) return null;
-  // File: /file/d/FILE_ID/...
   const fileMatch=url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
   if(fileMatch) return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
-  // Folder: /drive/folders/FOLDER_ID
   const folderMatch=url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
   if(folderMatch) return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#list`;
-  // Google Docs/Sheets/Slides: /document/d/ or /spreadsheets/d/ or /presentation/d/
   const docsMatch=url.match(/\/(document|spreadsheets|presentation|forms)\/d\/([a-zA-Z0-9_-]+)/);
   if(docsMatch) return url.replace(/\/edit.*$|\/view.*$|\/pub.*$/,'')+'/preview';
-  // YouTube
   const ytMatch=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
   if(ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-  // Generic — just embed as-is
   return url;
 }
 
@@ -2072,9 +2042,6 @@ async function deleteNote(id){
   toast("Deleted."); renderAll();
 }
 
-// ═══════════════════════════════════════════════════════════════
-// UPLOAD
-// ═══════════════════════════════════════════════════════════════
 function renderUpload(){
   const u=currentUser;
   const isAdmin=u&&u.isAdmin;
@@ -2084,10 +2051,8 @@ function renderUpload(){
   document.getElementById("uploadHint").textContent=u.isAdmin?"Admin uploads are published instantly.":"Your upload goes to admin review first.";
   const pwrap=document.getElementById("premCheckWrap");
   pwrap.style.display=u.isAdmin?"flex":"none";
-  // Set correct button text
   const ubtn=document.getElementById("uploadBtn");
   if(ubtn) ubtn.innerHTML=u.isAdmin?"🚀 Publish Now":"📨 Submit for Review";
-  // Restore upload mode UI
   const sfz=document.getElementById("singleFileZone"); const fz=document.getElementById("folderZone");
   const mfb=document.getElementById("modeFileBtn"); const mdb=document.getElementById("modeFolderBtn");
   if(sfz&&fz){ sfz.style.display=uploadMode==="file"?"block":"none"; fz.style.display=uploadMode==="folder"?"block":"none"; }
@@ -2115,7 +2080,6 @@ function handleFile(input){
   r.readAsDataURL(f);
 }
 
-// ── Upload mode toggle ──────────────────────────────────────────
 function setUploadMode(mode){
   uploadMode=mode;
   document.getElementById("singleFileZone").style.display=mode==="file"?"block":"none";
@@ -2126,7 +2090,6 @@ function setUploadMode(mode){
   else { uFileData=""; document.getElementById("uFile").value=""; document.getElementById("fileName").textContent="Click to upload (PDF, DOC, PPT, image…)"; }
 }
 
-// ── Folder selection ────────────────────────────────────────────
 function handleFolder(input){
   const files=[...input.files]; if(!files.length) return;
   const valid=files.filter(f=>f.size<=4.5*1024*1024);
@@ -2162,7 +2125,6 @@ function readFileAsBase64(file){
   return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=ev=>res(ev.target.result); r.onerror=rej; r.readAsDataURL(file); });
 }
 
-// ── Folder batch upload ─────────────────────────────────────────
 async function doFolderUpload(){
   const u=currentUser; if(!u){toast("Login first.","e");return;}
   const title=document.getElementById("uTitle").value.trim();
@@ -2226,21 +2188,21 @@ async function doUpload(){
   const pf=document.getElementById("uploadProgressFill");
   const pl=document.getElementById("uploadProgressLabel");
   if(pw) pw.style.display="block";
-  if(pf) pf.style.width="30%";
+  if(pf) pf.width="30%";
   if(pl) pl.textContent="Saving resource…";
   const id=Date.now()+"";
   const note={id,title,subject:subj,type,link,desc,uploader:u.name,uploaderEmail:u.email,
     date:fmtDate(),fileName:uFileData?(document.getElementById("uFile").files[0]?.name||""):"",
     status:u.isAdmin?"approved":"pending",hasFile:!!uFileData,submittedAt:new Date().toISOString(),isPremium:isPrem};
-  if(uFileData){ if(pf) pf.style.width="60%"; if(pl) pl.textContent="Uploading file…"; await sSet("bhu:file:"+id,uFileData); }
-  if(pf) pf.style.width="100%"; if(pl) pl.textContent="Done!";
+  if(uFileData){ if(pf) pf.width="60%"; if(pl) pl.textContent="Uploading file…"; await sSet("bhu:file:"+id,uFileData); }
+  if(pf) pf.width="100%"; if(pl) pl.textContent="Done!";
   if(u.isAdmin){notes=[note,...notes];await sSet("bhu:notes",notes);toast("Published! 📢");}
   else{pending=[note,...pending];await sSet("bhu:pending",pending);toast("Submitted for review! ⏳");}
   document.getElementById("uTitle").value="";document.getElementById("uSubject").value="";
   document.getElementById("uLink").value="";document.getElementById("uDesc").value="";
   document.getElementById("uFile").value="";uFileData="";
   document.getElementById("fileName").textContent="Click to upload (PDF, DOC, PPT, image…)";
-  setTimeout(()=>{ if(pw) pw.style.display="none"; if(pf) pf.style.width="0%"; },1200);
+  setTimeout(()=>{ if(pw) pw.style.display="none"; if(pf) pf.width="0%"; },1200);
   btn.disabled=false; btn.innerHTML=u.isAdmin?"🚀 Publish Now":"📨 Submit for Review";
   uploading=false; renderUpload(); renderAll();
 }
@@ -2253,8 +2215,6 @@ function setQuizMode(m){ quizMode=m; renderQuizStart(); }
 function renderQuizStart(){
   const isPrem=isSubActive(currentUser);
   const isLoggedIn=!!currentUser;
-  const freeUsed=getFreeQuizUsedToday();
-  const freeLeft=Math.max(0,FREE_QUIZ_PER_DAY-freeUsed);
   const totalAvail=Object.values(QUIZ_BANK).reduce((s,qs)=>s+qs.filter(q=>!q.premium||isPrem).length,0);
   const mixedCount=Math.min(20,totalAvail);
 
@@ -2275,13 +2235,10 @@ function renderQuizStart(){
       premBanner=`<div style="background:linear-gradient(135deg,#1a0a00,#3d1f00);border:1px solid #f59e0b;border-radius:14px;padding:16px 18px;margin-bottom:18px;">
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
           <div>
-            <div style="color:#f59e0b;font-weight:800;font-size:14px;margin-bottom:3px;">⭐ Free Plan — ${freeLeft}/${FREE_QUIZ_PER_DAY} Qs left today</div>
+            <div style="color:#f59e0b;font-weight:800;font-size:14px;margin-bottom:3px;">⭐ Free Plan</div>
             <div style="color:rgba(255,200,100,.75);font-size:12px;">Upgrade for unlimited practice, all premium questions & detailed analytics</div>
           </div>
-          <button class="btn btn-gold" style="padding:8px 18px;font-size:12px;" onclick="openPay()">Upgrade ₹19/month →</button>
-        </div>
-        <div style="background:rgba(255,255,255,.1);border-radius:50px;height:6px;margin-top:12px;overflow:hidden;">
-          <div style="height:100%;border-radius:50px;background:linear-gradient(90deg,#f59e0b,#c9690a);width:${Math.round((freeUsed/FREE_QUIZ_PER_DAY)*100)}%;transition:width .4s;"></div>
+          <button class="btn btn-gold" style="padding:8px 18px;font-size:12px;" onclick="openPay()">Upgrade ₹199/year →</button>
         </div>
       </div>`;
     }
@@ -2306,7 +2263,7 @@ function renderQuizStart(){
     </div>
     <div style="font-size:11px;color:#777;margin-bottom:16px;">${quizMode==='practice'?'💡 Practice Mode reveals the correct answer right after each question.':'📝 Test Mode reveals all answers together at the end, with a subject-wise score breakdown.'}</div>
 
-    <button class="btn btn-gold hov-btn" style="width:100%;padding:13px;font-size:14px;margin-bottom:18px;" onclick="startQuiz('__mixed__')" ${mixedCount===0?"disabled":""}>🎲 Mixed Quiz — All Subjects (${isPrem?mixedCount:'up to '+Math.min(FREE_QUIZ_PER_DAY,mixedCount)} Qs)</button>
+    <button class="btn btn-gold hov-btn" style="width:100%;padding:13px;font-size:14px;margin-bottom:18px;" onclick="startQuiz('__mixed__')" ${mixedCount===0?"disabled":""}>🎲 Mixed Quiz — All Subjects</button>
 
     <div style="font-size:13px;font-weight:600;color:#333;margin-bottom:14px;text-transform:uppercase;letter-spacing:.4px;">Or Choose a Subject</div>
     <div id="quizSubjects" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
@@ -2329,39 +2286,20 @@ function renderQuizStart(){
 
 function startQuiz(subj){
   const isPrem=isSubActive(currentUser);
-
-  // ── Free user daily limit gate ──
-  if(!isPrem){
-    const freeUsed=getFreeQuizUsedToday();
-    if(freeUsed>=FREE_QUIZ_PER_DAY){
-      toast(`⭐ Daily free limit of ${FREE_QUIZ_PER_DAY} questions reached. Upgrade for unlimited practice!`,"e");
-      setTimeout(()=>openPay(),900);
-      return;
-    }
-  }
-
   let qs;
   if(subj==="__mixed__"){
     let all=[];
     Object.entries(QUIZ_BANK).forEach(([s,arr])=>{ arr.filter(q=>!q.premium||isPrem).forEach(q=>all.push({...q,subj:s})); });
-    let maxQs=20;
-    if(!isPrem){ maxQs=Math.min(20,Math.max(0,FREE_QUIZ_PER_DAY-getFreeQuizUsedToday())); }
-    qs=all.sort(()=>Math.random()-.5).slice(0,maxQs);
+    qs=all.sort(()=>Math.random()-.5).slice(0,30); // fixed 30 max for mixed
     quizSubj="Mixed — All Subjects";
   } else {
     qs=[...(QUIZ_BANK[subj]||[])].filter(q=>!q.premium||isPrem).map(q=>({...q,subj})).sort(()=>Math.random()-.5);
-    if(!isPrem){ const left=Math.max(0,FREE_QUIZ_PER_DAY-getFreeQuizUsedToday()); qs=qs.slice(0,left); }
     quizSubj=subj;
   }
   if(!qs.length){
-    if(!isPrem&&getFreeQuizUsedToday()>=FREE_QUIZ_PER_DAY){
-      toast(`⭐ Daily free limit of ${FREE_QUIZ_PER_DAY} Qs reached — upgrade for unlimited!`,"e");
-      setTimeout(()=>openPay(),900);
-    } else { openPay(); }
+    toast("No questions available.","e");
     return;
   }
-  // Track free usage
-  if(!isPrem) addFreeQuizUsed(qs.length);
   quizQs=qs; quizAns=new Array(qs.length).fill(-1); quizIdx=0; quizDone=false;
   quizFlagged={}; quizStartTime=Date.now();
   document.getElementById("quizStart").style.display="none";
@@ -2679,6 +2617,7 @@ async function askAIForDoubt(qId){
 
 // ── Shared AI Professor caller (used by both main chat & community) ──
 async function callAIProfessor(userText){
+  if(!isSubActive(currentUser) && !currentUser?.isAdmin) { toast("⭐ AI Professor is a Premium feature! Upgrade to unlock.","e"); openPay(); return null; }
   let reply = null;
   try{
     const r = await fetch(AI_ENDPOINT, {
@@ -2895,7 +2834,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["pending","rejected","users","subs","quiz","pyq","settings"].forEach(k=>{
+  ["pending","rejected","users","subs","offers","quiz","pyq","settings"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -2978,6 +2917,15 @@ async function renderAdmin(){
           </tr>`;}).join("")}
         </tbody>
       </table></div></div>`;
+  } else if(adminTab==="offers"){
+    const currentOffer = await sGet("bhu:offer");
+    el.innerHTML=`
+      <div class="card" style="padding:22px;max-width:460px;">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">📢 Broadcast Offer Banner</h3>
+        <input id="offerInput" class="inp" placeholder="e.g. 50% Off Premium this weekend! Use code BHU50" value="${escapeHTML(currentOffer||"")}" style="margin-bottom:11px;">
+        <button class="btn btn-primary" onclick="pushAdminOffer()">Update & Broadcast</button>
+        <button class="btn btn-light" style="margin-left:8px;" onclick="sDel('bhu:offer');renderAdmin();">Clear</button>
+      </div>`;
   } else if(adminTab==="quiz"){
     // Count all questions in QUIZ_BANK (builtin + custom)
     const totalQ=Object.values(QUIZ_BANK).reduce((s,a)=>s+a.length,0);
@@ -3059,8 +3007,8 @@ async function renderAdmin(){
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div><label class="lbl">Option A *</label><input id="mOptA" class="inp" placeholder="Option A"></div>
             <div><label class="lbl">Option B *</label><input id="mOptB" class="inp" placeholder="Option B"></div>
-            <div><label class="lbl">Option C *</label><input id="mOptC" class="inp" placeholder="Option C"></div>
-            <div><label class="lbl">Option D *</label><input id="mOptD" class="inp" placeholder="Option D"></div>
+            <div><label class="lbl">Option C</label><input id="mOptC" class="inp" placeholder="Option C (optional)"></div>
+            <div><label class="lbl">Option D</label><input id="mOptD" class="inp" placeholder="Option D (optional)"></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div><label class="lbl">Correct Answer *</label>
@@ -4582,6 +4530,29 @@ async function doLogout(){
   if(section==="admin") setSection("home");
 }
 
+async function doGoogleLogin(){
+  if(!window.firebase) { toast("Firebase not initialized.","e"); return; }
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result = await firebase.auth().signInWithPopup(provider);
+    const user = result.user;
+    let found = usersDB.find(u=>u.email.toLowerCase()===user.email.toLowerCase());
+    if(!found){
+      found = {
+        id:Date.now()+"", name:user.displayName||"Google User", roll:"", year:"Other", 
+        email:user.email.toLowerCase(), password:"", joinedAt:new Date().toISOString(), 
+        subPlan:null, subExpiry:null
+      };
+      usersDB=[...usersDB,found]; await sSet("bhu:users",usersDB);
+    }
+    const sess={...found,isAdmin:false}; currentUser=sess; await sSet("bhu:session",sess);
+    closeLogin(); toast(`Welcome, ${found.name}! 🚀`); renderAll();
+  } catch(e) {
+    console.error(e);
+    toast("Google Login Failed","e");
+  }
+}
+
 // ═══════════════════════════════════════════════════════════════
 // PREMIUM / PAYMENT
 // ═══════════════════════════════════════════════════════════════
@@ -4681,7 +4652,7 @@ function renderProfile(){
             <div style="font-weight:600;font-size:14px;">🌱 Free Plan</div>
             <div style="font-size:12px;color:#777;margin-top:3px;">Upgrade to access all premium content</div>
           </div>
-          <button class="btn btn-gold" style="font-size:12px;padding:8px 16px;" onclick="openPay()">Upgrade ₹19/month →</button>
+          <button class="btn btn-gold" style="font-size:12px;padding:8px 16px;" onclick="openPay()">Upgrade ₹199/year →</button>
         </div>`;
     }
   }
@@ -5223,12 +5194,9 @@ async function addPastedPYQs(){
 // PREMIUM GATES — lock features for free users
 // ═══════════════════════════════════════════════════════════════
 const PREMIUM_FEATURES={
-  quiz:"Practice Quiz — unlimited subjects & questions",
-  daily:"Daily Quiz & Streak Tracking",
-  planner:"AI Study Planner",
-  analytics:"Performance Analytics",
   pyq:"PYQ Bank — full answer reveal",
-  doubt:"Community Doubts — post & reply"
+  doubt:"Community Doubts — post & reply",
+  games:"Interactive Games — unlimited play"
 };
 
 function premiumGateHTML(feature,style=""){
@@ -5236,7 +5204,7 @@ function premiumGateHTML(feature,style=""){
     <div style="font-size:44px;margin-bottom:12px;">⭐</div>
     <div style="font-weight:800;font-size:18px;margin-bottom:8px;">Premium Feature</div>
     <div style="color:#777;font-size:14px;margin-bottom:6px;">${escapeHTML(PREMIUM_FEATURES[feature]||feature)}</div>
-    <div style="color:#777;font-size:12px;margin-bottom:20px;">Upgrade to get full access — starts at just ₹19/month</div>
+    <div style="color:#777;font-size:12px;margin-bottom:20px;">Upgrade to get full access — just ₹199/year</div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
       <button class="btn btn-gold" style="padding:11px 24px;font-size:14px;" onclick="openPay()">⭐ Upgrade Now</button>
       <button class="btn btn-light" style="padding:11px 20px;font-size:13px;" onclick="openLogin()">Login / Register</button>
@@ -5244,60 +5212,11 @@ function premiumGateHTML(feature,style=""){
   </div>`;
 }
 
-// Wrap renderDailyInTab to add premium gate
-const _origRenderDailyInTab=renderDailyInTab;
-function renderDailyInTab(){
-  if(!currentUser){ document.getElementById("dailyTodayBlockQ").innerHTML=premiumGateHTML("daily"); return; }
-  if(!isSubActive(currentUser)){
-    // Allow 1 free daily attempt per day, then gate
-    const email=currentUser.email;
-    let sd={}; try{sd=JSON.parse(localStorage.getItem("bhu:streak")||"{}");}catch{}
-    const today=new Date().toISOString().split("T")[0];
-    const ud=sd[email]||{};
-    if(ud.lastDate===today){ _origRenderDailyInTab(); return; } // already done today, show result
-    // Show 1-attempt notice for free users
-    const todayBlock=document.getElementById("dailyTodayBlockQ");
-    if(todayBlock) todayBlock.innerHTML=`
-      <div class="card" style="padding:20px;margin-bottom:16px;border:2px solid #f59e0b;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <div style="font-size:28px;">🔥</div>
-          <div><div style="font-weight:700;font-size:15px;">Daily Quiz — 1 Free Attempt</div>
-          <div style="font-size:12px;color:#777;">Free accounts get 1 daily quiz attempt. Upgrade for unlimited streaks & history.</div></div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="startDailyInTab()">Start Free Attempt →</button>
-          <button class="btn btn-gold" onclick="openPay()">⭐ Upgrade for Full Access</button>
-        </div>
-      </div>`;
-    // Render history placeholder  
-    const histEl=document.getElementById("dailyHistoryQ");
-    if(histEl) histEl.innerHTML=`<div style="text-align:center;padding:20px;color:#777;font-size:13px;">📊 Full history & streak tracking — <a href="#" onclick="event.preventDefault();openPay();" style="color:#00B050;font-weight:700;">Premium feature</a></div>`;
-    return;
-  }
-  _origRenderDailyInTab();
-}
-
-// Override syncAnalyticsToTab for premium gate
-const _origSyncAnalyticsToTab=syncAnalyticsToTab;
-function syncAnalyticsToTab(){
-  if(!currentUser){ 
-    const lockEl=document.getElementById("analyticsLockQ"); const contEl=document.getElementById("analyticsContentQ");
-    if(lockEl) lockEl.style.display="block"; if(contEl) contEl.style.display="none"; return;
-  }
-  if(!isSubActive(currentUser)){
-    const lockEl=document.getElementById("analyticsLockQ"); const contEl=document.getElementById("analyticsContentQ");
-    if(lockEl){ lockEl.style.display="block"; lockEl.innerHTML=premiumGateHTML("analytics"); }
-    if(contEl) contEl.style.display="none"; return;
-  }
-  _origSyncAnalyticsToTab();
-}
-
 // Premium gate for doubts posting
 const _origPostDoubt=postDoubt;
 async function postDoubt(){
   if(!currentUser){ openLogin(); return; }
   if(!isSubActive(currentUser)){
-    // Free users: max 2 posts total
     const myQs=questions.filter(q=>q.authorEmail===currentUser.email);
     if(myQs.length>=2){
       toast("⭐ Free limit: 2 doubts. Upgrade to post unlimited questions!","e");
@@ -5307,16 +5226,23 @@ async function postDoubt(){
   await _origPostDoubt();
 }
 
-// Premium gate on planner generate
 function generatePlan2(){
   if(!currentUser){ openLogin(); return; }
+  _generatePlan2Impl(null);
+}
+
+// Wrap renderGamesHub to add premium gate
+const _origRenderGamesHub=renderGamesHub;
+function renderGamesHub(){
+  const hub=document.getElementById("gamesHub"); if(!hub) return;
   if(!isSubActive(currentUser)){
-    // Free users: only 7-day plan
-    toast("⭐ Upgrade for full AI study plans! Showing 7-day free preview.","e");
-    _generatePlan2Impl(7);
+    const area=document.getElementById("gameArea");
+    if(area){ area.style.display="none"; area.innerHTML=""; }
+    hub.style.display="block";
+    hub.innerHTML=premiumGateHTML("games", "margin:40px auto;max-width:400px;");
     return;
   }
-  _generatePlan2Impl(null);
+  _origRenderGamesHub();
 }
 
 function _generatePlan2Impl(freeLimit){
@@ -5447,10 +5373,6 @@ function syncPlannerToTab(){}
     if (window.matchMedia('(display-mode: standalone)').matches) return;
     const banner = document.createElement('div');
     banner.id = 'pwaInstallBanner';
-    banner.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);'
-      + 'background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;padding:14px 18px;'
-      + 'border-radius:18px;display:flex;align-items:center;gap:12px;z-index:9998;'
-      + 'box-shadow:0 8px 30px rgba(0,0,0,.35);max-width:360px;width:calc(100% - 32px);animation:msgIn .3s ease both;';
     banner.innerHTML =
       '<div style="font-size:28px;flex-shrink:0;">🌾</div>'
       + '<div style="flex:1;min-width:0;">'
@@ -5897,6 +5819,7 @@ let battleState={qs:[],idx:0,ans:[],score:0};
 
 function startWeeklyBattle(){
   if(!currentUser){ openLogin(); return; }
+  if(!isSubActive(currentUser) && !currentUser?.isAdmin) { toast("⭐ Weekly Battle is a Premium feature! Upgrade to unlock.","e"); openPay(); return; }
   const subj=getFeaturedSubject();
   const qs=shuffleArr((QUIZ_BANK[subj]||[]).map(q=>({...q,subj})));
   if(!qs.length){ toast("No questions for this week's subject yet.","e"); return; }
@@ -5983,6 +5906,7 @@ let duelCache=[];
 
 async function openDuelHub(){
   if(!currentUser){ openLogin(); return; }
+  if(!isSubActive(currentUser) && !currentUser?.isAdmin) { toast("⭐ 1v1 Duel is a Premium feature! Upgrade to unlock.","e"); openPay(); return; }
   document.getElementById("gamesHub").style.display="none";
   const area=document.getElementById("gameArea");
   area.style.display="block";
@@ -6144,3 +6068,5 @@ async function finishDuelPlay(){
 
 </body>
 </html>
+
+
