@@ -1840,8 +1840,8 @@ function renderHeader(){
     if(uploadBtn) uploadBtn.classList.toggle("hidden",!u.isAdmin);
   } else {
     huEl.innerHTML=`<button class="btn btn-white" style="font-size:12px;padding:7px 14px;" onclick="openLogin()">Login / Register</button>`;
-    const adminBtn=document.getElementById("navAdmin"); if(adminBtn) adminBtn.add("hidden");
-    const uploadBtn=document.getElementById("navUpload"); if(uploadBtn) uploadBtn.add("hidden");
+    const adminBtn=document.getElementById("navAdmin"); if(adminBtn) adminBtn.classList.add("hidden");
+    const uploadBtn=document.getElementById("navUpload"); if(uploadBtn) uploadBtn.classList.add("hidden");
   }
 }
 
