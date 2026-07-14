@@ -444,6 +444,37 @@ try {
 </div>
 
 <!-- PREMIUM MODAL -->
+<!-- Edit Upload Modal (Admin) -->
+<div id="editNoteModal" class="modal hidden" onclick="if(event.target===this)closeEditNote()">
+  <div class="modal-card" style="max-width:480px;">
+    <button class="close-modal" onclick="closeEditNote()">&times;</button>
+    <h2 style="font-size:20px;margin-bottom:18px;">✏️ Edit Upload</h2>
+    <div style="display:flex;flex-direction:column;gap:13px;">
+      <div><label class="lbl">Title</label><input id="enTitle" class="inp" placeholder="Title"></div>
+      <div><label class="lbl">Subject</label>
+        <select id="enSubject" class="inp"></select>
+      </div>
+      <div><label class="lbl">Type</label>
+        <select id="enType" class="inp">
+          <option>PDF</option><option>Video</option><option>Notes</option><option>Link</option><option>PPT</option><option>Image</option><option>PYQ</option>
+        </select>
+      </div>
+      <div><label class="lbl">Link / URL</label><input id="enLink" class="inp" type="url" placeholder="https://..."></div>
+      <div><label class="lbl">Description</label><textarea id="enDesc" class="inp" rows="2" placeholder="Short description (optional)" style="resize:vertical;"></textarea></div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="checkbox" id="enPremium" style="width:16px;height:16px;accent-color:#f59e0b;">
+        <label for="enPremium" style="font-size:13px;font-weight:600;cursor:pointer;">⭐ Mark as Premium</label>
+      </div>
+      <input type="hidden" id="enNoteId">
+      <input type="hidden" id="enNoteSource"> <!-- 'notes' or 'pending' -->
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="saveNoteEdit()">💾 Save Changes</button>
+        <button class="btn btn-light" onclick="closeEditNote()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ── Google Drive / Link Preview Modal ── -->
 <div id="driveModal" class="modal hidden" onclick="if(event.target===this)closeDriveModal()">
   <div style="background:#fff;border-radius:20px;width:100%;max-width:860px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden;">
@@ -1996,7 +2027,9 @@ function resCardHTML(n){
             `${n.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="downloadNote('${n.id}')">📥 Download</button>`:''}
              ${n.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="openDrivePreview('${escapeHTML(n.link)}','${escapeHTML(n.title)}')">👁 Preview</button>`:''}`
           }
-          ${(u&&(u.isAdmin||u.email===n.uploaderEmail))?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deleteNote('${n.id}')">🗑</button>`:''}
+          ${(u&&(u.isAdmin||u.email===n.uploaderEmail))?`
+            <button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 10px;font-size:11px;" onclick="editNote('${n.id}','notes')">✏️ Edit</button>
+            <button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deleteNote('${n.id}')">🗑</button>`:''}
         </div>
       </div>
     </div>`;
@@ -2040,6 +2073,59 @@ async function deleteNote(id){
   if(!window.confirm("Delete permanently?")) return;
   notes=notes.filter(n=>n.id!==id); await sSet("bhu:notes",notes); await sDel("bhu:file:"+id);
   toast("Deleted."); renderAll();
+}
+
+// ── Admin Edit Upload ──────────────────────────────────────────
+function editNote(id, source){
+  // Find the note in notes or pending
+  const arr = source==='pending' ? pending : notes;
+  const n = arr.find(x=>x.id===id); if(!n) return;
+
+  // Populate subject dropdown dynamically
+  const subjSel = document.getElementById('enSubject');
+  subjSel.innerHTML = getSubjects().map(s=>`<option value="${escapeHTML(s.name)}"${s.name===n.subject?' selected':''}>${escapeHTML(s.name)}</option>`).join('');
+
+  document.getElementById('enTitle').value   = n.title  || '';
+  document.getElementById('enType').value    = n.type   || 'PDF';
+  document.getElementById('enLink').value    = n.link   || '';
+  document.getElementById('enDesc').value    = n.desc   || '';
+  document.getElementById('enPremium').checked = !!n.isPremium;
+  document.getElementById('enNoteId').value  = id;
+  document.getElementById('enNoteSource').value = source;
+
+  document.getElementById('editNoteModal').classList.remove('hidden');
+}
+
+function closeEditNote(){
+  document.getElementById('editNoteModal').classList.add('hidden');
+}
+
+async function saveNoteEdit(){
+  const id     = document.getElementById('enNoteId').value;
+  const source = document.getElementById('enNoteSource').value;
+  const title  = document.getElementById('enTitle').value.trim();
+  const subj   = document.getElementById('enSubject').value;
+  const type   = document.getElementById('enType').value;
+  const link   = document.getElementById('enLink').value.trim();
+  const desc   = document.getElementById('enDesc').value.trim();
+  const isPrem = document.getElementById('enPremium').checked;
+
+  if(!title){ toast('Title is required.','e'); return; }
+
+  const applyEdit = n => n.id===id ? {...n, title, subject:subj, type, link, desc, isPremium:isPrem} : n;
+
+  if(source==='pending'){
+    pending = pending.map(applyEdit);
+    await sSet('bhu:pending', pending);
+  } else {
+    notes = notes.map(applyEdit);
+    await sSet('bhu:notes', notes);
+  }
+
+  toast('✅ Upload updated!');
+  closeEditNote();
+  renderAll();
+  if(source==='pending') renderAdmin();
 }
 
 function renderUpload(){
@@ -2860,6 +2946,7 @@ async function renderAdmin(){
               ${rejectItem===n.id?`<div style="margin-top:10px;"><input id="rejectReason_${n.id}" class="inp" placeholder="Rejection reason…" value="${escapeHTML(rejectReason)}" oninput="rejectReason=this.value"></div>`:''}
               <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
                 <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="approveNote('${n.id}')">✅ Approve</button>
+                <button class="btn" style="background:#E3F2FD;color:#1565C0;padding:6px 14px;font-size:12px;" onclick="editNote('${n.id}','pending')">✏️ Edit</button>
                 <button class="btn" style="background:#FFEBEE;color:#E53935;padding:6px 14px;font-size:12px;" onclick="rejectItem='${n.id}';rejectReason='';renderAdmin();">Reject</button>
                 ${rejectItem===n.id?`<button class="btn" style="background:#E53935;color:white;padding:6px 14px;font-size:12px;" onclick="rejectNote('${n.id}')">Confirm Reject</button>`:''}
               </div>
@@ -3501,23 +3588,15 @@ function renderPYQHub(){
 }
 
 function openPYQSubject(subjName){
+  _pyqActiveSubject = subjName; // store it in variable
   document.getElementById("pyqSubjectHub").style.display="none";
   document.getElementById("pyqContentArea").style.display="block";
   document.getElementById("pyqActiveSubjTitle").textContent=subjName + " PYQs";
-  
-  const subjFilter=document.getElementById("pyqSubjectFilter");
-  if(subjFilter){
-    // ensure option exists
-    if(!Array.from(subjFilter.options).find(o=>o.value===subjName)){
-      const opt=document.createElement("option"); opt.value=subjName; opt.text=subjName;
-      subjFilter.add(opt);
-    }
-    subjFilter.value=subjName;
-  }
   setPYQTab('mcq');
 }
 
 function closePYQSubject(){
+  _pyqActiveSubject = "All"; // reset
   document.getElementById("pyqContentArea").style.display="none";
   document.getElementById("pyqSubjectHub").style.display="grid";
   renderPYQHub();
@@ -3528,7 +3607,7 @@ function renderPYQ(){
   const isPrem=isSubActive(u);
   const examF   = (document.getElementById("pyqExamFilter")?.value||"All");
   const yearF   = (document.getElementById("pyqYearFilter")?.value||"All");
-  const subjF   = (document.getElementById("pyqSubjectFilter")?.value||"All");
+  const subjF   = _pyqActiveSubject; // use stored variable
   const listEl  = document.getElementById("pyqList");
   const countEl = document.getElementById("pyqCount");
   if(!listEl) return;
@@ -3901,6 +3980,11 @@ function renderPYQPdfLibrary(){
         <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:#0F3D23;">📤 Upload PYQ PDF Paper (Admin)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <div><label class="lbl">Title *</label><input id="qpPdfTitle" class="inp" placeholder="e.g. ICAR JRF 2024 Full Paper"></div>
+          <div><label class="lbl">Subject *</label>
+            <select id="qpPdfSubject" class="inp">
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join('')}
+            </select>
+          </div>
           <div><label class="lbl">Exam</label>
             <select id="qpPdfExam" class="inp"><option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option><option>BHU Entrance</option><option>Other</option></select>
           </div>
@@ -3919,8 +4003,8 @@ function renderPYQPdfLibrary(){
       </div>`;
   }
 
-  // Filter by subject
-  const subjF = document.getElementById("pyqSubjectFilter")?.value || "All";
+  // Filter by subject using stored active subject variable
+  const subjF = _pyqActiveSubject;
   const filteredPdfs = pyqPdfs.filter(p => subjF === "All" || p.subject === subjF);
 
   if(!filteredPdfs.length){
@@ -3965,6 +4049,7 @@ function handleQPPdfFile(input){
 async function uploadQPPdfFile(){
   if(!currentUser?.isAdmin) return;
   const title=document.getElementById('qpPdfTitle')?.value?.trim();
+  const subject=document.getElementById('qpPdfSubject')?.value||_pyqActiveSubject||'General';
   const exam=document.getElementById('qpPdfExam')?.value||'ICAR JRF';
   const year=document.getElementById('qpPdfYear')?.value||'2024';
   const link=document.getElementById('qpPdfLink')?.value?.trim();
@@ -3972,7 +4057,7 @@ async function uploadQPPdfFile(){
   if(!title){toast('Title required.','e');return;}
   if(!link&&!_qpPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
   const id=Date.now()+'';
-  const entry={id,title,exam,year,link:link||'',desc:desc||'',
+  const entry={id,title,subject,exam,year,link:link||'',desc:desc||'',
     uploader:currentUser.name,date:fmtDate(),
     fileName:_qpPdfFile?.name||'',hasFile:!!_qpPdfFileData};
   if(_qpPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_qpPdfFileData);
