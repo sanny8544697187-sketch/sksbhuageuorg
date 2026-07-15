@@ -1343,13 +1343,7 @@ try {
               <option value="2015">2015</option>
             </select>
           </div>
-          <div style="flex:1;min-width:120px;display:none;">
-            <!-- Subject filter hidden because it's selected from hub -->
-            <label class="lbl" style="font-size:10px;">Subject</label>
-            <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
-              <option value="All">All Subjects</option>
-            </select>
-          </div>
+          
         </div>
       </div>
       <div style="font-size:13px;color:#777;margin-bottom:12px;" id="pyqCount"></div>
@@ -6149,9 +6143,23 @@ async function finishDuelPlay(){
 // END GAMES MODULE
 // ═══════════════════════════════════════════════════════════════
 
+async function shareApp(){
+  if(navigator.share){
+    try{
+      await navigator.share({
+        title: 'Agri Edu Rise',
+        text: 'Join Agri Edu Rise, the best agriculture e-learning hub! Share with your friends and contacts!',
+        url: 'https://krishigyan.online/'
+      });
+    }catch(err){ console.log('Share failed:', err); }
+  } else {
+    toast('Sharing not supported on this browser.','e');
+  }
+}
 </script>
-
 </body>
 </html>
+
+
 
 
