@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
   ║           AGRI EDU RISE — e-Learning Portal  v10.0              ║
@@ -444,37 +444,6 @@ try {
 </div>
 
 <!-- PREMIUM MODAL -->
-<!-- Edit Upload Modal (Admin) -->
-<div id="editNoteModal" class="modal hidden" onclick="if(event.target===this)closeEditNote()">
-  <div class="modal-card" style="max-width:480px;">
-    <button class="close-modal" onclick="closeEditNote()">&times;</button>
-    <h2 style="font-size:20px;margin-bottom:18px;">✏️ Edit Upload</h2>
-    <div style="display:flex;flex-direction:column;gap:13px;">
-      <div><label class="lbl">Title</label><input id="enTitle" class="inp" placeholder="Title"></div>
-      <div><label class="lbl">Subject</label>
-        <select id="enSubject" class="inp"></select>
-      </div>
-      <div><label class="lbl">Type</label>
-        <select id="enType" class="inp">
-          <option>PDF</option><option>Video</option><option>Notes</option><option>Link</option><option>PPT</option><option>Image</option><option>PYQ</option>
-        </select>
-      </div>
-      <div><label class="lbl">Link / URL</label><input id="enLink" class="inp" type="url" placeholder="https://..."></div>
-      <div><label class="lbl">Description</label><textarea id="enDesc" class="inp" rows="2" placeholder="Short description (optional)" style="resize:vertical;"></textarea></div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <input type="checkbox" id="enPremium" style="width:16px;height:16px;accent-color:#f59e0b;">
-        <label for="enPremium" style="font-size:13px;font-weight:600;cursor:pointer;">⭐ Mark as Premium</label>
-      </div>
-      <input type="hidden" id="enNoteId">
-      <input type="hidden" id="enNoteSource"> <!-- 'notes' or 'pending' -->
-      <div style="display:flex;gap:10px;margin-top:4px;">
-        <button class="btn btn-primary" style="flex:1;" onclick="saveNoteEdit()">💾 Save Changes</button>
-        <button class="btn btn-light" onclick="closeEditNote()">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ── Google Drive / Link Preview Modal ── -->
 <div id="driveModal" class="modal hidden" onclick="if(event.target===this)closeDriveModal()">
   <div style="background:#fff;border-radius:20px;width:100%;max-width:860px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden;">
@@ -544,12 +513,13 @@ try {
     <div id="headerUser" style="flex-shrink:0;"></div>
   </div>
   <div class="nav-chips chips-row">
-    <button id="navHome"       class="btn btn-ghost active" onclick="setSection('home')">🏠 Dashboard</button>
-    <button id="navSubjects"   class="btn btn-ghost" onclick="setSection('subjects')">📚 Agri Notes</button>
-    <button id="navPyq"        class="btn btn-ghost" onclick="setSection('pyq')">📋 Previous Papers</button>
+    <button id="navHome"       class="btn btn-ghost active" onclick="setSection('home')">🏠 Home</button>
+    <button id="navSubjects"   class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
     <button id="navQuiz"       class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
-    <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
+    <button id="navPyq"        class="btn btn-ghost" onclick="setSection('pyq')">📋 PYQ</button>
     <button id="navGames"      class="btn btn-ghost" onclick="setSection('games')">🎮 Games</button>
+    <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
+    <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
     <button id="navUpload"     class="btn btn-ghost hidden admin-only" onclick="setSection('upload')">⬆️ Upload</button>
     <button id="navAdmin"      class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
   </div>
@@ -568,7 +538,7 @@ try {
       <div class="hero-actions">
         <button class="btn btn-primary" style="font-size:14px;padding:10px 22px;font-weight:700;box-shadow:0 4px 14px rgba(0,176,80,.4);" onclick="setSection('subjects')">Explore Subjects →</button>
         <button class="btn btn-white" style="font-size:14px;padding:10px 20px;" onclick="setSection('chat')">💬 Ask AI Professor</button>
-        
+        <button class="btn btn-light" style="font-size:14px;padding:10px 20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;" onclick="shareApp()">📤 Share with Friends</button>
       </div>
       <div class="hero-stats">
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
@@ -576,57 +546,9 @@ try {
         <div><strong id="statStudents">0</strong><span>Students</span></div>
         <div><strong id="statQuizCount">0+</strong><span>Quiz Qs</span></div>
       </div>
-    <!-- Dashboard Profile Card -->
-    <div id="dashProfileContainer" style="display:none;margin-bottom:20px;">
-      <div class="card" style="padding:24px;background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;border-radius:20px;">
-        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
-          <div id="profileAvatarLg" class="profile-avatar-lg" style="background:rgba(255,255,255,.2);"></div>
-          <div style="flex:1;min-width:0;">
-            <div id="profileName" style="font-size:22px;font-weight:800;margin-bottom:4px;"></div>
-            <div id="profileYear" style="font-size:13px;opacity:.75;margin-bottom:6px;"></div>
-            <div id="profileEmail" style="font-size:12px;opacity:.6;margin-bottom:10px;"></div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="profileBadges"></div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;">
-            <button class="btn btn-light" style="font-size:12px;padding:7px 14px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;" onclick="shareApp()">📤 Share App</button>
-            <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;" onclick="doLogout()">Logout</button>
-          </div>
-        </div>
-      </div>
-      <!-- Stats row -->
-      <div style="display:flex;gap:12px;margin:14px 0;flex-wrap:wrap;">
-        <div class="profile-stat-card"><strong id="pStatQuizzes" style="color:#00B050;">0</strong><span>Quizzes Done</span></div>
-        <div class="profile-stat-card"><strong id="pStatAccuracy" style="color:#1565C0;">0%</strong><span>Accuracy</span></div>
-        <div class="profile-stat-card"><strong id="pStatStreak" style="color:#f59e0b;">0</strong><span>Day Streak</span></div>
-        <div class="profile-stat-card"><strong id="pStatRank" style="color:#7B1FA2;">#—</strong><span>Rank</span></div>
-      </div>
-      <!-- Subscription card -->
-      <div class="card" style="padding:20px;margin-bottom:18px;" id="profileSubCard">
-        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">📦 Subscription</div>
-        <div id="profileSubDetails"></div>
-      </div>
-    </div>
-    
-    <!-- Login Prompt for Dashboard -->
-    <div id="dashLoginPrompt" class="card" style="padding:44px;text-align:center;margin-bottom:20px;">
-      <div style="font-size:44px;margin-bottom:12px;">👤</div>
-      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Login to view your dashboard</div>
-      <div style="color:#777;font-size:14px;margin-bottom:16px;">Track your progress, manage your account, and view updates.</div>
-      <button class="btn btn-primary" onclick="openLogin()">Login / Register</button>
     </div>
 
-    <!-- News & Jobs Feed -->
-    <div style="margin-bottom:22px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="font-weight:800;font-size:17px;">📰 News & Jobs Updates</div>
-      </div>
-      <div id="newsFeedList" style="display:flex;flex-direction:column;gap:10px;">
-         <div style="text-align:center;color:#777;font-size:12px;padding:20px;">Loading updates...</div>
-      </div>
-    </div>
-    </div>
-
-    
+    <div id="userBar"></div>
     <div id="premBannerHome"></div>
 
     <div class="quick-grid" id="quickFeatureGrid">
@@ -1092,7 +1014,63 @@ try {
 
 
   <!-- PROFILE / DASHBOARD -->
-  
+  <section id="profile" class="section fu">
+    <div id="profileLock" class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:12px;">👤</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Login to view your profile</div>
+      <div style="color:#777;font-size:14px;margin-bottom:16px;">Track your progress, manage your account and view your achievements.</div>
+      <button class="btn btn-primary" onclick="openLogin()">Login / Register</button>
+    </div>
+    <div id="profileContent" style="display:none;">
+      <!-- Profile header card -->
+      <div class="card" style="padding:24px;margin-bottom:18px;background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;border-radius:20px;">
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
+          <div id="profileAvatarLg" class="profile-avatar-lg" style="background:rgba(255,255,255,.2);"></div>
+          <div style="flex:1;min-width:0;">
+            <div id="profileName" style="font-size:22px;font-weight:800;margin-bottom:4px;"></div>
+            <div id="profileYear" style="font-size:13px;opacity:.75;margin-bottom:6px;"></div>
+            <div id="profileEmail" style="font-size:12px;opacity:.6;margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="profileBadges"></div>
+          </div>
+          <button class="btn btn-ghost" style="font-size:12px;padding:7px 14px;align-self:flex-start;" onclick="doLogout()">Logout</button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap;">
+        <div class="profile-stat-card"><strong id="pStatQuizzes" style="color:#00B050;">0</strong><span>Quizzes Done</span></div>
+        <div class="profile-stat-card"><strong id="pStatAccuracy" style="color:#1565C0;">0%</strong><span>Accuracy</span></div>
+        <div class="profile-stat-card"><strong id="pStatStreak" style="color:#f59e0b;">0</strong><span>Day Streak</span></div>
+        <div class="profile-stat-card"><strong id="pStatRank" style="color:#7B1FA2;">#—</strong><span>Rank</span></div>
+      </div>
+
+      <!-- Subscription card -->
+      <div class="card" style="padding:20px;margin-bottom:18px;" id="profileSubCard">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">📦 Subscription</div>
+        <div id="profileSubDetails"></div>
+      </div>
+
+      <!-- Subject accuracy -->
+      <div class="card" style="padding:20px;margin-bottom:18px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">📊 Subject Performance</div>
+        <div id="profileSubjectBars">
+          <div style="text-align:center;color:#777;font-size:13px;padding:20px;">Complete quizzes to see your subject-wise performance.</div>
+        </div>
+      </div>
+
+      <!-- Account details -->
+      <div class="card" style="padding:20px;margin-bottom:18px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">🎓 Account Details</div>
+        <div style="display:flex;flex-direction:column;gap:10px;" id="profileDetails"></div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="card" style="padding:20px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">🏅 Achievements</div>
+        <div id="profileAchievements" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+      </div>
+    </div>
+  </section>
 
   <!-- ADMIN -->
   <section id="admin" class="section fu admin-panel">
@@ -1105,7 +1083,7 @@ try {
       <button id="atSubs"     class="btn btn-light"   onclick="setAdminTab('subs')">⭐ Premium</button>
       <button id="atOffers"   class="btn btn-light"   onclick="setAdminTab('offers')">📢 Offers</button>
       <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
-      <button id="atPyq" class="btn btn-light" onclick="setAdminTab('pyq')">📋 Previous Papers</button>
+      <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
     </div>
     <div id="adminContent"></div>
@@ -1282,7 +1260,7 @@ try {
 
   <!-- ── PYQ BANK ───────────────────────────────────── -->
   <section id="pyq" class="section fu">
-    <div class="section-title">Previous Papers 📋</div>
+    <div class="section-title">PYQ Bank 📋</div>
     <div class="section-subtitle">Previous Year Questions from ICAR JRF, AFO, NABARD with answers</div>
 
     <div id="pyqSubjectHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:16px;">
@@ -1334,7 +1312,13 @@ try {
               <option value="2015">2015</option>
             </select>
           </div>
-          
+          <div style="flex:1;min-width:120px;display:none;">
+            <!-- Subject filter hidden because it's selected from hub -->
+            <label class="lbl" style="font-size:10px;">Subject</label>
+            <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
+              <option value="All">All Subjects</option>
+            </select>
+          </div>
         </div>
       </div>
       <div style="font-size:13px;color:#777;margin-bottom:12px;" id="pyqCount"></div>
@@ -1368,12 +1352,12 @@ try {
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
-  <button id="bnHome"        class="active" onclick="setSection('home')"><span>🏠</span><span>Dashboard</span></button>
-  <button id="bnSubjects"    onclick="setSection('subjects')"><span>📚</span><span>Agri Notes</span></button>
-  <button id="bnPyq"         onclick="setSection('pyq')"><span>📋</span><span>Papers</span></button>
+  <button id="bnHome"        class="active" onclick="setSection('home')"><span>🏠</span><span>Home</span></button>
+  <button id="bnSubjects"    onclick="setSection('subjects')"><span>📚</span><span>Subjects</span></button>
   <button id="bnQuiz"        onclick="setSection('quiz')"><span>🧠</span><span>Quiz</span></button>
-  <button id="bnChat"        onclick="setSection('chat')"><span>💬</span><span>Doubts</span></button>
   <button id="bnGames"       onclick="setSection('games')"><span>🎮</span><span>Games</span></button>
+  <button id="bnChat"        onclick="setSection('chat')"><span>💬</span><span>Doubts</span></button>
+  <button id="bnProfile"     onclick="setSection('profile')"><span>👤</span><span>Profile</span></button>
 </nav>
 
 <script>
@@ -1627,7 +1611,7 @@ const expiryDate  = plan => { const d=new Date(); if(plan==="monthly") d.setMont
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
-let notes=[],pending=[],usersDB=[],questions=[],pyqData=[],newsData=[],syllabusData=[],currentUser=null,adminPass=ADMIN_PASS_DEFAULT;
+let notes=[],pending=[],usersDB=[],questions=[],pyqData=[],currentUser=null,adminPass=ADMIN_PASS_DEFAULT;
 let section="home",dark=false,loginTab="login",catFilter="All",resType="All",resSubject="All";
 let uFileData="",uploading=false,folderFiles=[],uploadMode="file";
 let quizSubj="",quizQs=[],quizAns=[],quizIdx=0,quizDone=false;
@@ -1748,7 +1732,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       } else {
         if(section==="subjects"||section==="resources") { renderSubjects(); renderResources(); }
         if(section==="upload") renderUpload();
-        if(section==="home") { renderProfile(); }
+        if(section==="profile") renderProfile();
       }
     },20000);
   }
@@ -1814,7 +1798,7 @@ function setSection(s){
     const btn=document.getElementById("nav"+k.charAt(0).toUpperCase()+k.slice(1));
     if(btn){ btn.classList.toggle("btn-primary",k===s); btn.classList.toggle("btn-ghost",k!==s); }
   });
-  ["Home","Pyq","Chat","Subjects","Quiz","Games"].forEach(k=>{
+  ["Home","Subjects","Quiz","Games","Chat","Profile"].forEach(k=>{
     const btn=document.getElementById("bn"+k); if(btn) btn.classList.toggle("active",k.toLowerCase()===s);
   });
 
@@ -1822,11 +1806,9 @@ function setSection(s){
   if(s==="quiz")      { renderQuizStart(); setQuizTab(activeQuizTab); }
   if(s==="upload")    renderUpload();
   if(s==="admin")     renderAdmin();
-  if(s==="home"){ renderProfile(); }
-  if(s==="pyq") {
-    _pyqActiveSubject = "All";
-    setPYQTab('mcq');
-    renderPYQ();
+  if(s==="profile")   renderProfile();
+  if(s==="pyq")     { 
+    document.getElementById("pyqContentArea").style.display="none"; document.getElementById("pyqSubjectHub").style.display="grid"; renderPYQHub(); 
   }
   if(s==="games")     renderGamesHub();
   window.scrollTo({top:0,behavior:"smooth"});
@@ -1838,7 +1820,7 @@ function renderAll(){
   if(section==="resources"||section==="subjects") renderSubjects();
   if(section==="upload")    renderUpload();
   if(section==="admin")     renderAdmin();
-  if(section==="home") { renderProfile(); }
+  if(section==="profile")   renderProfile();
 }
 
 function renderHeader(){
@@ -2014,9 +1996,7 @@ function resCardHTML(n){
             `${n.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="downloadNote('${n.id}')">📥 Download</button>`:''}
              ${n.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="openDrivePreview('${escapeHTML(n.link)}','${escapeHTML(n.title)}')">👁 Preview</button>`:''}`
           }
-          ${(u&&(u.isAdmin||u.email===n.uploaderEmail))?`
-            <button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 10px;font-size:11px;" onclick="editNote('${n.id}','notes')">✏️ Edit</button>
-            <button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deleteNote('${n.id}')">🗑</button>`:''}
+          ${(u&&(u.isAdmin||u.email===n.uploaderEmail))?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deleteNote('${n.id}')">🗑</button>`:''}
         </div>
       </div>
     </div>`;
@@ -2060,59 +2040,6 @@ async function deleteNote(id){
   if(!window.confirm("Delete permanently?")) return;
   notes=notes.filter(n=>n.id!==id); await sSet("bhu:notes",notes); await sDel("bhu:file:"+id);
   toast("Deleted."); renderAll();
-}
-
-// ── Admin Edit Upload ──────────────────────────────────────────
-function editNote(id, source){
-  // Find the note in notes or pending
-  const arr = source==='pending' ? pending : notes;
-  const n = arr.find(x=>x.id===id); if(!n) return;
-
-  // Populate subject dropdown dynamically
-  const subjSel = document.getElementById('enSubject');
-  subjSel.innerHTML = getSubjects().map(s=>`<option value="${escapeHTML(s.name)}"${s.name===n.subject?' selected':''}>${escapeHTML(s.name)}</option>`).join('');
-
-  document.getElementById('enTitle').value   = n.title  || '';
-  document.getElementById('enType').value    = n.type   || 'PDF';
-  document.getElementById('enLink').value    = n.link   || '';
-  document.getElementById('enDesc').value    = n.desc   || '';
-  document.getElementById('enPremium').checked = !!n.isPremium;
-  document.getElementById('enNoteId').value  = id;
-  document.getElementById('enNoteSource').value = source;
-
-  document.getElementById('editNoteModal').classList.remove('hidden');
-}
-
-function closeEditNote(){
-  document.getElementById('editNoteModal').classList.add('hidden');
-}
-
-async function saveNoteEdit(){
-  const id     = document.getElementById('enNoteId').value;
-  const source = document.getElementById('enNoteSource').value;
-  const title  = document.getElementById('enTitle').value.trim();
-  const subj   = document.getElementById('enSubject').value;
-  const type   = document.getElementById('enType').value;
-  const link   = document.getElementById('enLink').value.trim();
-  const desc   = document.getElementById('enDesc').value.trim();
-  const isPrem = document.getElementById('enPremium').checked;
-
-  if(!title){ toast('Title is required.','e'); return; }
-
-  const applyEdit = n => n.id===id ? {...n, title, subject:subj, type, link, desc, isPremium:isPrem} : n;
-
-  if(source==='pending'){
-    pending = pending.map(applyEdit);
-    await sSet('bhu:pending', pending);
-  } else {
-    notes = notes.map(applyEdit);
-    await sSet('bhu:notes', notes);
-  }
-
-  toast('✅ Upload updated!');
-  closeEditNote();
-  renderAll();
-  if(source==='pending') renderAdmin();
 }
 
 function renderUpload(){
@@ -2933,7 +2860,6 @@ async function renderAdmin(){
               ${rejectItem===n.id?`<div style="margin-top:10px;"><input id="rejectReason_${n.id}" class="inp" placeholder="Rejection reason…" value="${escapeHTML(rejectReason)}" oninput="rejectReason=this.value"></div>`:''}
               <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
                 <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="approveNote('${n.id}')">✅ Approve</button>
-                <button class="btn" style="background:#E3F2FD;color:#1565C0;padding:6px 14px;font-size:12px;" onclick="editNote('${n.id}','pending')">✏️ Edit</button>
                 <button class="btn" style="background:#FFEBEE;color:#E53935;padding:6px 14px;font-size:12px;" onclick="rejectItem='${n.id}';rejectReason='';renderAdmin();">Reject</button>
                 ${rejectItem===n.id?`<button class="btn" style="background:#E53935;color:white;padding:6px 14px;font-size:12px;" onclick="rejectNote('${n.id}')">Confirm Reject</button>`:''}
               </div>
@@ -3575,15 +3501,23 @@ function renderPYQHub(){
 }
 
 function openPYQSubject(subjName){
-  _pyqActiveSubject = subjName; // store it in variable
   document.getElementById("pyqSubjectHub").style.display="none";
   document.getElementById("pyqContentArea").style.display="block";
   document.getElementById("pyqActiveSubjTitle").textContent=subjName + " PYQs";
+  
+  const subjFilter=document.getElementById("pyqSubjectFilter");
+  if(subjFilter){
+    // ensure option exists
+    if(!Array.from(subjFilter.options).find(o=>o.value===subjName)){
+      const opt=document.createElement("option"); opt.value=subjName; opt.text=subjName;
+      subjFilter.add(opt);
+    }
+    subjFilter.value=subjName;
+  }
   setPYQTab('mcq');
 }
 
 function closePYQSubject(){
-  _pyqActiveSubject = "All"; // reset
   document.getElementById("pyqContentArea").style.display="none";
   document.getElementById("pyqSubjectHub").style.display="grid";
   renderPYQHub();
@@ -3594,22 +3528,27 @@ function renderPYQ(){
   const isPrem=isSubActive(u);
   const examF   = (document.getElementById("pyqExamFilter")?.value||"All");
   const yearF   = (document.getElementById("pyqYearFilter")?.value||"All");
-  const subjF   = _pyqActiveSubject; // use stored variable
+  const subjF   = (document.getElementById("pyqSubjectFilter")?.value||"All");
   const listEl  = document.getElementById("pyqList");
   const countEl = document.getElementById("pyqCount");
   if(!listEl) return;
 
   // Premium banner above PYQ list
+  const today=new Date().toISOString().split("T")[0];
+  const revKey=u?u.email+"_"+today:"guest_"+today;
+  const revealsUsed=Object.keys(_pyqFreeReveals).filter(k=>k.startsWith(revKey)).length;
   let pyqBannerEl=document.getElementById("pyqPremBanner");
   if(!pyqBannerEl){
     pyqBannerEl=document.createElement("div"); pyqBannerEl.id="pyqPremBanner";
     listEl.before(pyqBannerEl);
   }
   if(!isPrem){
+    const left=Math.max(0,FREE_PYQ_REVEALS-Object.values(_pyqFreeReveals).filter((_,i)=>Object.keys(_pyqFreeReveals)[i]&&Object.keys(_pyqFreeReveals)[i].startsWith(u?u.email+"_"+today:"__")).length);
+    const freeRevLeft=FREE_PYQ_REVEALS-Object.keys(_pyqFreeReveals).filter(k=>k.startsWith((u?.email||"guest")+"_"+today)).length;
     pyqBannerEl.innerHTML=`<div style="background:linear-gradient(135deg,#1a0a00,#3d1f00);border:1px solid #f59e0b;border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <div>
-        <div style="color:#f59e0b;font-weight:800;font-size:13px;margin-bottom:2px;">⭐ Unlock Premium</div>
-        <div style="color:rgba(255,200,100,.75);font-size:12px;">Get unlimited access to premium questions and detailed explanations.</div>
+        <div style="color:#f59e0b;font-weight:800;font-size:13px;margin-bottom:2px;">⭐ Free Plan — ${Math.max(0,freeRevLeft)}/${FREE_PYQ_REVEALS} answer reveals left today</div>
+        <div style="color:rgba(255,200,100,.75);font-size:12px;">Upgrade for unlimited answer reveals + explanations</div>
       </div>
       <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="openPay()">Upgrade ₹19 →</button>
     </div>`;
@@ -3703,18 +3642,16 @@ let pyqTab='mcq';
 let pyqPdfs=[];
 
 function setPYQTab(tab){
-  ["mcq","pdf","saved","syllabus"].forEach(t=>{
-    const b=document.getElementById("ptab_"+t);
-    if(b) b.className=`sub-tab-btn ${t===tab?"active":""}`;
+  pyqTab=tab;
+  ['mcq','pdf','saved'].forEach(t=>{
+    const btn=document.getElementById('ptab_'+t);
+    const content=document.getElementById('ptab_'+t+'_content');
+    if(btn) btn.classList.toggle('active',t===tab);
+    if(content) content.style.display=t===tab?'block':'none';
   });
-  document.getElementById("pyqMcqContainer").style.display=tab==="mcq"?"block":"none";
-  document.getElementById("pyqPdfContainer").style.display=tab==="pdf"?"block":"none";
-  document.getElementById("pyqSavedList").style.display=tab==="saved"?"block":"none";
-  document.getElementById("pyqSyllabusContainer").style.display=tab==="syllabus"?"block":"none";
-  if(tab==="mcq") renderPYQ();
-  if(tab==="pdf") renderPYQPdfs();
-  if(tab==="saved") renderSavedPYQs();
-  if(tab==="syllabus") renderSyllabus();
+  if(tab==='mcq') renderPYQ();
+  if(tab==='pdf') renderPYQPdfLibrary();
+  if(tab==='saved') renderSavedPYQs();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -3964,11 +3901,6 @@ function renderPYQPdfLibrary(){
         <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:#0F3D23;">📤 Upload PYQ PDF Paper (Admin)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <div><label class="lbl">Title *</label><input id="qpPdfTitle" class="inp" placeholder="e.g. ICAR JRF 2024 Full Paper"></div>
-          <div><label class="lbl">Subject *</label>
-            <select id="qpPdfSubject" class="inp">
-              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join('')}
-            </select>
-          </div>
           <div><label class="lbl">Exam</label>
             <select id="qpPdfExam" class="inp"><option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option><option>BHU Entrance</option><option>Other</option></select>
           </div>
@@ -3987,8 +3919,8 @@ function renderPYQPdfLibrary(){
       </div>`;
   }
 
-  // Filter by subject using stored active subject variable
-  const subjF = _pyqActiveSubject;
+  // Filter by subject
+  const subjF = document.getElementById("pyqSubjectFilter")?.value || "All";
   const filteredPdfs = pyqPdfs.filter(p => subjF === "All" || p.subject === subjF);
 
   if(!filteredPdfs.length){
@@ -4033,7 +3965,6 @@ function handleQPPdfFile(input){
 async function uploadQPPdfFile(){
   if(!currentUser?.isAdmin) return;
   const title=document.getElementById('qpPdfTitle')?.value?.trim();
-  const subject=document.getElementById('qpPdfSubject')?.value||_pyqActiveSubject||'General';
   const exam=document.getElementById('qpPdfExam')?.value||'ICAR JRF';
   const year=document.getElementById('qpPdfYear')?.value||'2024';
   const link=document.getElementById('qpPdfLink')?.value?.trim();
@@ -4041,7 +3972,7 @@ async function uploadQPPdfFile(){
   if(!title){toast('Title required.','e');return;}
   if(!link&&!_qpPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
   const id=Date.now()+'';
-  const entry={id,title,subject,exam,year,link:link||'',desc:desc||'',
+  const entry={id,title,exam,year,link:link||'',desc:desc||'',
     uploader:currentUser.name,date:fmtDate(),
     fileName:_qpPdfFile?.name||'',hasFile:!!_qpPdfFileData};
   if(_qpPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_qpPdfFileData);
@@ -4660,79 +4591,62 @@ async function doPay(planId){
 // ═══════════════════════════════════════════════════════════════
 // PROFILE / DASHBOARD
 // ═══════════════════════════════════════════════════════════════
-function renderNews() {
-  const container = document.getElementById("newsFeedList");
-  if(!container) return;
-  if(newsData.length === 0) {
-    container.innerHTML = `<div style="text-align:center;color:#777;font-size:12px;padding:20px;">No recent updates.</div>`;
-    return;
-  }
-  container.innerHTML = newsData.map(n => `
-    <div class="card" style="padding:16px;border-left:4px solid #00B050;">
-      <div style="font-weight:800;font-size:15px;margin-bottom:6px;">${escapeHTML(n.title)}</div>
-      <div style="font-size:13px;color:#555;margin-bottom:8px;line-height:1.4;">${escapeHTML(n.desc)}</div>
-      ${n.link ? `<a href="${escapeHTML(n.link)}" target="_blank" style="font-size:12px;color:#1565C0;font-weight:700;text-decoration:none;">View Link →</a>` : ''}
-      <div style="font-size:10px;color:#999;margin-top:8px;text-align:right;">${new Date(n.time).toLocaleDateString()}</div>
-    </div>
-  `).join('');
-}
+function renderProfile(){
+  const u=currentUser;
+  const lockEl=document.getElementById("profileLock");
+  const contentEl=document.getElementById("profileContent");
+  if(!u){ lockEl.style.display="block"; contentEl.style.display="none"; return; }
+  lockEl.style.display="none"; contentEl.style.display="block";
 
-function renderProfile() {
-  const u = currentUser;
-  const lockEl = document.getElementById("dashLoginPrompt");
-  const contentEl = document.getElementById("dashProfileContainer");
-  if (!u) {
-    if(lockEl) lockEl.style.display = "block";
-    if(contentEl) contentEl.style.display = "none";
-    return;
-  }
-  if(lockEl) lockEl.style.display = "none";
-  if(contentEl) contentEl.style.display = "block";
-
-  const avatarEl = document.getElementById("profileAvatarLg");
-  if (avatarEl) {
-    avatarEl.style.background = u.isAdmin ? "linear-gradient(135deg,#FF7B00,#FFB347)" : "linear-gradient(135deg,#1565C0,#42A5F5)";
-    avatarEl.textContent = u.name[0].toUpperCase();
+  // Avatar
+  const avatarEl=document.getElementById("profileAvatarLg");
+  if(avatarEl){
+    avatarEl.style.background=u.isAdmin?
+      "linear-gradient(135deg,#FF7B00,#FFB347)":"linear-gradient(135deg,#1565C0,#42A5F5)";
+    avatarEl.textContent=u.name[0].toUpperCase();
   }
 
-  const el = id => document.getElementById(id);
-  if (el("profileName")) el("profileName").textContent = u.name;
-  if (el("profileYear")) el("profileYear").textContent = u.year || (u.isAdmin ? "Administrator" : "Student");
-  if (el("profileEmail")) el("profileEmail").textContent = u.email;
+  const el=id=>document.getElementById(id);
+  if(el("profileName")) el("profileName").textContent=u.name;
+  if(el("profileYear")) el("profileYear").textContent=u.year||(u.isAdmin?"Administrator":"Student");
+  if(el("profileEmail")) el("profileEmail").textContent=u.email;
 
-  const badgesEl = el("profileBadges");
-  if (badgesEl) {
-    const badges = [];
-    if (u.isAdmin) badges.push('<span class="badge-chip" style="background:rgba(255,123,0,.2);color:#FFB347;">🛡️ Admin</span>');
-    if (isSubActive(u) && !u.isAdmin) badges.push('<span class="badge-chip" style="background:rgba(249,158,11,.2);color:#f59e0b;">⭐ Premium</span>');
-    if (!isSubActive(u) && !u.isAdmin) badges.push('<span class="badge-chip" style="background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);">🌱 Free Plan</span>');
-    if (u.roll) badges.push(`<span class="badge-chip" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);">🎓 ${escapeHTML(u.roll)}</span>`);
-    badgesEl.innerHTML = badges.join("");
+  // Badges
+  const badgesEl=el("profileBadges");
+  if(badgesEl){
+    const badges=[];
+    if(u.isAdmin) badges.push('<span class="badge-chip" style="background:rgba(255,123,0,.2);color:#FFB347;">🛡️ Admin</span>');
+    if(isSubActive(u)&&!u.isAdmin) badges.push('<span class="badge-chip" style="background:rgba(249,158,11,.2);color:#f59e0b;">⭐ Premium</span>');
+    if(!isSubActive(u)&&!u.isAdmin) badges.push('<span class="badge-chip" style="background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);">🌱 Free Plan</span>');
+    if(u.roll) badges.push(`<span class="badge-chip" style="background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);">🎓 ${escapeHTML(u.roll)}</span>`);
+    badgesEl.innerHTML=badges.join("");
   }
 
-  const stats = getQuizStats();
-  if (el("pStatQuizzes")) el("pStatQuizzes").textContent = stats.quizCount;
-  if (el("pStatAccuracy")) el("pStatAccuracy").textContent = stats.accuracy + "%";
-  if (el("pStatStreak")) el("pStatStreak").textContent = getDailyStreak();
-  if (el("pStatRank")) el("pStatRank").textContent = getUserRankDisplay();
+  // Load quiz stats from localStorage / saved analytics
+  const stats=getQuizStats();
+  if(el("pStatQuizzes")) el("pStatQuizzes").textContent=stats.quizCount;
+  if(el("pStatAccuracy")) el("pStatAccuracy").textContent=stats.accuracy+"%";
+  if(el("pStatStreak")) el("pStatStreak").textContent=getDailyStreak();
+  if(el("pStatRank")) el("pStatRank").textContent=getUserRankDisplay();
 
-  const isPrem = isSubActive(u);
-  const subEl = el("profileSubDetails");
-  if (subEl) {
-    if (u.isAdmin) {
-      subEl.innerHTML = '<span class="badge-chip" style="background:#FFF3E0;color:#FF7B00;font-size:13px;padding:8px 16px;">🛡️ Admin — All Access</span>';
-    } else if (isPrem) {
-      const expDate = u.subExpiry ? new Date(u.subExpiry).toLocaleDateString("en-IN") : "Unknown";
-      subEl.innerHTML = `
+  // Subscription
+  const isPrem=isSubActive(u);
+  const subEl=el("profileSubDetails");
+  if(subEl){
+    if(u.isAdmin){
+      subEl.innerHTML='<span class="badge-chip" style="background:#FFF3E0;color:#FF7B00;font-size:13px;padding:8px 16px;">🛡️ Admin — All Access</span>';
+    } else if(isPrem){
+      const expDate=u.subExpiry?new Date(u.subExpiry).toLocaleDateString("en-IN"):"Unknown";
+      subEl.innerHTML=`
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
           <div>
             <div style="font-weight:700;color:#c9690a;font-size:15px;">⭐ Premium Active</div>
-            <div style="font-size:12px;color:#777;margin-top:3px;">Plan: ${escapeHTML(u.subPlan || "Premium")} · Expires: ${expDate}</div>
+            <div style="font-size:12px;color:#777;margin-top:3px;">Plan: ${escapeHTML(u.subPlan||"Premium")} · Expires: ${expDate}</div>
           </div>
           <span style="background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;padding:5px 14px;border-radius:50px;font-size:12px;font-weight:700;">✓ Active</span>
         </div>`;
     } else {
-      subEl.innerHTML = `
+      subEl.innerHTML=`
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
           <div>
             <div style="font-weight:600;font-size:14px;">🌱 Free Plan</div>
@@ -4742,7 +4656,64 @@ function renderProfile() {
         </div>`;
     }
   }
+
+  // Subject bars
+  const sbEl=el("profileSubjectBars");
+  const subjectStats=getSubjectStats();
+  if(sbEl){
+    if(Object.keys(subjectStats).length===0){
+      sbEl.innerHTML='<div style="text-align:center;color:#777;font-size:13px;padding:20px;">Complete quizzes to see subject-wise performance.</div>';
+    } else {
+      sbEl.innerHTML=Object.entries(subjectStats).map(([s,st])=>{
+        const pct=st.total?Math.round(st.correct/st.total*100):0;
+        const color=pct>=70?"#00B050":pct>=40?"#f59e0b":"#E53935";
+        return `<div style="margin-bottom:12px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+            <span style="font-weight:600;">${escapeHTML(s)}</span>
+            <span style="font-weight:700;color:${color};">${pct}% <span style="font-weight:400;color:#777;">(${st.correct}/${st.total})</span></span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div>
+        </div>`;
+      }).join("");
+    }
+  }
+
+  // Account details
+  const detEl=el("profileDetails");
+  if(detEl){
+    const rows=[
+      ["📧 Email", u.email],
+      ["🎓 Program", u.year||"—"],
+      ["🔖 Roll No.", u.roll||"—"],
+      ["📅 Joined", u.joinedAt?new Date(u.joinedAt).toLocaleDateString("en-IN"):"—"],
+    ];
+    detEl.innerHTML=rows.map(([label,val])=>`
+      <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #F0F5F0;font-size:13px;">
+        <span style="color:#777;">${label}</span>
+        <span style="font-weight:600;">${escapeHTML(val)}</span>
+      </div>`).join("");
+  }
+
+  // Achievements
+  const achEl=el("profileAchievements");
+  if(achEl){
+    const achievements=[];
+    const sq=stats.quizCount;
+    if(sq>=1) achievements.push({icon:"🎯",label:"First Quiz",color:"#E8F5E9"});
+    if(sq>=5) achievements.push({icon:"📚",label:"5 Quizzes",color:"#E3F2FD"});
+    if(sq>=10) achievements.push({icon:"🏆",label:"Quiz Master",color:"#FFF3E0"});
+    if(stats.accuracy>=80) achievements.push({icon:"⭐",label:"Top Scorer",color:"#FFF8E1"});
+    if(getDailyStreak()>=3) achievements.push({icon:"🔥",label:"On Fire",color:"#FFEBEE"});
+    if(isSubActive(u)&&!u.isAdmin) achievements.push({icon:"💎",label:"Premium",color:"#F3E5F5"});
+    if(achievements.length===0) achievements.push({icon:"🌱",label:"Getting Started",color:"#E8F5E9"});
+    achEl.innerHTML=achievements.map(a=>`
+      <div style="background:${a.color};border-radius:12px;padding:12px 16px;text-align:center;min-width:80px;">
+        <div style="font-size:24px;margin-bottom:4px;">${a.icon}</div>
+        <div style="font-size:10px;font-weight:700;color:#333;">${a.label}</div>
+      </div>`).join("");
+  }
 }
+
 function getQuizStats(){
   try{
     const saved=JSON.parse(localStorage.getItem("bhu:quizStats")||"{}");
@@ -6093,37 +6064,9 @@ async function finishDuelPlay(){
 // END GAMES MODULE
 // ═══════════════════════════════════════════════════════════════
 
-async function shareApp(){
-  if(navigator.share){
-    try{
-      await navigator.share({
-        title: 'Agri Edu Rise',
-        text: 'Join Agri Edu Rise, the best agriculture e-learning hub! Share with your friends and contacts!',
-        url: 'https://krishigyan.online/'
-      });
-    }catch(err){ console.log('Share failed:', err); }
-  } else {
-    toast('Sharing not supported on this browser.','e');
-  }
-}
 </script>
+
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
