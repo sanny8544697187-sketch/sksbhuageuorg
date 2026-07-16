@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
   ║           AGRI EDU RISE — e-Learning Portal  v10.0              ║
@@ -545,11 +545,11 @@ try {
   </div>
   <div class="nav-chips chips-row">
     <button id="navHome"       class="btn btn-ghost active" onclick="setSection('home')">🏠 Home</button>
+    <button id="navPyq"        class="btn btn-ghost" onclick="setSection('pyq')">📋 Previous Papers</button>
+    <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
     <button id="navSubjects"   class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
     <button id="navQuiz"       class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
-    <button id="navPyq"        class="btn btn-ghost" onclick="setSection('pyq')">📋 PYQ</button>
     <button id="navGames"      class="btn btn-ghost" onclick="setSection('games')">🎮 Games</button>
-    <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
     <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
     <button id="navUpload"     class="btn btn-ghost hidden admin-only" onclick="setSection('upload')">⬆️ Upload</button>
     <button id="navAdmin"      class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
@@ -1114,7 +1114,7 @@ try {
       <button id="atSubs"     class="btn btn-light"   onclick="setAdminTab('subs')">⭐ Premium</button>
       <button id="atOffers"   class="btn btn-light"   onclick="setAdminTab('offers')">📢 Offers</button>
       <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
-      <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
+      <button id="atPyq" class="btn btn-light" onclick="setAdminTab('pyq')">📋 Previous Papers</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
     </div>
     <div id="adminContent"></div>
@@ -1291,7 +1291,7 @@ try {
 
   <!-- ── PYQ BANK ───────────────────────────────────── -->
   <section id="pyq" class="section fu">
-    <div class="section-title">PYQ Bank 📋</div>
+    <div class="section-title">Previous Papers 📋</div>
     <div class="section-subtitle">Previous Year Questions from ICAR JRF, AFO, NABARD with answers</div>
 
     <div id="pyqSubjectHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:16px;">
@@ -1378,10 +1378,10 @@ try {
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <button id="bnHome"        class="active" onclick="setSection('home')"><span>🏠</span><span>Home</span></button>
+  <button id="bnPyq"         onclick="setSection('pyq')"><span>📋</span><span>Papers</span></button>
+  <button id="bnChat"        onclick="setSection('chat')"><span>💬</span><span>Doubts</span></button>
   <button id="bnSubjects"    onclick="setSection('subjects')"><span>📚</span><span>Subjects</span></button>
   <button id="bnQuiz"        onclick="setSection('quiz')"><span>🧠</span><span>Quiz</span></button>
-  <button id="bnGames"       onclick="setSection('games')"><span>🎮</span><span>Games</span></button>
-  <button id="bnChat"        onclick="setSection('chat')"><span>💬</span><span>Doubts</span></button>
   <button id="bnProfile"     onclick="setSection('profile')"><span>👤</span><span>Profile</span></button>
 </nav>
 
@@ -1823,7 +1823,7 @@ function setSection(s){
     const btn=document.getElementById("nav"+k.charAt(0).toUpperCase()+k.slice(1));
     if(btn){ btn.classList.toggle("btn-primary",k===s); btn.classList.toggle("btn-ghost",k!==s); }
   });
-  ["Home","Subjects","Quiz","Games","Chat","Profile"].forEach(k=>{
+  ["Home","Pyq","Chat","Subjects","Quiz","Profile"].forEach(k=>{
     const btn=document.getElementById("bn"+k); if(btn) btn.classList.toggle("active",k.toLowerCase()===s);
   });
 
@@ -1832,8 +1832,10 @@ function setSection(s){
   if(s==="upload")    renderUpload();
   if(s==="admin")     renderAdmin();
   if(s==="profile")   renderProfile();
-  if(s==="pyq")     { 
-    document.getElementById("pyqContentArea").style.display="none"; document.getElementById("pyqSubjectHub").style.display="grid"; renderPYQHub(); 
+  if(s==="pyq") {
+    _pyqActiveSubject = "All";
+    setPYQTab('mcq');
+    renderPYQ();
   }
   if(s==="games")     renderGamesHub();
   window.scrollTo({top:0,behavior:"smooth"});
@@ -3607,21 +3609,16 @@ function renderPYQ(){
   if(!listEl) return;
 
   // Premium banner above PYQ list
-  const today=new Date().toISOString().split("T")[0];
-  const revKey=u?u.email+"_"+today:"guest_"+today;
-  const revealsUsed=Object.keys(_pyqFreeReveals).filter(k=>k.startsWith(revKey)).length;
   let pyqBannerEl=document.getElementById("pyqPremBanner");
   if(!pyqBannerEl){
     pyqBannerEl=document.createElement("div"); pyqBannerEl.id="pyqPremBanner";
     listEl.before(pyqBannerEl);
   }
   if(!isPrem){
-    const left=Math.max(0,FREE_PYQ_REVEALS-Object.values(_pyqFreeReveals).filter((_,i)=>Object.keys(_pyqFreeReveals)[i]&&Object.keys(_pyqFreeReveals)[i].startsWith(u?u.email+"_"+today:"__")).length);
-    const freeRevLeft=FREE_PYQ_REVEALS-Object.keys(_pyqFreeReveals).filter(k=>k.startsWith((u?.email||"guest")+"_"+today)).length;
     pyqBannerEl.innerHTML=`<div style="background:linear-gradient(135deg,#1a0a00,#3d1f00);border:1px solid #f59e0b;border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
       <div>
-        <div style="color:#f59e0b;font-weight:800;font-size:13px;margin-bottom:2px;">⭐ Free Plan — ${Math.max(0,freeRevLeft)}/${FREE_PYQ_REVEALS} answer reveals left today</div>
-        <div style="color:rgba(255,200,100,.75);font-size:12px;">Upgrade for unlimited answer reveals + explanations</div>
+        <div style="color:#f59e0b;font-weight:800;font-size:13px;margin-bottom:2px;">⭐ Unlock Premium</div>
+        <div style="color:rgba(255,200,100,.75);font-size:12px;">Get unlimited access to premium questions and detailed explanations.</div>
       </div>
       <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="openPay()">Upgrade ₹19 →</button>
     </div>`;
@@ -6159,6 +6156,9 @@ async function shareApp(){
 </script>
 </body>
 </html>
+
+
+
 
 
 
