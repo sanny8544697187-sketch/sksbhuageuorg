@@ -1,4 +1,4 @@
-// ═══════════════════════════════════════════════════════════
+﻿// ═══════════════════════════════════════════════════════════
 // AGRI EDU RISE — Service Worker  v2.0
 // Strategy:
 //   • App shell (HTML + fonts)    → Cache-first  (offline capable)
@@ -64,8 +64,9 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 1. Only handle GET requests
+  // 1. Only handle GET requests and HTTP/HTTPS
   if (request.method !== 'GET') return;
+  if (!url.protocol.startsWith('http')) return;
 
   // 2. Bypass Firebase, Razorpay, and other live-only services
   if (shouldBypass(url)) return;
@@ -79,7 +80,7 @@ self.addEventListener('fetch', event => {
           caches.open(CACHE_NAME).then(c => c.put('./', clone));
           return res;
         }))
-        .catch(() => caches.match('./'))
+        .catch(() => caches.match('./').then(res => res || new Response('Offline', { status: 503 })))
     );
     return;
   }
@@ -125,4 +126,5 @@ self.addEventListener('message', event => {
     caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
   }
 });
+
 
