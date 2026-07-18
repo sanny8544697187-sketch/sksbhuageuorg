@@ -516,7 +516,7 @@ try {
     <button id="navHome"       class="btn btn-ghost active" onclick="setSection('home')">🏠 Home</button>
     <button id="navSubjects"   class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
     <button id="navQuiz"       class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
-    <button id="navPyq"        class="btn btn-ghost" onclick="setSection('pyq')">📋 PYQ</button>
+    <button id="navPyq"        class="btn btn-ghost" onclick="setSection('pyq')">📋 Previous Papers</button>
     <button id="navGames"      class="btn btn-ghost" onclick="setSection('games')">🎮 Games</button>
     <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
     <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
@@ -1258,83 +1258,32 @@ try {
     </div>
   </section>
 
-  <!-- ── PYQ BANK ───────────────────────────────────── -->
+  <!-- ── PREVIOUS PAPERS ───────────────────────────────────── -->
   <section id="pyq" class="section fu">
-    <div class="section-title">PYQ Bank 📋</div>
-    <div class="section-subtitle">Previous Year Questions from ICAR JRF, AFO, NABARD with answers</div>
+    <div class="section-title">Previous Papers 📋</div>
+    <div class="section-subtitle">Browse by Exam → Year → Subject. Tap an option to answer!</div>
 
-    <div id="pyqSubjectHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:16px;">
-      <!-- Subjects will be rendered here -->
+    <!-- Previous Papers Sub-tabs -->
+    <div class="sub-tabs">
+      <button class="sub-tab-btn active" id="ptab_mcq" onclick="setPYQTab('mcq')">📋 MCQ Bank</button>
+      <button class="sub-tab-btn" id="ptab_pdf" onclick="setPYQTab('pdf')">📄 PDF Files</button>
+      <button class="sub-tab-btn" id="ptab_saved" onclick="setPYQTab('saved')">📌 Saved</button>
     </div>
 
-    <div id="pyqContentArea" style="display:none;">
-      <button class="btn btn-light" style="margin-bottom:16px;font-size:12px;padding:6px 14px;" onclick="closePYQSubject()">← Back to Subjects</button>
-      <div style="font-weight:800;font-size:18px;margin-bottom:14px;color:#0F3D23;" id="pyqActiveSubjTitle">Subject Name</div>
+    <!-- ── MCQ TAB (hierarchical: Exam → Year → Subject → Q&A) ── -->
+    <div id="ptab_mcq_content">
+      <div id="pyqHierarchy"></div>
+    </div><!-- end ptab_mcq_content -->
 
-      <!-- PYQ Sub-tabs -->
-      <div class="sub-tabs">
-        <button class="sub-tab-btn active" id="ptab_mcq" onclick="setPYQTab('mcq')">📋 MCQ Bank</button>
-        <button class="sub-tab-btn" id="ptab_pdf" onclick="setPYQTab('pdf')">📄 PDF Files</button>
-        <button class="sub-tab-btn" id="ptab_saved" onclick="setPYQTab('saved')">📌 Saved</button>
-      </div>
+    <!-- ── PDF FILES TAB ── -->
+    <div id="ptab_pdf_content" style="display:none;">
+      <div id="pyqPdfList"></div>
+    </div><!-- end ptab_pdf_content -->
 
-      <!-- ── MCQ TAB ── -->
-      <div id="ptab_mcq_content">
-      <!-- Filters -->
-      <div class="card" style="padding:14px 16px;margin-bottom:16px;">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:120px;">
-            <label class="lbl" style="font-size:10px;">Exam</label>
-            <select id="pyqExamFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
-              <option value="All">All Exams</option>
-              <option value="ICAR JRF">ICAR JRF</option>
-              <option value="IBPS AFO">IBPS AFO</option>
-              <option value="NABARD">NABARD</option>
-              <option value="State PSC Agriculture">State PSC</option>
-              <option value="BHU Entrance">BHU Entrance</option>
-            </select>
-          </div>
-          <div style="flex:1;min-width:120px;">
-            <label class="lbl" style="font-size:10px;">Year</label>
-            <select id="pyqYearFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
-              <option value="All">All Years</option>
-              <option value="2026">2026</option>
-              <option value="2025">2025</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
-              <option value="2021">2021</option>
-              <option value="2020">2020</option>
-              <option value="2019">2019</option>
-              <option value="2018">2018</option>
-              <option value="2017">2017</option>
-              <option value="2016">2016</option>
-              <option value="2015">2015</option>
-            </select>
-          </div>
-          <div style="flex:1;min-width:120px;display:none;">
-            <!-- Subject filter hidden because it's selected from hub -->
-            <label class="lbl" style="font-size:10px;">Subject</label>
-            <select id="pyqSubjectFilter" class="inp" style="padding:7px 10px;" onchange="renderPYQ()">
-              <option value="All">All Subjects</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div style="font-size:13px;color:#777;margin-bottom:12px;" id="pyqCount"></div>
-      <div id="pyqList"></div>
-      </div><!-- end ptab_mcq_content -->
-
-      <!-- ── PDF FILES TAB ── -->
-      <div id="ptab_pdf_content" style="display:none;">
-        <div id="pyqPdfList"></div>
-      </div><!-- end ptab_pdf_content -->
-
-      <!-- ── SAVED PYQ TAB ── -->
-      <div id="ptab_saved_content" style="display:none;">
-        <div id="savedPYQContent"></div>
-      </div><!-- end ptab_saved_content -->
-    </div>
+    <!-- ── SAVED PYQ TAB ── -->
+    <div id="ptab_saved_content" style="display:none;">
+      <div id="savedPYQContent"></div>
+    </div><!-- end ptab_saved_content -->
 
   </section>
 
@@ -1807,9 +1756,7 @@ function setSection(s){
   if(s==="upload")    renderUpload();
   if(s==="admin")     renderAdmin();
   if(s==="profile")   renderProfile();
-  if(s==="pyq")     { 
-    document.getElementById("pyqContentArea").style.display="none"; document.getElementById("pyqSubjectHub").style.display="grid"; renderPYQHub(); 
-  }
+  if(s==="pyq")     { setPYQTab(pyqTab||'mcq'); }
   if(s==="games")     renderGamesHub();
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -3615,6 +3562,120 @@ function renderPYQ(){
   }).join("");
 }
 
+// ═══════════════════════════════════════════════════════════════
+// PREVIOUS PAPERS — hierarchical Exam → Year → Subject browser
+// with directly-selectable MCQ answers (tap an option to answer)
+// ═══════════════════════════════════════════════════════════════
+let pyqOpenExam=null, pyqOpenYear=null, pyqOpenSubject=null;
+let pyqUserAnswers={}; // qid -> selected option index
+
+function renderPYQHierarchy(){
+  const el=document.getElementById("pyqHierarchy"); if(!el) return;
+
+  if(!pyqData.length){
+    el.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
+      <div style="font-size:44px;margin-bottom:10px;">📋</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px;">No previous papers uploaded yet</div>
+      <div style="color:#777;font-size:13px;">Admin is adding questions — check back soon!</div>
+      ${currentUser?.isAdmin?`<button class="btn btn-primary" style="margin-top:16px;" onclick="setSection('admin');setTimeout(()=>setAdminTab('pyq'),80);">+ Add Questions →</button>`:""}
+    </div>`; return;
+  }
+
+  // Group: exam → year → subject → [questions]
+  const byExam={};
+  pyqData.forEach(q=>{
+    const exam=q.exam||"Other";
+    const year=String(q.year||"Unknown");
+    const subj=q.subject||"General";
+    if(!byExam[exam]) byExam[exam]={};
+    if(!byExam[exam][year]) byExam[exam][year]={};
+    if(!byExam[exam][year][subj]) byExam[exam][year][subj]=[];
+    byExam[exam][year][subj].push(q);
+  });
+
+  el.innerHTML=Object.entries(byExam).map(([exam,years])=>{
+    const examOpen=pyqOpenExam===exam;
+    const examCount=Object.values(years).reduce((s,ys)=>s+Object.values(ys).reduce((s2,ss)=>s2+ss.length,0),0);
+    return `<div class="card" style="margin-bottom:10px;overflow:hidden;padding:0;">
+      <div onclick="togglePYQExam('${escapeHTML(exam)}')" style="padding:16px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${examOpen?"#0F3D23":"#fff"};color:${examOpen?"#fff":"#111"};transition:.15s;">
+        <div style="font-weight:800;font-size:15px;">📘 ${escapeHTML(exam)}</div>
+        <div style="font-size:12px;opacity:.85;">${examCount} Qs &nbsp;${examOpen?"▲":"▼"}</div>
+      </div>
+      ${examOpen?`<div style="padding:12px 14px;background:#F8FBF8;">
+        ${Object.entries(years).sort((a,b)=>b[0].localeCompare(a[0])).map(([year,subs])=>{
+          const yearKey=exam+"__"+year;
+          const yearOpen=pyqOpenYear===yearKey;
+          const yearCount=Object.values(subs).reduce((s,ss)=>s+ss.length,0);
+          return `<div style="margin-bottom:8px;border:1px solid #E0EAE0;border-radius:12px;overflow:hidden;background:#fff;">
+            <div onclick="togglePYQYear('${yearKey}')" style="padding:11px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${yearOpen?"#E8F5E9":"#fff"};">
+              <div style="font-weight:700;font-size:13px;color:#0F3D23;">📅 ${escapeHTML(year)}</div>
+              <div style="font-size:11px;color:#777;">${yearCount} Qs &nbsp;${yearOpen?"▲":"▼"}</div>
+            </div>
+            ${yearOpen?`<div style="padding:8px 10px;background:#FAFCFA;">
+              ${Object.entries(subs).map(([subj,qs])=>{
+                const subjKey=yearKey+"__"+subj;
+                const subjOpen=pyqOpenSubject===subjKey;
+                return `<div style="margin-bottom:6px;border:1px solid #E0EAE0;border-radius:10px;overflow:hidden;background:#fff;">
+                  <div onclick="togglePYQSubject('${subjKey}')" style="padding:9px 13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${subjOpen?"#F3E5F5":"#F8FBF8"};">
+                    <div style="font-weight:700;font-size:12px;color:#7B1FA2;">🌿 ${escapeHTML(subj)}</div>
+                    <div style="font-size:10px;color:#777;">${qs.length} Qs &nbsp;${subjOpen?"▲":"▼"}</div>
+                  </div>
+                  ${subjOpen?`<div style="padding:10px;">${qs.map(q=>renderPYQQuestionCard(q)).join("")}</div>`:""}
+                </div>`;
+              }).join("")}
+            </div>`:""}
+          </div>`;
+        }).join("")}
+      </div>`:""}
+    </div>`;
+  }).join("");
+}
+
+function togglePYQExam(exam){ pyqOpenExam = pyqOpenExam===exam?null:exam; pyqOpenYear=null; pyqOpenSubject=null; renderPYQHierarchy(); }
+function togglePYQYear(key){ pyqOpenYear = pyqOpenYear===key?null:key; pyqOpenSubject=null; renderPYQHierarchy(); }
+function togglePYQSubject(key){ pyqOpenSubject = pyqOpenSubject===key?null:key; renderPYQHierarchy(); }
+
+function renderPYQQuestionCard(q){
+  const letters=["A","B","C","D"];
+  const diffColor={easy:"#E8F5E9",medium:"#FFF3E0",hard:"#FFEBEE"};
+  const diffText={easy:"#388E3C",medium:"#E65100",hard:"#C62828"};
+  const selected=pyqUserAnswers[q.id];
+  const answered=selected!==undefined;
+  return `<div class="pyq-card" style="box-shadow:none;border:1px solid #E0EAE0;">
+    ${q.diff?`<span style="background:${diffColor[q.diff]||"#F2F5F2"};color:${diffText[q.diff]||"#555"};font-size:10px;padding:2px 9px;border-radius:50px;font-weight:600;text-transform:capitalize;">${escapeHTML(q.diff)}</span>`:""}
+    <div style="font-weight:700;font-size:13px;line-height:1.6;margin:8px 0 10px;">${escapeHTML(q.q)}</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+      ${q.opts.map((o,oi)=>{
+        let style="border:1.5px solid #E0EAE0;background:#FAFAFA;";
+        let icon="";
+        if(answered){
+          if(oi===q.ans){ style="border:1.5px solid #00B050;background:#E8F5E9;"; icon=" ✅"; }
+          else if(oi===selected){ style="border:1.5px solid #E53935;background:#FFEBEE;"; icon=" ❌"; }
+        }
+        return `<div onclick="${answered?"":`selectPYQAnswer('${q.id}',${oi})`}" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;cursor:${answered?"default":"pointer"};${style}">
+          <span style="font-weight:700;font-size:12px;min-width:18px;color:${answered&&oi===q.ans?"#00B050":"#999"};">${letters[oi]}.</span>
+          <span style="font-size:13px;flex:1;font-weight:${answered&&oi===q.ans?"700":"400"};">${escapeHTML(o)}${icon}</span>
+        </div>`;
+      }).join("")}
+    </div>
+    ${answered&&q.exp?`<div style="background:#E8F5E9;border-radius:10px;padding:10px 12px;font-size:12px;color:#0F3D23;line-height:1.6;">💡 <strong>Explanation:</strong> ${escapeHTML(q.exp)}</div>`:""}
+    <div style="margin-top:9px;display:flex;gap:8px;flex-wrap:wrap;">
+      ${answered?`<button class="btn btn-light" style="font-size:11px;padding:5px 12px;" onclick="event.stopPropagation();resetPYQAnswer('${q.id}')">🔄 Try Again</button>`:`<span style="font-size:11px;color:#999;align-self:center;">👆 Tap an option to answer</span>`}
+      <button onclick="event.stopPropagation();_toggleSavePYQQ('${q.id}')" style="background:${isPYQSaved(q.id)?"#E8F5E9":"#F2F5F2"};color:${isPYQSaved(q.id)?"#00B050":"#777"};border:none;padding:5px 12px;border-radius:50px;font-size:11px;font-weight:600;cursor:pointer;margin-left:auto;">${isPYQSaved(q.id)?"📌 Saved":"📌 Save"}</button>
+    </div>
+  </div>`;
+}
+
+function selectPYQAnswer(id,idx){
+  if(!currentUser){ openLogin(); return; }
+  pyqUserAnswers[id]=idx;
+  renderPYQHierarchy();
+}
+function resetPYQAnswer(id){
+  delete pyqUserAnswers[id];
+  renderPYQHierarchy();
+}
+
 function togglePYQReveal(id){
   const u=currentUser;
   if(!u){ openLogin(); return; }
@@ -3649,7 +3710,7 @@ function setPYQTab(tab){
     if(btn) btn.classList.toggle('active',t===tab);
     if(content) content.style.display=t===tab?'block':'none';
   });
-  if(tab==='mcq') renderPYQ();
+  if(tab==='mcq') renderPYQHierarchy();
   if(tab==='pdf') renderPYQPdfLibrary();
   if(tab==='saved') renderSavedPYQs();
 }
@@ -3689,7 +3750,7 @@ function _toggleSavePYQQ(id){
   else{saved.push({...q,savedAt:Date.now()});toast('📌 PYQ Saved!');}
   setSavedQs('pyq',saved);
   updateSavedPYQCount();
-  renderPYQ();
+  renderPYQHierarchy();
 }
 
 function saveWrongQuestions(qs,ans,subj){
