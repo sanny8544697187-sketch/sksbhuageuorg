@@ -536,9 +536,8 @@ try {
       <h1>Your Complete<br>Agriculture Learning Hub</h1>
       <p>Study notes, PDFs, video lectures & AI-powered doubt solving — synced live across every device.</p>
       <div class="hero-actions">
-        <button class="btn btn-primary" style="font-size:14px;padding:10px 22px;font-weight:700;box-shadow:0 4px 14px rgba(0,176,80,.4);" onclick="setSection('subjects')">Explore Subjects →</button>
+        <button class="btn btn-primary" style="font-size:14px;padding:10px 22px;font-weight:700;box-shadow:0 4px 14px rgba(0,176,80,.4);" onclick="setSection('pyq')">Explore Previous Papers →</button>
         <button class="btn btn-white" style="font-size:14px;padding:10px 20px;" onclick="setSection('chat')">💬 Ask AI Professor</button>
-        <button class="btn btn-light" style="font-size:14px;padding:10px 20px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;" onclick="shareApp()">📤 Share with Friends</button>
       </div>
       <div class="hero-stats">
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
@@ -1048,6 +1047,21 @@ try {
       <div class="card" style="padding:20px;margin-bottom:18px;" id="profileSubCard">
         <div style="font-weight:700;font-size:15px;margin-bottom:14px;">📦 Subscription</div>
         <div id="profileSubDetails"></div>
+      </div>
+
+      <!-- Share App card -->
+      <div class="card" style="padding:20px;margin-bottom:18px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📤 Share App</div>
+        <div style="font-size:12px;color:#777;margin-bottom:14px;">Invite classmates to Agri Edu Rise — share the link below or send it directly.</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+          <input id="shareAppLink" class="inp" readonly style="flex:1;min-width:180px;background:#F8FBF8;font-size:12px;" onclick="this.select();">
+          <button class="btn btn-light" style="padding:9px 16px;font-size:12px;flex-shrink:0;" onclick="copyShareLink()">📋 Copy</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" style="font-size:13px;padding:9px 18px;" onclick="shareApp()">📤 Share Now</button>
+          <button class="btn" style="background:#25D366;color:white;font-size:13px;padding:9px 18px;" onclick="shareAppVia('whatsapp')">💬 WhatsApp</button>
+          <button class="btn" style="background:#0088cc;color:white;font-size:13px;padding:9px 18px;" onclick="shareAppVia('telegram')">✈️ Telegram</button>
+        </div>
       </div>
 
       <!-- Subject accuracy -->
@@ -4659,6 +4673,10 @@ function renderProfile(){
   if(!u){ lockEl.style.display="block"; contentEl.style.display="none"; return; }
   lockEl.style.display="none"; contentEl.style.display="block";
 
+  // Share App link
+  const shareLinkEl=document.getElementById("shareAppLink");
+  if(shareLinkEl) shareLinkEl.value=getAppShareLink();
+
   // Avatar
   const avatarEl=document.getElementById("profileAvatarLg");
   if(avatarEl){
@@ -5107,6 +5125,48 @@ function resetPlan2(){
 }
 function syncPlannerToTab(){
   // No-op unless plan is already generated; user must re-generate for tab context
+}
+
+function getAppShareLink(){
+  return window.location.origin + window.location.pathname;
+}
+
+async function shareApp(){
+  const link=getAppShareLink();
+  const shareData={
+    title:"Agri Edu Rise 🌾",
+    text:"Join me on Agri Edu Rise — notes, quizzes, PYQs & AI Professor for BHU Agriculture students!",
+    url:link
+  };
+  if(navigator.share){
+    try{ await navigator.share(shareData); return; }catch(e){ /* user cancelled — fall through to copy */ }
+  }
+  copyShareLink();
+}
+
+function copyShareLink(){
+  const link=getAppShareLink();
+  const el=document.getElementById("shareAppLink");
+  if(el) el.value=link;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(link).then(()=>toast("🔗 Link copied!")).catch(()=>fallbackCopyLink(link));
+  } else {
+    fallbackCopyLink(link);
+  }
+}
+function fallbackCopyLink(link){
+  const ta=document.createElement("textarea");
+  ta.value=link; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); toast("🔗 Link copied!"); }catch(e){ toast("Couldn't copy — long-press the link field.","e"); }
+  document.body.removeChild(ta);
+}
+
+function shareAppVia(platform){
+  const link=getAppShareLink();
+  const msg=encodeURIComponent("Join me on Agri Edu Rise 🌾 — notes, quizzes, PYQs & AI Professor for BHU Agriculture students!\n"+link);
+  if(platform==="whatsapp") window.open("https://wa.me/?text="+msg,"_blank");
+  else if(platform==="telegram") window.open("https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent("Join me on Agri Edu Rise 🌾"),"_blank");
 }
 
 function toggleDark(){
@@ -6129,5 +6189,3 @@ async function finishDuelPlay(){
 
 </body>
 </html>
-
-
