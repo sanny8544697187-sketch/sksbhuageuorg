@@ -481,11 +481,24 @@ try {
       <p style="color:#777;font-size:13px;">Access all PDFs, videos, PYQ papers & full quiz banks</p>
     </div>
     <div style="display:grid;gap:12px;margin-bottom:20px;">
+      <div onclick="doPay('trial')" class="card hov-card" style="padding:18px;cursor:pointer;border:2px solid #E0EAE0;position:relative;">
+        <div style="position:absolute;top:-10px;right:14px;background:#1565C0;color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:50px;">TRY IT OUT</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div><div style="font-weight:700;font-size:16px;">7-Day Trial</div><div style="font-size:13px;color:#777;margin-top:2px;">Full premium access for 7 days</div></div>
+          <div style="font-size:22px;font-weight:800;color:#1565C0;">₹9</div>
+        </div>
+      </div>
+      <div onclick="doPay('monthly')" class="card hov-card" style="padding:18px;cursor:pointer;border:2px solid #E0EAE0;position:relative;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div><div style="font-weight:700;font-size:16px;">Monthly Plan</div><div style="font-size:13px;color:#777;margin-top:2px;">Premium access, billed monthly</div></div>
+          <div style="font-size:22px;font-weight:800;color:#00B050;">₹49<span style="font-size:12px;font-weight:600;color:#777;">/mo</span></div>
+        </div>
+      </div>
       <div onclick="doPay('yearly')" class="card hov-card" style="padding:18px;cursor:pointer;border:2px solid #00B050;position:relative;">
         <div style="position:absolute;top:-10px;right:14px;background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:50px;">BEST VALUE</div>
         <div style="display:flex;align-items:center;justify-content:space-between;">
           <div><div style="font-weight:700;font-size:16px;">Yearly Plan</div><div style="font-size:13px;color:#777;margin-top:2px;">Full year of premium access</div></div>
-          <div style="font-size:22px;font-weight:800;color:#00B050;">₹199</div>
+          <div style="font-size:22px;font-weight:800;color:#00B050;">₹449</div>
         </div>
       </div>
     </div>
@@ -1091,7 +1104,8 @@ try {
     <div class="section-title">Admin Panel 🛡️</div>
     <div class="section-subtitle">Manage uploads, students & portal settings</div>
     <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
-      <button id="atPending"  class="btn btn-primary" onclick="setAdminTab('pending')">⏳ Pending <span id="pendingBadge" class="hidden" style="background:white;color:#00B050;border-radius:50px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></button>
+      <button id="atUploads"  class="btn btn-primary" onclick="setAdminTab('uploads')">📁 All Uploads</button>
+      <button id="atPending"  class="btn btn-light" onclick="setAdminTab('pending')">⏳ Pending <span id="pendingBadge" class="hidden" style="background:white;color:#00B050;border-radius:50px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></button>
       <button id="atRejected" class="btn btn-light"   onclick="setAdminTab('rejected')">❌ Rejected</button>
       <button id="atUsers"    class="btn btn-light"   onclick="setAdminTab('users')">👥 Students</button>
       <button id="atSubs"     class="btn btn-light"   onclick="setAdminTab('subs')">⭐ Premium</button>
@@ -1334,7 +1348,9 @@ const ADMIN_PASS_DEFAULT = "admin2025";
 const RAZORPAY_KEY       = "rzp_live_SxOPLwrDUzQWx9";
 
 const PLANS = {
-  yearly: { id:"yearly",  label:"Yearly",   price:199, period:"year"  },
+  trial:   { id:"trial",   label:"7-Day Trial", price:9,   period:"trial" },
+  monthly: { id:"monthly", label:"Monthly",     price:49,  period:"month" },
+  yearly:  { id:"yearly",  label:"Yearly",      price:449, period:"year"  },
 };
 
 const DEFAULT_SUBJECTS = [
@@ -1569,7 +1585,7 @@ function loadRazorpay() {
   });
 }
 const isSubActive = u => { if(!u) return false; if(u.isAdmin) return true; if(!u.subExpiry) return false; return new Date(u.subExpiry)>new Date(); };
-const expiryDate  = plan => { const d=new Date(); if(plan==="monthly") d.setMonth(d.getMonth()+1); else d.setFullYear(d.getFullYear()+1); return d.toISOString(); };
+const expiryDate  = plan => { const d=new Date(); if(plan==="trial") d.setDate(d.getDate()+7); else if(plan==="monthly") d.setMonth(d.getMonth()+1); else d.setFullYear(d.getFullYear()+1); return d.toISOString(); };
 
 // ═══════════════════════════════════════════════════════════════
 // STATE
@@ -1592,7 +1608,7 @@ let msgs=[{role:"assistant",content:"Namaste! 🌾 I'm your BHU AI Agriculture P
 let aiLoading=false;
 let expandedQ=null,replyTarget=null,upvoted={},mcqVotes={};
 let aiDoubtLoading={},aiDoubtAnswers={};
-let adminTab="pending",rejectItem=null,rejectReason="",syncInterval=null;
+let adminTab="uploads",rejectItem=null,rejectReason="",syncInterval=null,editingUploadId=null;
 let quizPdfParsing=false;
 
 function fmtTime(){ return new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}); }
@@ -1691,7 +1707,16 @@ window.addEventListener("DOMContentLoaded", async () => {
       if(section==="admin"){
         const pb=document.getElementById("pendingBadge");
         if(pb){ pb.textContent=pending.length; pb.classList.toggle("hidden",pending.length===0); }
-        if(adminTab==="pending"||adminTab==="rejected"||adminTab==="users"||adminTab==="subs"||adminTab==="settings"||adminTab==="offers") renderAdmin();
+        const _editingSomething = !!editingUploadId || !!editingCustomQ || !!_editingPYQId;
+        if(adminTab==="uploads"){
+          if(!editingUploadId) renderAdmin(); // don't wipe an open "All Uploads" edit form
+        } else if(adminTab==="quiz"){
+          if(!editingCustomQ) renderAdmin(); // don't wipe an open Quiz Bank edit form
+        } else if(adminTab==="pyq"){
+          if(!_editingPYQId) renderAdmin(); // don't wipe an open PYQ Bank edit form
+        } else if(adminTab==="pending"||adminTab==="rejected"||adminTab==="users"||adminTab==="subs"||adminTab==="settings"||adminTab==="offers") {
+          renderAdmin();
+        }
       } else {
         if(section==="subjects"||section==="resources") { renderSubjects(); renderResources(); }
         if(section==="upload") renderUpload();
@@ -1841,7 +1866,7 @@ function renderHome(){
             ${["📄 Premium PDFs","🎬 All Videos","📝 PYQ Papers","🧠 Full Quizzes"].map(f=>`<span style="font-size:12px;color:#fbbf24;font-weight:600;">✓ ${f}</span>`).join("")}
           </div>
         </div>
-        <button class="btn btn-gold" style="padding:11px 22px;font-size:13px;" onclick="openPay()">Start at ₹199/year →</button>
+        <button class="btn btn-gold" style="padding:11px 22px;font-size:13px;" onclick="openPay()">Start at ₹9 · 7-Day Trial →</button>
       </div>`;
     pbEl.style.display="block";
   } else {
@@ -1957,6 +1982,7 @@ function resCardHTML(n){
             `${n.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="downloadNote('${n.id}')">📥 Download</button>`:''}
              ${n.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="openDrivePreview('${escapeHTML(n.link)}','${escapeHTML(n.title)}')">👁 Preview</button>`:''}`
           }
+          ${u?.isAdmin?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 10px;font-size:11px;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('uploads');setTimeout(()=>editUpload('${n.id}','approved'),100);},80);">✏️ Edit</button>`:''}
           ${(u&&(u.isAdmin||u.email===n.uploaderEmail))?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deleteNote('${n.id}')">🗑</button>`:''}
         </div>
       </div>
@@ -2199,7 +2225,7 @@ function renderQuizStart(){
             <div style="color:#f59e0b;font-weight:800;font-size:14px;margin-bottom:3px;">⭐ Free Plan</div>
             <div style="color:rgba(255,200,100,.75);font-size:12px;">Upgrade for unlimited practice, all premium questions & detailed analytics</div>
           </div>
-          <button class="btn btn-gold" style="padding:8px 18px;font-size:12px;" onclick="openPay()">Upgrade ₹199/year →</button>
+          <button class="btn btn-gold" style="padding:8px 18px;font-size:12px;" onclick="openPay()">Upgrade from ₹49/mo →</button>
         </div>
       </div>`;
     }
@@ -2795,7 +2821,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["pending","rejected","users","subs","offers","quiz","pyq","settings"].forEach(k=>{
+  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","settings"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -2807,7 +2833,32 @@ async function renderAdmin(){
   const el=document.getElementById("adminContent"); if(!el) return;
   const pb=document.getElementById("pendingBadge");
   if(pb){ pb.textContent=pending.length; pb.classList.toggle("hidden",pending.length===0); }
-  if(adminTab==="pending"){
+  if(adminTab==="uploads"){
+    el.innerHTML=`
+      <div class="card" style="padding:16px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:10px;">📁 All Uploads (${pending.length+notes.length}) — search, filter, edit or manage everything in one place</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input id="adminUploadSearch" class="inp" placeholder="🔍 Search title/uploader…" style="flex:1;min-width:160px;font-size:12px;padding:7px 10px;" oninput="renderAdminUploadsList()">
+          <select id="adminUploadStatusFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
+            <option value="All">All Status</option>
+            <option value="pending">⏳ Pending</option>
+            <option value="approved">✅ Approved</option>
+            <option value="rejected">❌ Rejected</option>
+          </select>
+          <select id="adminUploadSubjFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
+            <option value="All">All Subjects</option>
+            ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+          </select>
+          <select id="adminUploadTypeFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
+            <option value="All">All Types</option>
+            ${RES_TYPES.filter(t=>t!=="All").map(t=>`<option value="${t}">${t}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+      <div id="adminUploadEditForm"></div>
+      <div id="adminUploadsListItems"></div>`;
+    renderAdminUploadsList();
+  } else if(adminTab==="pending"){
     el.innerHTML=pending.length===0?
       `<div class="card" style="padding:40px;text-align:center;"><div style="font-size:44px;margin-bottom:10px;">✅</div><div style="font-weight:700;font-size:15px;">No pending uploads</div></div>`:
       pending.map(n=>`
@@ -2871,7 +2922,8 @@ async function renderAdmin(){
             <td style="padding:9px 13px;color:#777;">${u.subPlan||"—"}</td>
             <td style="padding:9px 13px;color:#777;white-space:nowrap;">${u.subExpiry?new Date(u.subExpiry).toLocaleDateString("en-IN"):"—"}</td>
             <td style="padding:9px 13px;"><div style="display:flex;gap:4px;flex-wrap:wrap;">
-              ${!act?`<button onclick="grantPremium('${u.id}','monthly')" style="background:#E8F5E9;color:#00B050;border:none;padding:3px 7px;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:600;">+Month</button>
+              ${!act?`<button onclick="grantPremium('${u.id}','trial')" style="background:#E3F2FD;color:#1565C0;border:none;padding:3px 7px;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:600;">+Trial</button>
+              <button onclick="grantPremium('${u.id}','monthly')" style="background:#E8F5E9;color:#00B050;border:none;padding:3px 7px;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:600;">+Month</button>
               <button onclick="grantPremium('${u.id}','yearly')" style="background:#FFF8E1;color:#c9690a;border:none;padding:3px 7px;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:600;">+Year</button>`:''}
               ${act?`<button onclick="revokePremium('${u.id}')" style="background:#FFEBEE;color:#E53935;border:none;padding:3px 7px;border-radius:5px;font-size:10px;cursor:pointer;font-family:inherit;font-weight:600;">Revoke</button>`:''}
             </div></td>
@@ -3195,6 +3247,143 @@ function renderCustomQList(){
   if(!container.innerHTML.trim()) container.innerHTML=`<div style="text-align:center;color:#777;font-size:13px;padding:16px;">No matching questions.</div>`;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ALL UPLOADS — unified search/filter/edit across pending+approved+rejected
+// ═══════════════════════════════════════════════════════════════
+function renderAdminUploadsList(){
+  const container=document.getElementById("adminUploadsListItems"); if(!container) return;
+  const search=(document.getElementById("adminUploadSearch")?.value||"").toLowerCase();
+  const statusF=document.getElementById("adminUploadStatusFilter")?.value||"All";
+  const subjF=document.getElementById("adminUploadSubjFilter")?.value||"All";
+  const typeF=document.getElementById("adminUploadTypeFilter")?.value||"All";
+  const all=[...pending.map(n=>({...n,status:"pending"})), ...notes];
+  const filtered=all.filter(n=>{
+    if(statusF!=="All" && n.status!==statusF) return false;
+    if(subjF!=="All" && n.subject!==subjF) return false;
+    if(typeF!=="All" && n.type!==typeF) return false;
+    if(search && !n.title.toLowerCase().includes(search) && !(n.uploader||"").toLowerCase().includes(search)) return false;
+    return true;
+  }).sort((a,b)=>new Date(b.submittedAt||0)-new Date(a.submittedAt||0));
+
+  if(!filtered.length){
+    container.innerHTML=`<div style="text-align:center;color:#777;font-size:13px;padding:30px;">No uploads match your filters.</div>`;
+    return;
+  }
+  const statusColor={pending:"#FFF8E1",approved:"#F8FBF8",rejected:"#FFEBEE"};
+  const statusText={pending:"⏳ Pending",approved:"✅ Approved",rejected:"❌ Rejected"};
+  container.innerHTML=filtered.map(n=>`
+    <div class="card" style="padding:14px 16px;margin-bottom:8px;background:${statusColor[n.status]||"#F8FBF8"};">
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:50px;background:#fff;">${statusText[n.status]||n.status}</span>
+            <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:50px;background:#E8F5E9;color:#0F3D23;">${escapeHTML(n.subject)}</span>
+            <span style="font-size:10px;color:#777;">${escapeHTML(n.type)}</span>
+            ${n.isPremium?'<span style="font-size:9px;background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;padding:1px 7px;border-radius:50px;font-weight:700;">⭐</span>':''}
+          </div>
+          <div style="font-weight:700;font-size:13px;">${escapeHTML(n.title)}</div>
+          <div style="font-size:11px;color:#777;margin-top:2px;">by ${escapeHTML(n.uploader)} · ${escapeHTML(n.date)}${n.rejectReason?` · Reason: ${escapeHTML(n.rejectReason)}`:""}</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0;flex-wrap:wrap;">
+          <button onclick="editUpload('${n.id}','${n.status}')" style="background:#E3F2FD;color:#1565C0;border:none;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;">✏️ Edit</button>
+          ${n.status==="pending"?`<button onclick="approveNote('${n.id}')" style="background:#E8F5E9;color:#00B050;border:none;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;">✅ Approve</button>`:""}
+          <button onclick="deleteAnyUpload('${n.id}','${n.status}')" style="background:#FFEBEE;color:#E53935;border:none;padding:5px 10px;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;">🗑</button>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+function _findUpload(id,status){
+  return status==="pending" ? pending.find(x=>x.id===id) : notes.find(x=>x.id===id);
+}
+
+let _editUploadFileData=null, _editUploadFileName=null;
+
+function editUpload(id,status){
+  const n=_findUpload(id,status); if(!n) return;
+  editingUploadId={id,status};
+  _editUploadFileData=null; _editUploadFileName=null;
+  const form=document.getElementById("adminUploadEditForm"); if(!form) return;
+  form.innerHTML=`
+    <div class="card" style="padding:20px;margin-bottom:16px;border:2px solid #00B050;">
+      <div style="font-weight:700;font-size:15px;margin-bottom:14px;">✏️ Edit Upload</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div><label class="lbl">Title *</label><input id="euTitle" class="inp" value="${escapeHTML(n.title)}"></div>
+        <div class="upload-grid">
+          <div><label class="lbl">Subject *</label><select id="euSubject" class="inp">${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}" ${n.subject===s.name?"selected":""}>${escapeHTML(s.name)}</option>`).join("")}</select></div>
+          <div><label class="lbl">Type</label><select id="euType" class="inp">${RES_TYPES.filter(t=>t!=="All").map(t=>`<option ${n.type===t?"selected":""}>${t}</option>`).join("")}</select></div>
+        </div>
+        <div><label class="lbl">External Link</label><input id="euLink" class="inp" value="${escapeHTML(n.link||"")}" placeholder="https://drive.google.com/…"></div>
+        <div><label class="lbl">Description</label><textarea id="euDesc" class="inp" rows="2" style="resize:vertical;">${escapeHTML(n.desc||"")}</textarea></div>
+        <div>
+          <label class="lbl">Replace File (optional)</label>
+          <div class="drop-zone" onclick="document.getElementById('euFile').click()" style="padding:14px;">
+            <input id="euFile" type="file" style="display:none;" onchange="handleEditUploadFile(this)">
+            <div id="euFileLabel" style="font-size:12px;color:#333;">${n.hasFile?`Current file: ${escapeHTML(n.fileName||"file")} — click to replace`:"Click to attach a file"}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="euPrem" ${n.isPremium?"checked":""}><label for="euPrem" style="font-size:13px;font-weight:600;cursor:pointer;">⭐ Premium only</label>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveUploadEdit()">💾 Save Changes</button>
+          <button class="btn btn-light" onclick="cancelEditUpload()">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+  form.scrollIntoView({behavior:"smooth",block:"center"});
+}
+
+function handleEditUploadFile(input){
+  const f=input.files[0]; if(!f) return;
+  if(f.size>4.5*1024*1024){toast("File > 4.5 MB. Use a Google Drive link instead.","e");input.value="";return;}
+  const r=new FileReader();
+  r.onload=ev=>{ _editUploadFileData=ev.target.result; _editUploadFileName=f.name;
+    const lbl=document.getElementById("euFileLabel"); if(lbl) lbl.textContent="New file: "+f.name; };
+  r.readAsDataURL(f);
+}
+
+function cancelEditUpload(){
+  editingUploadId=null; _editUploadFileData=null; _editUploadFileName=null;
+  const form=document.getElementById("adminUploadEditForm"); if(form) form.innerHTML="";
+}
+
+async function saveUploadEdit(){
+  if(!editingUploadId) return;
+  const {id,status}=editingUploadId;
+  const title=document.getElementById("euTitle").value.trim();
+  const subject=document.getElementById("euSubject").value;
+  const type=document.getElementById("euType").value;
+  const link=document.getElementById("euLink").value.trim();
+  const desc=document.getElementById("euDesc").value.trim();
+  const isPremium=document.getElementById("euPrem").checked;
+  if(!title||!subject){ toast("Title & Subject required.","e"); return; }
+
+  const arr = status==="pending" ? pending : notes;
+  const idx = arr.findIndex(x=>x.id===id);
+  if(idx===-1){ toast("Upload not found.","e"); return; }
+  arr[idx] = {...arr[idx], title, subject, type, link, desc, isPremium};
+  if(_editUploadFileData){
+    await sSet("bhu:file:"+id,_editUploadFileData);
+    arr[idx].hasFile=true; arr[idx].fileName=_editUploadFileName;
+  }
+  if(status==="pending"){ await sSet("bhu:pending",pending); } else { await sSet("bhu:notes",notes); }
+  toast("✅ Upload updated!");
+  cancelEditUpload();
+  renderAdminUploadsList();
+  renderAll();
+}
+
+async function deleteAnyUpload(id,status){
+  if(!window.confirm("Delete this upload permanently?")) return;
+  if(status==="pending"){ pending=pending.filter(x=>x.id!==id); await sSet("bhu:pending",pending); }
+  else { notes=notes.filter(x=>x.id!==id); await sSet("bhu:notes",notes); }
+  await sDel("bhu:file:"+id);
+  toast("Deleted.");
+  renderAdminUploadsList();
+  renderAll();
+}
+
 async function approveNote(id){
   const n=pending.find(x=>x.id===id); if(!n) return;
   pending=pending.filter(x=>x.id!==id); await sSet("bhu:pending",pending);
@@ -3511,7 +3700,7 @@ function renderPYQ(){
         <div style="color:#f59e0b;font-weight:800;font-size:13px;margin-bottom:2px;">⭐ Free Plan — ${Math.max(0,freeRevLeft)}/${FREE_PYQ_REVEALS} answer reveals left today</div>
         <div style="color:rgba(255,200,100,.75);font-size:12px;">Upgrade for unlimited answer reveals + explanations</div>
       </div>
-      <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="openPay()">Upgrade ₹19 →</button>
+      <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="openPay()">Upgrade from ₹9 →</button>
     </div>`;
   } else {
     pyqBannerEl.innerHTML=`<div style="background:linear-gradient(90deg,#0a2e14,#0F3D23);border:1px solid #00B050;border-radius:14px;padding:10px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
@@ -4074,7 +4263,7 @@ async function deletePYQPdf(id){
 }
 
 // Admin: Upload a raw PYQ PDF (no MCQ conversion)
-let _pyqPdfFileData='', _pyqPdfFile=null;
+let _pyqPdfFileData='', _pyqPdfFile=null, _editingPYQPdfId=null;
 
 function handlePYQPdfFile(input){
   const f=input.files[0]; if(!f) return;
@@ -4086,6 +4275,27 @@ function handlePYQPdfFile(input){
   if(lbl) lbl.textContent='📄 '+f.name+' ('+(f.size/1024).toFixed(0)+' KB)';
 }
 
+function editPYQPdfEntry(id){
+  const p=pyqPdfs.find(x=>x.id===id); if(!p) return;
+  _editingPYQPdfId=id;
+  document.getElementById('pyqPdfTitle').value=p.title||'';
+  document.getElementById('pyqPdfExam').value=p.exam||'ICAR JRF';
+  document.getElementById('pyqPdfYear').value=p.year||'2024';
+  document.getElementById('pyqPdfLink').value=p.link||'';
+  document.getElementById('pyqPdfDesc').value=p.desc||'';
+  const btn=document.getElementById('pyqPdfSubmitBtn');
+  if(btn) btn.textContent='💾 Update PDF Paper';
+  const cb=document.getElementById('pyqPdfCancelBtn'); if(cb) cb.style.display='inline-block';
+  document.getElementById('pyqPdfTitle').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelEditPYQPdf(){
+  _editingPYQPdfId=null; _pyqPdfFileData=''; _pyqPdfFile=null;
+  ['pyqPdfTitle','pyqPdfLink','pyqPdfDesc'].forEach(eid=>{const e=document.getElementById(eid);if(e)e.value='';});
+  const lbl=document.getElementById('pyqPdfFileLabel'); if(lbl) lbl.textContent='Click to upload PDF (max 10 MB)';
+  const btn=document.getElementById('pyqPdfSubmitBtn'); if(btn) btn.textContent='📤 Upload PDF Paper';
+  const cb=document.getElementById('pyqPdfCancelBtn'); if(cb) cb.style.display='none';
+}
+
 async function uploadPYQPdfFile(){
   if(!currentUser?.isAdmin) return;
   const title=document.getElementById('pyqPdfTitle')?.value?.trim();
@@ -4094,6 +4304,17 @@ async function uploadPYQPdfFile(){
   const link=document.getElementById('pyqPdfLink')?.value?.trim();
   const desc=document.getElementById('pyqPdfDesc')?.value?.trim();
   if(!title){toast('Title required.','e');return;}
+  if(_editingPYQPdfId){
+    const idx=pyqPdfs.findIndex(x=>x.id===_editingPYQPdfId);
+    if(idx===-1){toast('Paper not found.','e');return;}
+    pyqPdfs[idx]={...pyqPdfs[idx],title,exam,year,link:link||'',desc:desc||''};
+    if(_pyqPdfFileData){ await sSet('bhu:file:pyqpdf_'+_editingPYQPdfId,_pyqPdfFileData); pyqPdfs[idx].hasFile=true; pyqPdfs[idx].fileName=_pyqPdfFile?.name||pyqPdfs[idx].fileName; }
+    await sSet('bhu:pyqpdfs',pyqPdfs);
+    toast('✅ PDF paper updated!');
+    cancelEditPYQPdf();
+    renderAdminPYQPdfSection(); renderPYQPdfLibrary();
+    return;
+  }
   if(!link&&!_pyqPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
   const id=Date.now()+'';
   const entry={id,title,exam,year,link:link||'',desc:desc||'',
@@ -4138,13 +4359,17 @@ function renderAdminPYQPdfSection(){
       </div>
     </div>
     <div><label class="lbl">Description</label><textarea id="pyqPdfDesc" class="inp" rows="2" placeholder="Brief description (optional)" style="resize:vertical;"></textarea></div>
-    <button class="btn btn-primary" style="margin-top:12px;padding:10px 20px;" onclick="uploadPYQPdfFile()">📤 Upload PDF Paper</button>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn btn-primary" id="pyqPdfSubmitBtn" style="padding:10px 20px;" onclick="uploadPYQPdfFile()">📤 Upload PDF Paper</button>
+      <button class="btn btn-light" id="pyqPdfCancelBtn" style="display:none;" onclick="cancelEditPYQPdf()">✕ Cancel Edit</button>
+    </div>
     ${pyqPdfs.length>0?`
       <div style="margin-top:16px;font-weight:700;font-size:13px;margin-bottom:8px;">Uploaded Papers (${pyqPdfs.length})</div>
       ${pyqPdfs.map(p=>`
         <div style="background:#F8FBF8;border-radius:10px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
           <div style="flex:1;font-size:13px;"><strong>${escapeHTML(p.title)}</strong><br><span style="font-size:11px;color:#777;">${escapeHTML(p.exam)} ${escapeHTML(p.year)} · ${escapeHTML(p.date)}</span></div>
           ${p.link?`<button onclick="openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')" style="background:#E3F2FD;color:#1565C0;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">👁</button>`:''}
+          <button onclick="editPYQPdfEntry('${p.id}')" style="background:#FFF3E0;color:#E65100;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">✏️</button>
           <button onclick="deletePYQPdf('${p.id}')" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">🗑</button>
         </div>`).join('')}`:''}`;
 }
@@ -4637,7 +4862,8 @@ function openPay(){
 }
 
 async function doPay(planId){
-  const u=currentUser; if(!u){closePayModal();openLogin();return;}
+  const u=currentUser; if(!u){openLogin();return;}
+  if(planId==="trial" && u.usedTrial){ toast("You've already used your one-time trial. Pick Monthly or Yearly instead.","e"); return; }
   const ok=await loadRazorpay();
   if(!ok){toast("Payment gateway failed.","e");return;}
   const plan=PLANS[planId];
@@ -4646,11 +4872,12 @@ async function doPay(planId){
     name:"BHU Agriculture Portal",description:`${plan.label} Premium`,
     handler:async function(res){
       const exp=expiryDate(planId);
-      usersDB=usersDB.map(x=>x.id===u.id?{...x,subPlan:planId,subExpiry:exp,payId:res.razorpay_payment_id}:x);
+      const extra=planId==="trial"?{usedTrial:true}:{};
+      usersDB=usersDB.map(x=>x.id===u.id?{...x,subPlan:planId,subExpiry:exp,payId:res.razorpay_payment_id,...extra}:x);
       await sSet("bhu:users",usersDB);
-      const ns={...u,subPlan:planId,subExpiry:exp}; currentUser=ns; await sSet("bhu:session",ns);
+      const ns={...u,subPlan:planId,subExpiry:exp,...extra}; currentUser=ns; await sSet("bhu:session",ns);
       document.getElementById("payModal").classList.add("hidden");
-      toast("🎉 Premium activated!"); renderAll();
+      toast(planId==="trial"?"🎉 7-Day Trial activated!":"🎉 Premium activated!"); renderAll();
     },
     prefill:{name:u.name,email:u.email},
     theme:{color:"#00B050"},
@@ -4731,7 +4958,7 @@ function renderProfile(){
             <div style="font-weight:600;font-size:14px;">🌱 Free Plan</div>
             <div style="font-size:12px;color:#777;margin-top:3px;">Upgrade to access all premium content</div>
           </div>
-          <button class="btn btn-gold" style="font-size:12px;padding:8px 16px;" onclick="openPay()">Upgrade ₹199/year →</button>
+          <button class="btn btn-gold" style="font-size:12px;padding:8px 16px;" onclick="openPay()">Upgrade from ₹49/mo →</button>
         </div>`;
     }
   }
@@ -5325,7 +5552,7 @@ function premiumGateHTML(feature,style=""){
     <div style="font-size:44px;margin-bottom:12px;">⭐</div>
     <div style="font-weight:800;font-size:18px;margin-bottom:8px;">Premium Feature</div>
     <div style="color:#777;font-size:14px;margin-bottom:6px;">${escapeHTML(PREMIUM_FEATURES[feature]||feature)}</div>
-    <div style="color:#777;font-size:12px;margin-bottom:20px;">Upgrade to get full access — just ₹199/year</div>
+    <div style="color:#777;font-size:12px;margin-bottom:20px;">Upgrade to get full access — from just ₹9 for a 7-day trial</div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
       <button class="btn btn-gold" style="padding:11px 24px;font-size:14px;" onclick="openPay()">⭐ Upgrade Now</button>
       <button class="btn btn-light" style="padding:11px 20px;font-size:13px;" onclick="openLogin()">Login / Register</button>
@@ -6189,3 +6416,5 @@ async function finishDuelPlay(){
 
 </body>
 </html>
+
+
