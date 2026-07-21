@@ -632,54 +632,15 @@ try {
 
     <!-- ── SUBJECTS TAB ── -->
     <div id="stab_subjects_content">
-      <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
-        <div style="flex:2; min-width:300px;">
-          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-            <div class="search-box" style="flex:1;min-width:180px;">
-              <span style="font-size:14px;color:#777;">🔍</span>
-              <input id="subSearch" type="text" placeholder="Search subjects…" oninput="renderSubjects()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;">
-            </div>
-            <div id="catFilters" class="chips-row" style="gap:8px;"></div>
-          </div>
-          <div id="subjectGrid" class="subject-grid"></div>
-          <div id="noSubjects" style="text-align:center;color:#777;padding:40px 20px;font-size:14px;display:none;">No subjects found.</div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+        <div class="search-box" style="flex:1;min-width:180px;">
+          <span style="font-size:14px;color:#777;">🔍</span>
+          <input id="subSearch" type="text" placeholder="Search subjects…" oninput="renderSubjects()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;">
         </div>
-        <div style="flex:1; min-width:280px; max-width:400px; display:flex; flex-direction:column; gap:12px;">
-          <div class="section-title" style="font-size:18px;">Recommended Books 📚</div>
-          <div id="booksList" style="display:flex; flex-direction:column; gap:12px;">
-            <div class="card hov-card" style="padding:16px;">
-              <div style="display:flex; gap:12px; align-items:center;">
-                <div style="font-size:30px;">📚</div>
-                <div>
-                  <div style="font-weight:700;font-size:14px;">Fundamentals of Agriculture</div>
-                  <div style="font-size:12px;color:#777;">by Arun Katyayan</div>
-                </div>
-              </div>
-              <button class="btn btn-primary" style="width:100%; margin-top:12px; font-size:12px;">Buy Now - ₹450</button>
-            </div>
-            <div class="card hov-card" style="padding:16px;">
-              <div style="display:flex; gap:12px; align-items:center;">
-                <div style="font-size:30px;">📘</div>
-                <div>
-                  <div style="font-weight:700;font-size:14px;">Objective Agriculture</div>
-                  <div style="font-size:12px;color:#777;">by S.R. Kantwa</div>
-                </div>
-              </div>
-              <button class="btn btn-primary" style="width:100%; margin-top:12px; font-size:12px;">Buy Now - ₹320</button>
-            </div>
-            <div class="card hov-card" style="padding:16px;">
-              <div style="display:flex; gap:12px; align-items:center;">
-                <div style="font-size:30px;">📗</div>
-                <div>
-                  <div style="font-weight:700;font-size:14px;">Agriculture Success</div>
-                  <div style="font-size:12px;color:#777;">by B.R. Dalal</div>
-                </div>
-              </div>
-              <button class="btn btn-primary" style="width:100%; margin-top:12px; font-size:12px;">Buy Now - ₹299</button>
-            </div>
-          </div>
-        </div>
+        <div id="catFilters" class="chips-row" style="gap:8px;"></div>
       </div>
+      <div id="subjectGrid" class="subject-grid"></div>
+      <div id="noSubjects" style="text-align:center;color:#777;padding:40px 20px;font-size:14px;display:none;">No subjects found.</div>
     </div>
 
     <!-- ── RESOURCES TAB ── -->
@@ -3203,8 +3164,8 @@ async function renderAdmin(){
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
           <div><label class="lbl">Exam</label>
             <select id="pyqBulkExam" class="inp">
-              <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option>
-              <option>BHU Entrance</option><option>IARI</option><option>Other</option>
+              <option>ICAR JRF</option><option>IARI PG PAPER</option><option>NABARD</option>
+              <option>IBPS AFO</option><option>BHU ENTRANCE</option><option>OTHER</option>
             </select>
           </div>
           <div><label class="lbl">Year</label>
@@ -3234,8 +3195,8 @@ async function renderAdmin(){
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
           <div><label class="lbl">Exam</label>
             <select id="pyqPasteExam" class="inp">
-              <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option>
-              <option>BHU Entrance</option><option>IARI</option><option>Other</option>
+              <option>ICAR JRF</option><option>IARI PG PAPER</option><option>NABARD</option>
+              <option>IBPS AFO</option><option>BHU ENTRANCE</option><option>OTHER</option>
             </select>
           </div>
           <div><label class="lbl">Year</label>
@@ -3265,11 +3226,11 @@ async function renderAdmin(){
             <div><label class="lbl">Exam *</label>
               <select id="pyqExam" class="inp">
                 <option value="ICAR JRF">ICAR JRF</option>
-                <option value="IBPS AFO">IBPS AFO</option>
+                <option value="IARI PG PAPER">IARI PG PAPER</option>
                 <option value="NABARD">NABARD</option>
-                <option value="BHU Entrance">BHU Entrance</option>
-                <option value="IARI">IARI</option>
-                <option value="Other">Other</option>
+                <option value="IBPS AFO">IBPS AFO</option>
+                <option value="BHU ENTRANCE">BHU ENTRANCE</option>
+                <option value="OTHER">OTHER</option>
               </select>
             </div>
             <div><label class="lbl">Year *</label>
@@ -4303,7 +4264,7 @@ function renderPYQPdfLibrary(){
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
           <div><label class="lbl">Title *</label><input id="qpPdfTitle" class="inp" placeholder="e.g. ICAR JRF 2024 Full Paper"></div>
           <div><label class="lbl">Exam</label>
-            <select id="qpPdfExam" class="inp"><option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option><option>BHU Entrance</option><option>Other</option></select>
+            <select id="qpPdfExam" class="inp"><option>ICAR JRF</option><option>IARI PG PAPER</option><option>NABARD</option><option>IBPS AFO</option><option>BHU ENTRANCE</option><option>OTHER</option></select>
           </div>
           <div><label class="lbl">Year</label>
             <select id="qpPdfYear" class="inp">${[2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015].map(y=>`<option>${y}</option>`).join('')}</select>
@@ -4533,7 +4494,7 @@ function renderAdminPYQPdfSection(){
       <div><label class="lbl">Paper Title *</label><input id="pyqPdfTitle" class="inp" placeholder="e.g. ICAR JRF 2024 Full Paper"></div>
       <div><label class="lbl">Exam</label>
         <select id="pyqPdfExam" class="inp">
-          <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD</option><option>BHU Entrance</option><option>Other</option>
+          <option>ICAR JRF</option><option>IARI PG PAPER</option><option>NABARD</option><option>IBPS AFO</option><option>BHU ENTRANCE</option><option>OTHER</option>
         </select>
       </div>
       <div><label class="lbl">Year</label>
