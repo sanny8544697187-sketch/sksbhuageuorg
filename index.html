@@ -632,15 +632,54 @@ try {
 
     <!-- ── SUBJECTS TAB ── -->
     <div id="stab_subjects_content">
-      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-        <div class="search-box" style="flex:1;min-width:180px;">
-          <span style="font-size:14px;color:#777;">🔍</span>
-          <input id="subSearch" type="text" placeholder="Search subjects…" oninput="renderSubjects()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;">
+      <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="flex:2; min-width:300px;">
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+            <div class="search-box" style="flex:1;min-width:180px;">
+              <span style="font-size:14px;color:#777;">🔍</span>
+              <input id="subSearch" type="text" placeholder="Search subjects…" oninput="renderSubjects()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;">
+            </div>
+            <div id="catFilters" class="chips-row" style="gap:8px;"></div>
+          </div>
+          <div id="subjectGrid" class="subject-grid"></div>
+          <div id="noSubjects" style="text-align:center;color:#777;padding:40px 20px;font-size:14px;display:none;">No subjects found.</div>
         </div>
-        <div id="catFilters" class="chips-row" style="gap:8px;"></div>
+        <div style="flex:1; min-width:280px; max-width:400px; display:flex; flex-direction:column; gap:12px;">
+          <div class="section-title" style="font-size:18px;">Recommended Books 📚</div>
+          <div id="booksList" style="display:flex; flex-direction:column; gap:12px;">
+            <div class="card hov-card" style="padding:16px;">
+              <div style="display:flex; gap:12px; align-items:center;">
+                <div style="font-size:30px;">📚</div>
+                <div>
+                  <div style="font-weight:700;font-size:14px;">Fundamentals of Agriculture</div>
+                  <div style="font-size:12px;color:#777;">by Arun Katyayan</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="width:100%; margin-top:12px; font-size:12px;">Buy Now - ₹450</button>
+            </div>
+            <div class="card hov-card" style="padding:16px;">
+              <div style="display:flex; gap:12px; align-items:center;">
+                <div style="font-size:30px;">📘</div>
+                <div>
+                  <div style="font-weight:700;font-size:14px;">Objective Agriculture</div>
+                  <div style="font-size:12px;color:#777;">by S.R. Kantwa</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="width:100%; margin-top:12px; font-size:12px;">Buy Now - ₹320</button>
+            </div>
+            <div class="card hov-card" style="padding:16px;">
+              <div style="display:flex; gap:12px; align-items:center;">
+                <div style="font-size:30px;">📗</div>
+                <div>
+                  <div style="font-weight:700;font-size:14px;">Agriculture Success</div>
+                  <div style="font-size:12px;color:#777;">by B.R. Dalal</div>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="width:100%; margin-top:12px; font-size:12px;">Buy Now - ₹299</button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div id="subjectGrid" class="subject-grid"></div>
-      <div id="noSubjects" style="text-align:center;color:#777;padding:40px 20px;font-size:14px;display:none;">No subjects found.</div>
     </div>
 
     <!-- ── RESOURCES TAB ── -->
@@ -670,12 +709,48 @@ try {
     <!-- ── PLANNER TAB ── -->
     <div id="stab_planner_content" style="display:none;">
       <div class="card" style="padding:22px;margin-bottom:20px;" id="plannerSetup2">
-        <div style="display:flex;flex-direction:column;gap:14px;max-width:460px;">
-          <div><label class="lbl">Select Exam</label>
-            <select id="planExam2" class="inp">
-              <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD Grade A</option>
-              <option>State PSC Agriculture</option><option>BHU Semester Exam</option><option>Other</option>
-            </select>
+        <div style="display:flex;flex-direction:column;gap:14px;max-width:100%;">
+          <div>
+            <label class="lbl">Select Exam</label>
+            <input type="hidden" id="planExam2" value="ICAR JRF">
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:10px;" id="examPanelGrid2">
+              <div class="card hov-card exam-panel" id="examPanel_ICAR JRF_2" onclick="selectPlannerExam('ICAR JRF', 2)" style="padding:16px; border:2px solid #00B050; cursor:pointer; text-align:center;">
+                <div style="font-size:32px;">🎓</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">ICAR JRF Course</div>
+                <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+                <button class="btn btn-primary" style="width:100%; font-size:12px;">Select</button>
+              </div>
+              <div class="card hov-card exam-panel" id="examPanel_IARI PG PAPER_2" onclick="selectPlannerExam('IARI PG PAPER', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+                <div style="font-size:32px;">🏫</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">IARI PG Paper</div>
+                <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+                <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+              </div>
+              <div class="card hov-card exam-panel" id="examPanel_NABARD_2" onclick="selectPlannerExam('NABARD', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+                <div style="font-size:32px;">🏛️</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">NABARD Mains</div>
+                <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+                <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+              </div>
+              <div class="card hov-card exam-panel" id="examPanel_IBPS AFO_2" onclick="selectPlannerExam('IBPS AFO', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+                <div style="font-size:32px;">🏦</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">IBPS AFO Complete</div>
+                <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+                <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+              </div>
+              <div class="card hov-card exam-panel" id="examPanel_BHU ENTRANCE_2" onclick="selectPlannerExam('BHU ENTRANCE', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+                <div style="font-size:32px;">🏛️</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">BHU Entrance</div>
+                <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+                <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+              </div>
+              <div class="card hov-card exam-panel" id="examPanel_OTHER_2" onclick="selectPlannerExam('OTHER', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+                <div style="font-size:32px;">🌾</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">Other Exams</div>
+                <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+                <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+              </div>
+            </div>
           </div>
           <div><label class="lbl">Exam Date *</label><input id="planDate2" class="inp" type="date"></div>
           <div><label class="lbl">Daily Study Hours</label>
@@ -690,13 +765,24 @@ try {
         </div>
       </div>
       <div id="plannerOutput2" style="display:none;">
-        <div class="card" style="padding:18px 20px;margin-bottom:16px;background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;">
-          <div style="font-size:11px;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Days to Exam</div>
-          <div style="font-size:44px;font-weight:800;line-height:1;" id="planCountdown2">—</div>
-          <div style="font-size:13px;opacity:.75;margin-top:4px;" id="planExamLabel2"></div>
+        <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+          <div style="flex:2; min-width:300px;">
+            <div class="card" style="padding:18px 20px;margin-bottom:16px;background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;">
+              <div style="font-size:11px;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Days to Exam</div>
+              <div style="font-size:44px;font-weight:800;line-height:1;" id="planCountdown2">—</div>
+              <div style="font-size:13px;opacity:.75;margin-top:4px;" id="planExamLabel2"></div>
+            </div>
+            <div id="planDaysList2"></div>
+            <button class="btn btn-light" style="margin-top:12px;" onclick="resetPlan2()">↩ Change Plan</button>
+          </div>
+          <div style="flex:1; min-width:280px; max-width:400px;">
+            <div class="section-title" style="font-size:18px;">Exam Syllabus 📖</div>
+            <div class="card" style="padding:16px; margin-top:12px; background:#F8FBF8;">
+              <div style="font-weight:700; font-size:14px; margin-bottom:8px; color:#00B050;" id="syllabusTitle2">Syllabus</div>
+              <ul id="syllabusList2" style="padding-left:20px; font-size:13px; color:#333; line-height:1.6; margin:0;"></ul>
+            </div>
+          </div>
         </div>
-        <div id="planDaysList2"></div>
-        <button class="btn btn-light" style="margin-top:12px;" onclick="resetPlan2()">↩ Change Plan</button>
       </div>
     </div>
   </section>
@@ -1249,13 +1335,48 @@ try {
 
     <!-- Setup card -->
     <div class="card" style="padding:22px;margin-bottom:20px;" id="plannerSetup">
-      <div style="display:flex;flex-direction:column;gap:14px;max-width:460px;">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:100%;">
         <div>
           <label class="lbl">Select Exam</label>
-          <select id="planExam" class="inp">
-            <option>ICAR JRF</option><option>IBPS AFO</option><option>NABARD Grade A</option>
-            <option>State PSC Agriculture</option><option>BHU Semester Exam</option><option>Other</option>
-          </select>
+          <input type="hidden" id="planExam" value="ICAR JRF">
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:10px;" id="examPanelGrid">
+            <div class="card hov-card exam-panel" id="examPanel_ICAR JRF" onclick="selectPlannerExam('ICAR JRF', '')" style="padding:16px; border:2px solid #00B050; cursor:pointer; text-align:center;">
+              <div style="font-size:32px;">🎓</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">ICAR JRF Course</div>
+              <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+              <button class="btn btn-primary" style="width:100%; font-size:12px;">Select</button>
+            </div>
+            <div class="card hov-card exam-panel" id="examPanel_IARI PG PAPER" onclick="selectPlannerExam('IARI PG PAPER', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+              <div style="font-size:32px;">🏫</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">IARI PG Paper</div>
+              <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+              <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+            </div>
+            <div class="card hov-card exam-panel" id="examPanel_NABARD" onclick="selectPlannerExam('NABARD', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+              <div style="font-size:32px;">🏛️</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">NABARD Mains</div>
+              <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+              <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+            </div>
+            <div class="card hov-card exam-panel" id="examPanel_IBPS AFO" onclick="selectPlannerExam('IBPS AFO', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+              <div style="font-size:32px;">🏦</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">IBPS AFO Complete</div>
+              <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+              <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+            </div>
+            <div class="card hov-card exam-panel" id="examPanel_BHU ENTRANCE" onclick="selectPlannerExam('BHU ENTRANCE', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+              <div style="font-size:32px;">🏛️</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">BHU Entrance</div>
+              <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+              <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+            </div>
+            <div class="card hov-card exam-panel" id="examPanel_OTHER" onclick="selectPlannerExam('OTHER', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
+              <div style="font-size:32px;">🌾</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">Other Exams</div>
+              <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
+              <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
+            </div>
+          </div>
         </div>
         <div>
           <label class="lbl">Exam Date *</label>
@@ -1276,13 +1397,24 @@ try {
 
     <!-- Countdown + plan -->
     <div id="plannerOutput" style="display:none;">
-      <div class="card" style="padding:18px 20px;margin-bottom:16px;background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;">
-        <div style="font-size:11px;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Days to Exam</div>
-        <div style="font-size:44px;font-weight:800;line-height:1;" id="planCountdown">—</div>
-        <div style="font-size:13px;opacity:.75;margin-top:4px;" id="planExamLabel"></div>
+      <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="flex:2; min-width:300px;">
+          <div class="card" style="padding:18px 20px;margin-bottom:16px;background:linear-gradient(135deg,#0F3D23,#1B6B3A);color:white;">
+            <div style="font-size:11px;font-weight:700;opacity:.65;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;">Days to Exam</div>
+            <div style="font-size:44px;font-weight:800;line-height:1;" id="planCountdown">—</div>
+            <div style="font-size:13px;opacity:.75;margin-top:4px;" id="planExamLabel"></div>
+          </div>
+          <div id="planDaysList"></div>
+          <button class="btn btn-light" style="margin-top:12px;" onclick="resetPlan()">↩ Change Plan</button>
+        </div>
+        <div style="flex:1; min-width:280px; max-width:400px;">
+          <div class="section-title" style="font-size:18px;">Exam Syllabus 📖</div>
+          <div class="card" style="padding:16px; margin-top:12px; background:#F8FBF8;">
+            <div style="font-weight:700; font-size:14px; margin-bottom:8px; color:#00B050;" id="syllabusTitle">Syllabus</div>
+            <ul id="syllabusList" style="padding-left:20px; font-size:13px; color:#333; line-height:1.6; margin:0;"></ul>
+          </div>
+        </div>
       </div>
-      <div id="planDaysList"></div>
-      <button class="btn btn-light" style="margin-top:12px;" onclick="resetPlan()">↩ Change Plan</button>
     </div>
   </section>
 
@@ -5370,6 +5502,44 @@ function syncAnalyticsToTab(){
   }
 }
 
+const examInfoMap = {
+  "ICAR JRF": ["General Agriculture", "Genetics & Plant Breeding", "Agronomy & Soil Science", "Plant Physiology & Crop Sciences"],
+  "IARI PG PAPER": ["Crop Science", "Horticulture", "Plant Protection", "Entomology & Nematology", "Plant Pathology"],
+  "NABARD": ["Agriculture & Rural Development", "Economic & Social Issues", "English Language", "Reasoning & Quantitative Aptitude"],
+  "IBPS AFO": ["Agriculture Current Affairs", "Crop Production", "Soil Science", "Animal Husbandry & Dairy Science", "Agricultural Engineering"],
+  "BHU ENTRANCE": ["Mental Ability", "Chemistry", "Physics & Mathematics", "Botany & Zoology", "Agriculture Principles"],
+  "OTHER": ["General Agriculture Syllabus", "Current Affairs", "Basic Science Concepts"]
+};
+
+function selectPlannerExam(examName, suffix) {
+  const inputEl = document.getElementById("planExam" + suffix);
+  if(inputEl) inputEl.value = examName;
+  const exams = ["ICAR JRF", "IARI PG PAPER", "NABARD", "IBPS AFO", "BHU ENTRANCE", "OTHER"];
+  exams.forEach(ex => {
+    const p = document.getElementById("examPanel_" + ex + (suffix?"_2":""));
+    if(p){
+      if(ex === examName){
+        p.style.borderColor = "#00B050";
+        p.querySelector("button").className = "btn btn-primary";
+      } else {
+        p.style.borderColor = "transparent";
+        p.querySelector("button").className = "btn btn-light";
+      }
+    }
+  });
+}
+
+function resetPlan(){
+  const setup = document.getElementById("plannerSetup");
+  const out = document.getElementById("plannerOutput");
+  if(setup) setup.style.display="block";
+  if(out) out.style.display="none";
+}
+
+function generatePlan(){
+  _generatePlan2Impl(null, "");
+}
+
 // ── Planner v2 (for tab) ─────────────────────────────────────────
 function generatePlan2(){
   const dateEl=document.getElementById("planDate2");
@@ -5384,6 +5554,11 @@ function generatePlan2(){
   document.getElementById("plannerOutput2").style.display="block";
   const cdEl=document.getElementById("planCountdown2"); if(cdEl) cdEl.textContent=daysLeft;
   const exEl=document.getElementById("planExamLabel2"); if(exEl) exEl.textContent=examEl.value+" · "+hoursEl.value+" hrs/day";
+  const syll = examInfoMap[examEl.value] || examInfoMap["OTHER"];
+  const sylUl = document.getElementById("syllabusList2");
+  if(sylUl) sylUl.innerHTML = syll.map(s => `<li>${escapeHTML(s)}</li>`).join("");
+  const sylTitle = document.getElementById("syllabusTitle2");
+  if(sylTitle) sylTitle.textContent = examEl.value + " Syllabus";
   const topicsPool=[
     "Agronomy — Crop Production & Management","Soil Science — Chemistry & Fertility",
     "Genetics & Plant Breeding — Hybridization","Plant Pathology — Disease Management",
@@ -5655,10 +5830,10 @@ function renderGamesHub(){
   _origRenderGamesHub();
 }
 
-function _generatePlan2Impl(freeLimit){
-  const dateEl=document.getElementById("planDate2");
-  const examEl=document.getElementById("planExam2");
-  const hoursEl=document.getElementById("planHours2");
+function _generatePlan2Impl(freeLimit, suffix="2"){
+  const dateEl=document.getElementById("planDate"+suffix);
+  const examEl=document.getElementById("planExam"+suffix);
+  const hoursEl=document.getElementById("planHours"+suffix);
   if(!dateEl?.value){toast("Please select an exam date.","e");return;}
   const examDate=new Date(dateEl.value); const today=new Date();
   today.setHours(0,0,0,0);
@@ -5666,10 +5841,17 @@ function _generatePlan2Impl(freeLimit){
   if(daysLeft<=0){toast("Exam date must be in the future.","e");return;}
   const maxDays=freeLimit||daysLeft;
   const showDays=Math.min(daysLeft,maxDays);
-  document.getElementById("plannerSetup2").style.display="none";
-  document.getElementById("plannerOutput2").style.display="block";
-  const cdEl=document.getElementById("planCountdown2"); if(cdEl) cdEl.textContent=daysLeft;
-  const exEl=document.getElementById("planExamLabel2"); if(exEl) exEl.textContent=examEl.value+" · "+hoursEl.value+" hrs/day";
+  const setupEl = document.getElementById("plannerSetup"+suffix);
+  const outEl = document.getElementById("plannerOutput"+suffix);
+  if(setupEl) setupEl.style.display="none";
+  if(outEl) outEl.style.display="block";
+  const cdEl=document.getElementById("planCountdown"+suffix); if(cdEl) cdEl.textContent=daysLeft;
+  const exEl=document.getElementById("planExamLabel"+suffix); if(exEl) exEl.textContent=examEl.value+" · "+hoursEl.value+" hrs/day";
+  const syll = examInfoMap[examEl.value] || examInfoMap["OTHER"];
+  const sylUl = document.getElementById("syllabusList"+suffix);
+  if(sylUl) sylUl.innerHTML = syll.map(s => `<li>${escapeHTML(s)}</li>`).join("");
+  const sylTitle = document.getElementById("syllabusTitle"+suffix);
+  if(sylTitle) sylTitle.textContent = examEl.value + " Syllabus";
   const topicsPool=[
     "Agronomy — Crop Production & Management","Soil Science — Chemistry & Fertility",
     "Genetics & Plant Breeding — Hybridization","Plant Pathology — Disease Management",
@@ -5680,7 +5862,7 @@ function _generatePlan2Impl(freeLimit){
     "Soil Science — Microbiology & pH","PYQ Revision — ICAR JRF 2024",
     "Full Mock Test — All Subjects"
   ];
-  const planEl=document.getElementById("planDaysList2");
+  const planEl=document.getElementById("planDaysList"+suffix);
   if(!planEl) return;
   planEl.innerHTML=Array.from({length:showDays},(_,i)=>{
     const d=new Date(today); d.setDate(today.getDate()+i);
