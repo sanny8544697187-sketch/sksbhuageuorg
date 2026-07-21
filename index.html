@@ -4148,6 +4148,11 @@ function practiceQs(qs){
 // ═══════════════════════════════════════════════════════════════
 // PYQ PDF LIBRARY — upload raw PDFs (not MCQ-forced)
 // ═══════════════════════════════════════════════════════════════
+let pyqPdfOpenExam=null, pyqPdfOpenYear=null, pyqPdfOpenSubject=null;
+function togglePYQPdfExam(e){ pyqPdfOpenExam=pyqPdfOpenExam===e?null:e; pyqPdfOpenYear=null; pyqPdfOpenSubject=null; renderPYQPdfLibrary(); }
+function togglePYQPdfYear(y){ pyqPdfOpenYear=pyqPdfOpenYear===y?null:y; pyqPdfOpenSubject=null; renderPYQPdfLibrary(); }
+function togglePYQPdfSubject(s){ pyqPdfOpenSubject=pyqPdfOpenSubject===s?null:s; renderPYQPdfLibrary(); }
+
 async function loadPYQPdfs(){
   const data=await sGet('bhu:pyqpdfs'); if(data) pyqPdfs=data;
 }
@@ -4171,7 +4176,8 @@ function renderPYQPdfLibrary(){
           <div><label class="lbl">Year</label>
             <select id="qpPdfYear" class="inp">${[2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015].map(y=>`<option>${y}</option>`).join('')}</select>
           </div>
-          <div><label class="lbl">Drive / Direct Link</label><input id="qpPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
+          <div><label class="lbl">Subject</label><input id="qpPdfSubject" class="inp" placeholder="e.g. Agronomy"></div>
+          <div style="grid-column:1 / span 2;"><label class="lbl">Drive / Direct Link</label><input id="qpPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
         </div>
         <div class="drop-zone" style="padding:14px;margin-bottom:10px;" onclick="document.getElementById('qpPdfFileInput').click()">
           <input id="qpPdfFileInput" type="file" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleQPPdfFile(this)">
@@ -4194,25 +4200,77 @@ function renderPYQPdfLibrary(){
       <div style="color:#777;font-size:13px;">Admin can upload complete PYQ papers as PDFs for students to download.</div>
     </div>`; return;
   }
-  el.innerHTML=adminUploadHtml+`
-    <div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${filteredPdfs.length})</div>
-    ${filteredPdfs.map(p=>`
-      <div class="res-card hov-card">
-        <div class="res-icon" style="background:#FFEBEE;">📄</div>
-        <div class="res-info">
-          <div class="res-title">${escapeHTML(p.title)}</div>
-          <div class="res-meta">
-            <span style="background:#F3E5F5;color:#7B1FA2;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:700;margin-right:4px;">${escapeHTML(p.exam||'')} ${escapeHTML(p.year||'')}</span>
-            PDF Paper · ${escapeHTML(p.date||'')} · by ${escapeHTML(p.uploader||'Admin')}
+
+  const byExam={};
+  filteredPdfs.forEach(p=>{
+    const exam=p.exam||"Other";
+    const year=String(p.year||"Unknown");
+    const subj=p.subject||"General";
+    if(!byExam[exam]) byExam[exam]={};
+    if(!byExam[exam][year]) byExam[exam][year]={};
+    if(!byExam[exam][year][subj]) byExam[exam][year][subj]=[];
+    byExam[exam][year][subj].push(p);
+  });
+
+  let hHtml = adminUploadHtml + `<div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${filteredPdfs.length})</div><div style="display:flex;flex-direction:column;gap:8px;">`;
+  Object.keys(byExam).sort().forEach(exam=>{
+    const examOpen = pyqPdfOpenExam===exam;
+    hHtml += `<div class="card hov-card" style="padding:14px;cursor:pointer;border-left:4px solid #00B050;" onclick="togglePYQPdfExam('${escapeHTML(exam)}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-weight:700;">
+        <span>🎓 ${escapeHTML(exam)}</span>
+        <span style="color:#00B050;">${examOpen?"▲":"▼"}</span>
+      </div>
+    </div>`;
+    if(examOpen){
+      hHtml += `<div style="padding-left:14px;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;margin-top:-2px;">`;
+      Object.keys(byExam[exam]).sort((a,b)=>b.localeCompare(a)).forEach(year=>{
+        const yearOpen = pyqPdfOpenYear===year;
+        hHtml += `<div class="card hov-card" style="padding:12px 14px;cursor:pointer;background:#FAFAFA;" onclick="togglePYQPdfYear('${escapeHTML(year)}')">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px;">
+            <span>📅 ${escapeHTML(year)}</span>
+            <span style="color:#999;">${yearOpen?"▲":"▼"}</span>
           </div>
-          ${p.desc?`<div class="res-desc">${escapeHTML(p.desc)}</div>`:''}
-          <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;">
-            ${p.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')">👁 View PDF</button>`:''}
-            ${p.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="downloadPYQPdf('${p.id}')">📥 Download</button>`:''}
-            ${isAdmin?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deletePYQPdf('${p.id}')">🗑</button>`:''}
-          </div>
-        </div>
-      </div>`).join('')}`;
+        </div>`;
+        if(yearOpen){
+          hHtml += `<div style="padding-left:14px;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;margin-top:-2px;">`;
+          Object.keys(byExam[exam][year]).sort().forEach(subj=>{
+            const subjOpen = pyqPdfOpenSubject===subj;
+            const pdfs = byExam[exam][year][subj];
+            hHtml += `<div class="card hov-card" style="padding:12px 14px;cursor:pointer;background:#F8FBF8;" onclick="togglePYQPdfSubject('${escapeHTML(subj)}')">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:13px;">
+                <span>📚 ${escapeHTML(subj)} (${pdfs.length})</span>
+                <span style="color:#00B050;">${subjOpen?"▲":"▼"}</span>
+              </div>
+            </div>`;
+            if(subjOpen){
+              hHtml += `<div style="padding-left:10px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px;">
+                ${pdfs.map(p=>`
+                <div class="res-card hov-card" style="margin-bottom:0;">
+                  <div class="res-icon" style="background:#FFEBEE;">📄</div>
+                  <div class="res-info">
+                    <div class="res-title">${escapeHTML(p.title)}</div>
+                    <div class="res-meta">
+                      PDF Paper · ${escapeHTML(p.date||'')} · by ${escapeHTML(p.uploader||'Admin')}
+                    </div>
+                    ${p.desc?`<div class="res-desc">${escapeHTML(p.desc)}</div>`:''}
+                    <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;">
+                      ${p.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="event.stopPropagation();openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')">👁 View PDF</button>`:''}
+                      ${p.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="event.stopPropagation();downloadPYQPdf('${p.id}')">📥 Download</button>`:''}
+                      ${isAdmin?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="event.stopPropagation();deletePYQPdf('${p.id}')">🗑</button>`:''}
+                    </div>
+                  </div>
+                </div>`).join('')}
+              </div>`;
+            }
+          });
+          hHtml += `</div>`;
+        }
+      });
+      hHtml += `</div>`;
+    }
+  });
+  hHtml += `</div>`;
+  el.innerHTML = hHtml;
 }
 
 // Inline PDF upload handlers for the student-facing PYQ PDF tab
@@ -4231,12 +4289,13 @@ async function uploadQPPdfFile(){
   const title=document.getElementById('qpPdfTitle')?.value?.trim();
   const exam=document.getElementById('qpPdfExam')?.value||'ICAR JRF';
   const year=document.getElementById('qpPdfYear')?.value||'2024';
+  const subject=document.getElementById('qpPdfSubject')?.value?.trim()||'General';
   const link=document.getElementById('qpPdfLink')?.value?.trim();
   const desc=document.getElementById('qpPdfDesc')?.value?.trim();
   if(!title){toast('Title required.','e');return;}
   if(!link&&!_qpPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
   const id=Date.now()+'';
-  const entry={id,title,exam,year,link:link||'',desc:desc||'',
+  const entry={id,title,exam,year,subject,link:link||'',desc:desc||'',
     uploader:currentUser.name,date:fmtDate(),
     fileName:_qpPdfFile?.name||'',hasFile:!!_qpPdfFileData};
   if(_qpPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_qpPdfFileData);
@@ -4281,6 +4340,7 @@ function editPYQPdfEntry(id){
   document.getElementById('pyqPdfTitle').value=p.title||'';
   document.getElementById('pyqPdfExam').value=p.exam||'ICAR JRF';
   document.getElementById('pyqPdfYear').value=p.year||'2024';
+  const subjEl=document.getElementById('pyqPdfSubject'); if(subjEl) subjEl.value=p.subject||'';
   document.getElementById('pyqPdfLink').value=p.link||'';
   document.getElementById('pyqPdfDesc').value=p.desc||'';
   const btn=document.getElementById('pyqPdfSubmitBtn');
@@ -4290,7 +4350,7 @@ function editPYQPdfEntry(id){
 }
 function cancelEditPYQPdf(){
   _editingPYQPdfId=null; _pyqPdfFileData=''; _pyqPdfFile=null;
-  ['pyqPdfTitle','pyqPdfLink','pyqPdfDesc'].forEach(eid=>{const e=document.getElementById(eid);if(e)e.value='';});
+  ['pyqPdfTitle','pyqPdfLink','pyqPdfDesc','pyqPdfSubject'].forEach(eid=>{const e=document.getElementById(eid);if(e)e.value='';});
   const lbl=document.getElementById('pyqPdfFileLabel'); if(lbl) lbl.textContent='Click to upload PDF (max 10 MB)';
   const btn=document.getElementById('pyqPdfSubmitBtn'); if(btn) btn.textContent='📤 Upload PDF Paper';
   const cb=document.getElementById('pyqPdfCancelBtn'); if(cb) cb.style.display='none';
@@ -4301,13 +4361,14 @@ async function uploadPYQPdfFile(){
   const title=document.getElementById('pyqPdfTitle')?.value?.trim();
   const exam=document.getElementById('pyqPdfExam')?.value||'ICAR JRF';
   const year=document.getElementById('pyqPdfYear')?.value||'2024';
+  const subject=document.getElementById('pyqPdfSubject')?.value?.trim()||'General';
   const link=document.getElementById('pyqPdfLink')?.value?.trim();
   const desc=document.getElementById('pyqPdfDesc')?.value?.trim();
   if(!title){toast('Title required.','e');return;}
   if(_editingPYQPdfId){
     const idx=pyqPdfs.findIndex(x=>x.id===_editingPYQPdfId);
     if(idx===-1){toast('Paper not found.','e');return;}
-    pyqPdfs[idx]={...pyqPdfs[idx],title,exam,year,link:link||'',desc:desc||''};
+    pyqPdfs[idx]={...pyqPdfs[idx],title,exam,year,subject,link:link||'',desc:desc||''};
     if(_pyqPdfFileData){ await sSet('bhu:file:pyqpdf_'+_editingPYQPdfId,_pyqPdfFileData); pyqPdfs[idx].hasFile=true; pyqPdfs[idx].fileName=_pyqPdfFile?.name||pyqPdfs[idx].fileName; }
     await sSet('bhu:pyqpdfs',pyqPdfs);
     toast('✅ PDF paper updated!');
@@ -4317,7 +4378,7 @@ async function uploadPYQPdfFile(){
   }
   if(!link&&!_pyqPdfFileData){toast('Provide a link or upload a PDF file.','e');return;}
   const id=Date.now()+'';
-  const entry={id,title,exam,year,link:link||'',desc:desc||'',
+  const entry={id,title,exam,year,subject,link:link||'',desc:desc||'',
     uploader:currentUser.name,date:fmtDate(),
     fileName:_pyqPdfFile?.name||'',hasFile:!!_pyqPdfFileData};
   if(_pyqPdfFileData) await sSet('bhu:file:pyqpdf_'+id,_pyqPdfFileData);
@@ -4325,7 +4386,7 @@ async function uploadPYQPdfFile(){
   await sSet('bhu:pyqpdfs',pyqPdfs);
   toast('✅ PDF paper uploaded!');
   _pyqPdfFileData=''; _pyqPdfFile=null;
-  ['pyqPdfTitle','pyqPdfLink','pyqPdfDesc'].forEach(eid=>{const e=document.getElementById(eid);if(e)e.value='';});
+  ['pyqPdfTitle','pyqPdfLink','pyqPdfDesc','pyqPdfSubject'].forEach(eid=>{const e=document.getElementById(eid);if(e)e.value='';});
   const lbl=document.getElementById('pyqPdfFileLabel');
   if(lbl) lbl.textContent='Click to upload PDF (max 10 MB)';
   renderAdminPYQPdfSection(); renderPYQPdfLibrary();
@@ -4348,7 +4409,8 @@ function renderAdminPYQPdfSection(){
           ${[2025,2024,2023,2022,2021,2020,2019].map(y=>`<option>${y}</option>`).join('')}
         </select>
       </div>
-      <div><label class="lbl">Google Drive / Direct PDF Link</label><input id="pyqPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
+      <div><label class="lbl">Subject</label><input id="pyqPdfSubject" class="inp" placeholder="e.g. Agronomy"></div>
+      <div style="grid-column:1 / span 2;"><label class="lbl">Google Drive / Direct PDF Link</label><input id="pyqPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
     </div>
     <div style="margin-bottom:10px;">
       <label class="lbl">Or Upload PDF File (max 10 MB)</label>
@@ -4367,7 +4429,7 @@ function renderAdminPYQPdfSection(){
       <div style="margin-top:16px;font-weight:700;font-size:13px;margin-bottom:8px;">Uploaded Papers (${pyqPdfs.length})</div>
       ${pyqPdfs.map(p=>`
         <div style="background:#F8FBF8;border-radius:10px;padding:10px 14px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
-          <div style="flex:1;font-size:13px;"><strong>${escapeHTML(p.title)}</strong><br><span style="font-size:11px;color:#777;">${escapeHTML(p.exam)} ${escapeHTML(p.year)} · ${escapeHTML(p.date)}</span></div>
+          <div style="flex:1;font-size:13px;"><strong>${escapeHTML(p.title)}</strong><br><span style="font-size:11px;color:#777;">${escapeHTML(p.exam)} ${escapeHTML(p.year)} ${escapeHTML(p.subject?`· ${p.subject}`:'')} · ${escapeHTML(p.date)}</span></div>
           ${p.link?`<button onclick="openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')" style="background:#E3F2FD;color:#1565C0;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">👁</button>`:''}
           <button onclick="editPYQPdfEntry('${p.id}')" style="background:#FFF3E0;color:#E65100;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">✏️</button>
           <button onclick="deletePYQPdf('${p.id}')" style="background:#FFEBEE;color:#E53935;border:none;padding:4px 8px;border-radius:7px;cursor:pointer;font-size:11px;">🗑</button>
