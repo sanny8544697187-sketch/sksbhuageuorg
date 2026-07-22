@@ -427,19 +427,13 @@ try {
     </div>
     <div id="registerForm" class="login-form hidden">
       <div><label class="lbl">Full Name *</label><input id="regName" class="inp" type="text" placeholder="Enter your name"></div>
-      <div><label class="lbl">Roll Number</label><input id="regRoll" class="inp" type="text" placeholder="e.g. AG-2025-001"></div>
-      <div>
-        <label class="lbl">Year</label>
-        <select id="regYear" class="inp">
-          <option>B.Sc. Ag. Year 1</option><option>B.Sc. Ag. Year 2</option>
-          <option>B.Sc. Ag. Year 3</option><option>B.Sc. Ag. Year 4</option>
-          <option>M.Sc. Agriculture</option><option>Ph.D. Research</option>
-        </select>
-      </div>
       <div><label class="lbl">Email *</label><input id="regEmail" class="inp" type="email" placeholder="Enter your email"></div>
       <div><label class="lbl">Password * (min 6 chars)</label><input id="regPass" class="inp" type="password" placeholder="Create password"></div>
       <div id="regErr" style="color:#E53935;font-size:13px;"></div>
       <button class="btn btn-primary" onclick="doRegister()">Create Account</button>
+      <button class="btn btn-light" style="width:100%; border:1px solid #ccc; background:#fff; color:#333; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:10px;" onclick="doGoogleLogin()">
+        <img src="https://www.google.com/favicon.ico" width="16" alt="G"> Register with Google
+      </button>
     </div>
   </div>
 </div>
@@ -1807,6 +1801,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(saved_ap) adminPass=saved_ap;
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
   if(sess){ currentUser=sess; }
+  else { setTimeout(openLogin, 1500); }
 
   await loadPYQPdfs();
 
@@ -5034,10 +5029,10 @@ async function doLogin(){
 
 async function doRegister(){
   const name=document.getElementById("regName").value.trim();
-  const roll=document.getElementById("regRoll").value.trim();
-  const year=document.getElementById("regYear").value;
   const em=document.getElementById("regEmail").value.trim().toLowerCase();
   const pass=document.getElementById("regPass").value;
+  const roll="";
+  const year="Other";
   const errEl=document.getElementById("regErr");
   if(!name||!em||!pass){errEl.textContent="Fill all required fields.";return;}
   if(pass.length<6){errEl.textContent="Password min 6 characters.";return;}
