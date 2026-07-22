@@ -360,6 +360,7 @@
       }
     }
   </style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591814606015176" crossorigin="anonymous"></script>
 </head>
 <body>
 
@@ -646,25 +647,72 @@ try {
 
     <!-- ── RESOURCES TAB ── -->
     <div id="stab_resources_content" style="display:none;">
-      <div class="section-subtitle" id="resCount">Loading resources…</div>
-      <div class="card" style="padding:14px 16px;margin-bottom:16px;">
-        <div class="search-box" style="margin-bottom:12px;">
-          <span style="font-size:14px;color:#777;">🔍</span>
-          <input id="resSearch" type="text" placeholder="Search by title or subject…" oninput="renderResources()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;width:100%;">
+      <!-- Resources sub-tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px;">
+        <button id="resSubTab_upload" class="btn btn-primary" style="padding:7px 16px;font-size:12px;font-weight:700;white-space:nowrap;" onclick="setResSubTab('upload')">📤 Community Uploads</button>
+        <button id="resSubTab_library" class="btn btn-light" style="padding:7px 16px;font-size:12px;font-weight:700;white-space:nowrap;" onclick="setResSubTab('library')">📚 Curated Library</button>
+      </div>
+
+      <!-- Community Uploads panel -->
+      <div id="resPanel_upload">
+        <div class="section-subtitle" id="resCount">Loading resources…</div>
+        <div class="card" style="padding:14px 16px;margin-bottom:16px;">
+          <div class="search-box" style="margin-bottom:12px;">
+            <span style="font-size:14px;color:#777;">🔍</span>
+            <input id="resSearch" type="text" placeholder="Search by title or subject…" oninput="renderResources()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;width:100%;">
+          </div>
+          <div class="chips-row" style="margin-bottom:10px;">
+            <span style="font-size:11px;font-weight:600;color:#777;flex-shrink:0;align-self:center;margin-right:4px;">Type:</span>
+            <div id="typeFilters"></div>
+          </div>
+          <div class="chips-row">
+            <span style="font-size:11px;font-weight:600;color:#777;flex-shrink:0;align-self:center;margin-right:4px;">Subject:</span>
+            <div id="subjectFilters"></div>
+          </div>
         </div>
-        <div class="chips-row" style="margin-bottom:10px;">
-          <span style="font-size:11px;font-weight:600;color:#777;flex-shrink:0;align-self:center;margin-right:4px;">Type:</span>
-          <div id="typeFilters"></div>
-        </div>
-        <div class="chips-row">
-          <span style="font-size:11px;font-weight:600;color:#777;flex-shrink:0;align-self:center;margin-right:4px;">Subject:</span>
-          <div id="subjectFilters"></div>
+        <div id="resourceList"></div>
+        <div id="noResourceResults" class="card" style="padding:40px;text-align:center;display:none;">
+          <div style="font-size:40px;margin-bottom:10px;">📭</div>
+          <div id="noResText" style="font-weight:700;font-size:15px;"></div>
         </div>
       </div>
-      <div id="resourceList"></div>
-      <div id="noResourceResults" class="card" style="padding:40px;text-align:center;display:none;">
-        <div style="font-size:40px;margin-bottom:10px;">📭</div>
-        <div id="noResText" style="font-weight:700;font-size:15px;"></div>
+
+      <!-- Curated Library panel -->
+      <div id="resPanel_library" style="display:none;">
+        <!-- ICAR eCourses & BAU Notes sub-nav -->
+        <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;">
+          <button id="libTab_icar" class="btn btn-primary" style="padding:6px 14px;font-size:12px;font-weight:700;white-space:nowrap;" onclick="setLibTab('icar')">🌾 ICAR eCourses</button>
+          <button id="libTab_bau" class="btn btn-light" style="padding:6px 14px;font-size:12px;font-weight:700;white-space:nowrap;" onclick="setLibTab('bau')">🏛️ BAU Notes</button>
+          <button id="libTab_iari" class="btn btn-light" style="padding:6px 14px;font-size:12px;font-weight:700;white-space:nowrap;" onclick="setLibTab('iari')">📖 IARI PG Papers</button>
+        </div>
+
+        <!-- Lib search -->
+        <div class="card" style="padding:10px 14px;margin-bottom:14px;">
+          <div class="search-box">
+            <span style="font-size:14px;color:#777;">🔍</span>
+            <input id="libSearch" type="text" placeholder="Search curated resources…" oninput="renderLibrary()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;width:100%;">
+          </div>
+        </div>
+
+        <!-- ICAR eCourses Panel -->
+        <div id="libPanel_icar">
+          <div style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.5;">📌 Official ICAR e-Course PDFs — free to access and download for all B.Sc. Agriculture students.</div>
+          <div id="icarSubjectNav" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;"></div>
+          <div id="icarList"></div>
+        </div>
+
+        <!-- BAU Notes Panel -->
+        <div id="libPanel_bau" style="display:none;">
+          <div style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.5;">📌 Bihar Agricultural University (Sabour) — semester-wise study notes and reference PDFs.</div>
+          <div id="bauSemNav" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;"></div>
+          <div id="bauList"></div>
+        </div>
+
+        <!-- IARI Papers Panel -->
+        <div id="libPanel_iari" style="display:none;">
+          <div style="font-size:13px;color:#555;margin-bottom:12px;line-height:1.5;">📌 IARI Post-Graduate Entrance Paper resources — subject-wise collections.</div>
+          <div id="iariList"></div>
+        </div>
       </div>
     </div>
 
@@ -678,37 +726,37 @@ try {
             <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:10px;" id="examPanelGrid2">
               <div class="card hov-card exam-panel" id="examPanel_ICAR JRF_2" onclick="selectPlannerExam('ICAR JRF', 2)" style="padding:16px; border:2px solid #00B050; cursor:pointer; text-align:center;">
                 <div style="font-size:32px;">🎓</div>
-                <div style="font-weight:800; font-size:15px; margin:6px 0;">ICAR JRF Course</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">ICAR JRF</div>
                 <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
                 <button class="btn btn-primary" style="width:100%; font-size:12px;">Select</button>
               </div>
               <div class="card hov-card exam-panel" id="examPanel_IARI PG PAPER_2" onclick="selectPlannerExam('IARI PG PAPER', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
                 <div style="font-size:32px;">🏫</div>
-                <div style="font-weight:800; font-size:15px; margin:6px 0;">IARI PG Paper</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">IARI PG PAPER</div>
                 <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
                 <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
               </div>
               <div class="card hov-card exam-panel" id="examPanel_NABARD_2" onclick="selectPlannerExam('NABARD', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
                 <div style="font-size:32px;">🏛️</div>
-                <div style="font-weight:800; font-size:15px; margin:6px 0;">NABARD Mains</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">NABARD</div>
                 <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
                 <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
               </div>
               <div class="card hov-card exam-panel" id="examPanel_IBPS AFO_2" onclick="selectPlannerExam('IBPS AFO', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
                 <div style="font-size:32px;">🏦</div>
-                <div style="font-weight:800; font-size:15px; margin:6px 0;">IBPS AFO Complete</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">IBPS AFO</div>
                 <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
                 <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
               </div>
               <div class="card hov-card exam-panel" id="examPanel_BHU ENTRANCE_2" onclick="selectPlannerExam('BHU ENTRANCE', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
                 <div style="font-size:32px;">🏛️</div>
-                <div style="font-weight:800; font-size:15px; margin:6px 0;">BHU Entrance</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">BHU ENTRENCE</div>
                 <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
                 <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
               </div>
               <div class="card hov-card exam-panel" id="examPanel_OTHER_2" onclick="selectPlannerExam('OTHER', 2)" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
                 <div style="font-size:32px;">🌾</div>
-                <div style="font-weight:800; font-size:15px; margin:6px 0;">Other Exams</div>
+                <div style="font-weight:800; font-size:15px; margin:6px 0;">OTHER</div>
                 <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
                 <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
               </div>
@@ -1316,37 +1364,37 @@ try {
           <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px; margin-bottom:10px;" id="examPanelGrid">
             <div class="card hov-card exam-panel" id="examPanel_ICAR JRF" onclick="selectPlannerExam('ICAR JRF', '')" style="padding:16px; border:2px solid #00B050; cursor:pointer; text-align:center;">
               <div style="font-size:32px;">🎓</div>
-              <div style="font-weight:800; font-size:15px; margin:6px 0;">ICAR JRF Course</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">ICAR JRF</div>
               <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
               <button class="btn btn-primary" style="width:100%; font-size:12px;">Select</button>
             </div>
             <div class="card hov-card exam-panel" id="examPanel_IARI PG PAPER" onclick="selectPlannerExam('IARI PG PAPER', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
               <div style="font-size:32px;">🏫</div>
-              <div style="font-weight:800; font-size:15px; margin:6px 0;">IARI PG Paper</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">IARI PG PAPER</div>
               <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
               <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
             </div>
             <div class="card hov-card exam-panel" id="examPanel_NABARD" onclick="selectPlannerExam('NABARD', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
               <div style="font-size:32px;">🏛️</div>
-              <div style="font-weight:800; font-size:15px; margin:6px 0;">NABARD Mains</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">NABARD</div>
               <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
               <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
             </div>
             <div class="card hov-card exam-panel" id="examPanel_IBPS AFO" onclick="selectPlannerExam('IBPS AFO', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
               <div style="font-size:32px;">🏦</div>
-              <div style="font-weight:800; font-size:15px; margin:6px 0;">IBPS AFO Complete</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">IBPS AFO</div>
               <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
               <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
             </div>
             <div class="card hov-card exam-panel" id="examPanel_BHU ENTRANCE" onclick="selectPlannerExam('BHU ENTRANCE', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
               <div style="font-size:32px;">🏛️</div>
-              <div style="font-weight:800; font-size:15px; margin:6px 0;">BHU Entrance</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">BHU ENTRENCE</div>
               <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
               <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
             </div>
             <div class="card hov-card exam-panel" id="examPanel_OTHER" onclick="selectPlannerExam('OTHER', '')" style="padding:16px; border:2px solid transparent; cursor:pointer; text-align:center;">
               <div style="font-size:32px;">🌾</div>
-              <div style="font-weight:800; font-size:15px; margin:6px 0;">Other Exams</div>
+              <div style="font-weight:800; font-size:15px; margin:6px 0;">OTHER</div>
               <div style="font-size:11px; color:#777; margin-bottom:6px;">Validity: Till Exam</div>
               <button class="btn btn-light" style="width:100%; font-size:12px;">Select</button>
             </div>
