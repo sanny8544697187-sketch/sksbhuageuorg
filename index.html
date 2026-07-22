@@ -32,30 +32,10 @@
   <title>Agri Edu Rise — Agriculture e-Learning v10</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-
-  <!-- ══ GOOGLE ADSENSE ══════════════════════════════════════════════
-       STEP 1: Replace ca-pub-2591814606015176 with your Publisher ID
-       STEP 2: Replace each data-ad-slot value with your Ad Unit Slot IDs
-       Get them from: https://adsense.google.com → Ads → By ad unit
-  ═══════════════════════════════════════════════════════════════════ -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591814606015176" crossorigin="anonymous"></script>
   <style>
     /* ── RESET & BASE ── */
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html,body{height:100%;}
-
-    /* ── GOOGLE ADS ── */
-    .ad-container {
-      width:100%; overflow:hidden; text-align:center;
-      margin:12px 0; border-radius:12px;
-      background:#f9f9f9; min-height:60px;
-    }
-    .ad-container ins { display:block; }
-    .ad-label {
-      font-size:9px; color:#bbb; text-transform:uppercase;
-      letter-spacing:.5px; margin-bottom:2px;
-    }
-    body.ads-hidden .ad-container { display:none !important; }
     body{
       font-family:'Plus Jakarta Sans',sans-serif;
       -webkit-font-smoothing:antialiased;
@@ -398,7 +378,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <!-- Google AdSense Placeholder -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591814606015176" crossorigin="anonymous"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
 
 <script>
 // ── FIREBASE CONFIG ─────────────────────────────────────────────
@@ -583,18 +563,6 @@ try {
     <div id="userBar"></div>
     <div id="premBannerHome"></div>
 
-    <!-- AD UNIT 1: Banner below hero — replace slot ID -->
-    <div class="ad-container" id="adHeroBanner">
-      <div class="ad-label">Advertisement</div>
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-2591814606015176"
-           data-ad-slot="1111111111"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-    </div>
-
     <div class="quick-grid" id="quickFeatureGrid">
       <div class="card quick-card hov-card" onclick="setSection('quiz');setTimeout(()=>setQuizTab('daily'),60)">
         <div class="quick-icon" style="background:#FFF8E1;">🔥</div>
@@ -660,6 +628,7 @@ try {
       <button class="sub-tab-btn active" id="stab_subjects" onclick="setSubjectsTab('subjects')">📚 Subjects</button>
       <button class="sub-tab-btn" id="stab_resources" onclick="setSubjectsTab('resources')">📁 Resources</button>
       <button class="sub-tab-btn" id="stab_planner" onclick="setSubjectsTab('planner')">🗓️ Planner</button>
+      <button class="sub-tab-btn" id="stab_ebooks" onclick="setSubjectsTab('ebooks')">📖 E-Books</button>
     </div>
 
     <!-- ── SUBJECTS TAB ── -->
@@ -774,9 +743,21 @@ try {
               <div style="font-weight:700; font-size:14px; margin-bottom:8px; color:#00B050;" id="syllabusTitle2">Syllabus</div>
               <ul id="syllabusList2" style="padding-left:20px; font-size:13px; color:#333; line-height:1.6; margin:0;"></ul>
             </div>
+            <div class="card" style="padding:16px; margin-top:12px;">
+              <button class="btn btn-light" style="width:100%;font-size:13px;display:flex;align-items:center;justify-content:space-between;" onclick="toggleExamPattern('2')">
+                <span>📋 Exam Pattern &amp; Marking Scheme</span>
+                <span id="examPatternArrow2">▼</span>
+              </button>
+              <div id="examPatternBox2" style="display:none;margin-top:12px;"></div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ── E-BOOKS TAB ── -->
+    <div id="stab_ebooks_content" style="display:none;">
+      <div id="ebooksLibraryRoot"></div>
     </div>
   </section>
 
@@ -1406,6 +1387,13 @@ try {
             <div style="font-weight:700; font-size:14px; margin-bottom:8px; color:#00B050;" id="syllabusTitle">Syllabus</div>
             <ul id="syllabusList" style="padding-left:20px; font-size:13px; color:#333; line-height:1.6; margin:0;"></ul>
           </div>
+          <div class="card" style="padding:16px; margin-top:12px;">
+            <button class="btn btn-light" style="width:100%;font-size:13px;display:flex;align-items:center;justify-content:space-between;" onclick="toggleExamPattern('')">
+              <span>📋 Exam Pattern &amp; Marking Scheme</span>
+              <span id="examPatternArrow">▼</span>
+            </button>
+            <div id="examPatternBox" style="display:none;margin-top:12px;"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1860,7 +1848,7 @@ let activeLbTabQ="all";
 
 function setSubjectsTab(tab){
   activeSubjectsTab=tab;
-  ["subjects","resources","planner"].forEach(t=>{
+  ["subjects","resources","planner","ebooks"].forEach(t=>{
     const btn=document.getElementById("stab_"+t);
     const content=document.getElementById("stab_"+t+"_content");
     if(btn) btn.classList.toggle("active",t===tab);
@@ -1869,6 +1857,7 @@ function setSubjectsTab(tab){
   if(tab==="resources") renderResources();
   if(tab==="subjects") renderSubjects();
   if(tab==="planner") syncPlannerToTab();
+  if(tab==="ebooks") renderEbooksLibrary();
 }
 
 function setQuizTab(tab){
@@ -5504,9 +5493,91 @@ const examInfoMap = {
   "OTHER": ["General Agriculture Syllabus", "Current Affairs", "Basic Science Concepts"]
 };
 
+// Detailed exam-pattern breakdown (phases, sections, timing, marking) — shown as an
+// expandable card in the Study Planner alongside the syllabus list.
+const EXAM_PATTERN_INFO = {
+  "ICAR JRF": {
+    phases: ["Single objective-type online test (no separate mains/interview stage for JRF screening)"],
+    sections: ["General Agriculture", "Discipline-specific subject paper", "General Science & Aptitude"],
+    duration: "2 hours",
+    marking: "+1 for each correct answer; check current notification for negative marking rules, as these can change year to year.",
+    tip: "Focus on NCERT-level basics plus your specialisation subject — JRF papers weight the discipline paper heavily."
+  },
+  "IARI PG PAPER": {
+    phases: ["Single online entrance test", "Interview/counselling for shortlisted candidates (institute-dependent)"],
+    sections: ["Crop Science", "Horticulture", "Plant Protection (Entomology & Pathology)", "General Agriculture"],
+    duration: "2 hours",
+    marking: "Objective MCQs with standard positive marking; verify negative marking from the current IARI brochure.",
+    tip: "IARI papers lean conceptual — prioritise understanding over rote memorisation."
+  },
+  "NABARD": {
+    phases: ["Preliminary exam", "Mains exam", "Interview"],
+    sections: ["Reasoning & Quantitative Aptitude", "English Language", "Economic & Social Issues", "Agriculture & Rural Development"],
+    duration: "Prelims ~2 hours; Mains varies by paper",
+    marking: "Typically 1/4th negative marking per wrong answer — always confirm against the latest official notification.",
+    tip: "Rural development and agri-economics current affairs carry real weight in NABARD Mains."
+  },
+  "IBPS AFO": {
+    phases: ["Prelims (online objective)", "Mains (Professional Knowledge paper)", "Interview"],
+    sections: ["Prelims: English Language, Reasoning, Quantitative Aptitude (each sectionally timed)", "Mains: single Professional Knowledge (Agriculture) paper, bilingual"],
+    duration: "Prelims: 2 hours total, ~40 minutes per section. Mains: 45 minutes for 60 questions.",
+    marking: "1/4th mark deducted per wrong answer; no deduction for unattempted questions. Final merit blends online score and interview roughly 80:20, with a minimum qualifying cutoff.",
+    tip: "Mains Professional Knowledge is scored high-stakes — revise crop production, soil science, animal husbandry and agri-engineering fundamentals thoroughly."
+  },
+  "BHU ENTRANCE": {
+    phases: ["Single objective entrance test"],
+    sections: ["Mental Ability", "Chemistry", "Physics & Mathematics", "Botany & Zoology", "Agriculture Principles"],
+    duration: "Typically 2–2.5 hours (confirm with current year's info bulletin)",
+    marking: "Standard positive marking; negative marking policy varies by year — check the latest CUET/BHU UET notification.",
+    tip: "Balance revision across science basics and agriculture-specific principles; BHU papers test breadth over depth."
+  },
+  "OTHER": {
+    phases: ["Varies by exam — check the specific exam's official notification"],
+    sections: ["General Agriculture Syllabus", "Current Affairs", "Basic Science Concepts"],
+    duration: "Varies by exam",
+    marking: "Varies by exam — always confirm from the official source before your test.",
+    tip: "Use this planner as a general revision tracker and adapt the schedule once you know the exact pattern."
+  }
+};
+
+function toggleExamPattern(suffix){
+  const box=document.getElementById("examPatternBox"+suffix);
+  const arrow=document.getElementById("examPatternArrow"+suffix);
+  if(!box) return;
+  const show = box.style.display==="none"||!box.style.display;
+  box.style.display = show?"block":"none";
+  if(arrow) arrow.textContent = show?"▲":"▼";
+  if(show) renderExamPattern(suffix);
+}
+
+function renderExamPattern(suffix){
+  const box=document.getElementById("examPatternBox"+suffix);
+  if(!box) return;
+  const examInput=document.getElementById("planExam"+suffix);
+  const examName=examInput?examInput.value:"OTHER";
+  const info=EXAM_PATTERN_INFO[examName]||EXAM_PATTERN_INFO["OTHER"];
+  box.innerHTML=`
+    <div style="display:flex;flex-direction:column;gap:12px;font-size:12.5px;color:#333;line-height:1.6;">
+      <div>
+        <div style="font-weight:700;color:#0F3D23;font-size:12px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Phases</div>
+        <ul style="padding-left:18px;margin:0;">${info.phases.map(p=>`<li>${escapeHTML(p)}</li>`).join("")}</ul>
+      </div>
+      <div>
+        <div style="font-weight:700;color:#0F3D23;font-size:12px;text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Sections Tested</div>
+        <ul style="padding-left:18px;margin:0;">${info.sections.map(s=>`<li>${escapeHTML(s)}</li>`).join("")}</ul>
+      </div>
+      <div><span style="font-weight:700;color:#0F3D23;">⏱ Duration:</span> ${escapeHTML(info.duration)}</div>
+      <div><span style="font-weight:700;color:#0F3D23;">✏️ Marking:</span> ${escapeHTML(info.marking)}</div>
+      <div style="background:#E8F5E9;border-radius:10px;padding:10px 12px;">💡 <strong>Tip:</strong> ${escapeHTML(info.tip)}</div>
+      <div style="font-size:10.5px;color:#999;">General guidance only — always cross-check exact pattern & marking with the exam's official current-year notification.</div>
+    </div>`;
+}
+
 function selectPlannerExam(examName, suffix) {
   const inputEl = document.getElementById("planExam" + suffix);
   if(inputEl) inputEl.value = examName;
+  const patBox = document.getElementById("examPatternBox" + suffix);
+  if(patBox && patBox.style.display==="block") renderExamPattern(suffix);
   const exams = ["ICAR JRF", "IARI PG PAPER", "NABARD", "IBPS AFO", "BHU ENTRANCE", "OTHER"];
   exams.forEach(ex => {
     const p = document.getElementById("examPanel_" + ex + (suffix?"_2":""));
@@ -6648,6 +6719,153 @@ async function finishDuelPlay(){
 // ═══════════════════════════════════════════════════════════════
 // END GAMES MODULE
 // ═══════════════════════════════════════════════════════════════
+
+</script>
+
+
+<script>
+// ═══ E-BOOKS LIBRARY MODULE (adapted feature) ═══
+const EBOOKS_LIBRARY = [
+  { title:"A Textbook of Agronomy", author:"B.Chandrasekaran, K.Annadurai, E.Somasundaram",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiek3Am45vK5VKPbu03ftEWA0ZiDYwuinZIbl5hJyUby-v-Bbo13CzV8eLIUbusL-GHSP3aedGynXAfXi3M_UOPt6N8O3G6fxCuw7I5C1InyFN7ZAb-cVrRkjcor0Ns7iuALQlZule8pPJ6DC6OjxZkLstdwF-WpfZ1F_srLZvOdj2K11AY_vpFXrE5yA/s1600/a%20textbook%20of%20agronomy.webp",
+    link:"https://drive.google.com/file/d/1JyiG7dA8jz9sNqwPMDpCpZinU8Iqg0qx/view?usp=drivesdk", subject:"Agronomy" },
+  { title:"Agronomy At A Glance", author:"Maliwal PL, Mundra SL",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhNLchbfEuXqFLfuMzlLJBSiPAYC9UvF2cVu5R7icCh-6uvPeB34rrjLV3cYMv14dQXNDa61zJGC3QvwfXJRJx5qoB1SWbcWDU2XjCqOVg-ciDNvW6xynpBtPghRLta-Vagd7hfQI_2KW2AWtIM_HwsENEjg0GoKxsK9nLN5U6WvyOgTjg3HAYZ3YO49g/s1600-rw/agronomy%20at%20a%20glance.webp",
+    link:"https://drive.google.com/file/d/1TUVXAe9u4GWQHiNfF1JGg9qEbAnnKFUy/view?usp=drivesdk", subject:"Agronomy" },
+  { title:"Principles of Agronomy", author:"T.Yellamanda Reddy, G.H.Sankara Reddy",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhA2QX9TJ2mA5z_79q0l41lyBrSQTIOEgRp6ww9LW7dgGsTTKBeX-Hz5g1DcWC9AfuwpFNcE5dHwyjswDzEa5lls0RA4usOMm9daJhO8BnGbca2H-S7vNmgWx7lCZSAZjTimlAykjkIyqQqm7PalLA6vkf2PC6_vlnq1XepRqLW1_yAans0MnMKjzKpPQ/s1600-rw/principles%20of%20agronomy.webp",
+    link:"https://drive.google.com/file/d/1M2JhgIF99VcYnIW1O3OErT2dxpZq6dla/view?usp=drivesdk", subject:"Agronomy" },
+  { title:"Agronomy In Brief", author:"B.Raghavendra, Y.Ashoka Reddy, G.Prabhakara Reddy, M.Srinivasa Reddy, G.Krishna, Satish",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEguQ5WHwLCzcuVN1-44_DX2AlHWd4OB1hSrXnmNOOdda8QZeH-GM6ySPyA98RZ0NbqzSZ_NnZGekGmoBK5GmfBheljB8adM7oClMUrD7JpIJTBfrzCFalNeKWeRHAGQl3lWg56xdIEC_CvTqtaUH6UmIHh_rWAq4pQ2nU2yH3LsPCkGu3qoRi0Lf9FyEg/s1600-rw/agronomy%20in%20brief.webp",
+    link:"https://drive.google.com/file/d/1WlilQYK19JWthAs5pl62XJZ6tUERjfMM/view?usp=drivesdk", subject:"Agronomy" },
+  { title:"A Competitive Book of Agriculture", author:"Nem Raj Sunda",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjSvFvnqDCKblIO7LZjRrFL6AkV77NehRfUtkHQz5GIzFtCo2f13KvZjiggxMID-QpvQE24wCiF7LbXn3DNsQdZ22NXJ1Vie6tmMNbbjPnGO8jBtHYzb4leg6eg9p9McvIESy-N2L2JaTpE-bb8eqDNpP0BhlafjtX-oIzFda8DN41ebO6Iw4Cy-XLb2Q/s1600-rw/a%20competitive%20book%20of%20Agriculture.webp",
+    link:"https://drive.google.com/file/d/1X_HENeK4RhuaW7K6OQQJgek6hber1b6k/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"Principles of Seed Technology", author:"P.K.Agrawal",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiMgLVzPATcM7C_4n-aPy6GTN-D4B3yceNM5A30QhhzHaMycFGgjEu9tVGMVU5_HBZJy4Uk9nWm37IbD1jJXk2L-6dzkgJZJpzH0rVIaFqVbKtqedbTcqbpIGG8OlEjfD8ETVM5qNMq6q3rN5lPLZ8IA2UuBrO34QeneHfE9EwBD-H4vtNkFlb9eRvWLw/s1600-rw/principles%20of%20seed%20technology.webp",
+    link:"https://drive.google.com/file/d/1_flU5VOYiD6b0vBP2bYjgZCjOHFsC_e1/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"Instant Horticulture", author:"S.N.Gupta",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiR3n8hRxXWHrZ4W3OjZSAsC--4XdUA4ImTbiLQYnXDDKhlQQ2Ge0fOieG5vGwLde9qEl0qnF1xJYFcxn5zMIPhFMeIlHWPCCkzUDfjL0lCrp_2d1_oMonFC_XS_PQoqQNliOxt0ZsuqHw_SpIBRELxJrQBG_yKGJ8ZsP4AYEYUKAhXzMSG_Xab7VadCQ/s1600-rw/instant%20horticulture.webp",
+    link:"https://drive.google.com/file/d/1TYDAO5R9r9guswNqj_mPOHYF6DhBzbg1/view?usp=drivesdk", subject:"Horticulture" },
+  { title:"Objective Agriculture", author:"S.R.Kantwa",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhC8ajOPlP6RRvvQY8jA_P1rcKRylNvD18Uv2Ob6E2WJFwf_P4wPGnqk_zIVD-AGDkYXFRBeYdueBuGxPvQav_2hTXud_2eRb7Catdv76l_QAkAUCGRi0vwLKKhV8PKH25KGQkmUBErLcReVYvknDAtUvfGUsHrxvPSeBl-qj-WmdM3MyH1YjOBR7OoBg/s1600-rw/objective%20agriculture.webp",
+    link:"https://drive.google.com/file/d/1WbBs-ELZ_FOCjrvnyGologNzkKDfNlHs/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"A Textbook of Animal Husbandry", author:"G.C.Banerjee",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh14r4tzGymAe7ZJvcYfOIBaFoq_MIrCMJ-nAUacW49ypVyMZ1S27jpf2Z8oVsp1j8MxgbqziKc6b1FvX6oC3eEuhJLMCeOV3QNfzrwwBHNvl5l5_tiFrMt-L2YcbnPC2jcWsfd5hGyETXgZB_j1Tfxv1NdVr_hfH_F7J8wwHnzc1keBe4CPcd-MSx3Lw/s1600-rw/animal%20husbandry.webp",
+    link:"https://drive.google.com/file/d/1Sg9-_6PvNVYW4Pu3lI4jxaSy83Z_SDtb/view?usp=drivesdk", subject:"Animal Husbandry & Dairy Tech" },
+  { title:"Fundamentals of Agriculture", author:"Arun Katyayan",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjdhtVGZ8_RxrjPKlrj4SFAJEIlszz7RrOroeVB-6GTM9X9c0K13QFThslRlUeuawmIZZABZjG1EOT0hmBf-uDs-rph8J2Wo2G0tPvEm94ZIVMLq5Dfl5AQx9x-5PgnfJ-X_xX76uMtbrITbG52TmKdomMtnmgroD1pjEgdDXyQE4Fi73JiHGBjRRR3OQ/s1600-rw/fundamentals%20of%20agriculture.webp",
+    link:"https://drive.google.com/file/d/1LfFdO4OkCPmCIYgVPs_MJZi2RmaS2vEt/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"Question Bank for Agriculture Competitions", author:"R.K.Sharma",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjyEY8iN7h-Dt6HSQbQbgdQGZzI2IBzl3h-pCYULGJhnYugC7IeYbm2vMybTabv98lMbNWQ4vvkiP24rmyksa0CRJL2bDkkKDqq_gNug11fcED6o7dywcAweq2nKsC4myROU8WqYh3pF2wSVcHTn9G490QxlWYpqQlWx_RTBW-_paxc397L8OQ9MLmyZA/s1600-rw/question%20bank%20for%20agriculture.webp",
+    link:"https://drive.google.com/file/d/1TacjJbI-ehOT8LcL3Yc7NsdzcCoSCgQJ/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"Guide for Agricultural Competitive Examinations", author:"R.K.Sharma, N.Pandey, A.P.Singh, R.S.Maitry",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgkBPYTa7vk7n7OwDAbuVjD2DP3T64_LgVmMntyYR8j3ZSk7CiiLiuiKyHzMAUhA372H1bVQsfykCzDR9WFDoqVNaMwrNfcQTHA_ZJJeaKgtuAGIdLX5N8nowUvccTVRgHE3SME_WCDuDeqR3u3cWgCt_8BmdzqgX9DfkIdWl4vE5k5pDeheAXsOBXHrg/s1600-rw/agricultural%20competitive%20exams.webp",
+    link:"https://drive.google.com/file/d/1Xp1wqTipKc1L1W3MzTnE_wWgsRdkIT30/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"General Agriculture", author:"ANGRAU",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEieiCpKjowpXf1qULzVRUiQH4m5ennteLeFvgD4dZfrQ-oZ0EhbePguBiNYG6rqu3YUh_xdnP5KfBUIPxSSOhjBXECyyAZyqgM_6Yo3jSfegw2l0nJP_0ioxA7aTJm8VzmKCwfL85scEt43i2EbdagWcaHEHIR6emQYUYjPw1UMHR4GQo0xoVktPFU-cg/s1600-rw/handbook%20on%20general%20agriculture.webp",
+    link:"https://drive.google.com/file/d/1WfNgFRs2xNZtpqEGiiDPB6CErCI7184o/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"Objective Agronomy", author:"N.Thavaprakaash, K.Velayudham",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjNU4GIadm9JqetdZxqDQEdRMuc2p1FZ68XR5YYHdpxoyJ84-YaMsllA-9CZ3UfoSeKwHfGapIqv4nSqd_pJ-_iYkLewn9VJP2iv7WujR4Kyxaku2Nxn-vY20_I2fgZ3FLaGIQIJXQSbnL79M1GRVmBGsGjgLSfbgFHCaQCg9egM0TRXwDwspTWdbmvAw/s1600-rw/objective%20agronomy.webp",
+    link:"https://drive.google.com/file/d/1ZKT3T4Lg7RthtkzMPQbIzar-dAWq8jDM/view?usp=drivesdk", subject:"Agronomy" },
+  { title:"Soil Science (Objective)", author:"T.Ramesh, Brajendra, Patiram, Anand K.Vishwakarma, S.V.Ngachan",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjXVw04jzcI0SJ2qTPNgGyuRPLI8UT9DSftFxzvrliQftcI61ZBHy-CdzHfLp3fP3gLrBElmchHMI_9Q2OY9ZuaJ1eFT9oVQTyP2pTVP7V7UCdborIBuKaZ--AAQy91FbyAHmzk97v1dA_HEFShwgtnPf4AYtyKVZQTyFViktL2iLxXryRi4Eheo9Hbjw/s1600-rw/objective%20soil%20science.webp",
+    link:"https://drive.google.com/file/d/1_eg6W3Ne1TdapPwJueMSifDjefqQrblP/view?usp=drivesdk", subject:"Soil Sciences & Agricultural Chemistry" },
+  { title:"Agriculture At A Glance", author:"R.K.Sharma, B.B.Singh, S.Shinde, V.K.Pandey, N.Pandey, S.K.Bhoi",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiw3vgW6Tn03cyuBQXALdAIEvO6tuzCelz5C_XB9JOOwOL-3e7p-fyrVvRfWqrIOAeNeV95FyrVC_SlrWxbLCiiFHn0-_qaYJm3MR0xsN8tegjpimDLXw91cmTLd-Oo9ZiFg-a-dmmmn26fMengCCpZwp6CMN3csyTWTThuv7zuDq8G-rBG5gCTLVjJgw/s1600-rw/agriculture%20at%20a%20glance.webp",
+    link:"https://drive.google.com/file/d/1_rI70I-oVj0igDiwlZW1DBoNYkmxxAUe/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"Fungi, Bacteria & Viruses", author:"H.C.Dube",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgfRuW_Ivo-ZQPzIfybL30edu1w6ynWrbmmNhHDNTYgwqJclK2zhD1rv30GoparAxwA8peJhYLiPLm5S4aq6Vzz3je6nkH3xNWwabGvSZfLmyJPUMQcdwEQ_vhbTuWSB6AE9gL22TfMEvQ0HkRTz1L6_9IBuvqip1HOd_uDocJvrgHmLArm_RBNJvzCAw/s1600-rw/fungi,%20bacteria%20and%20viruses.webp",
+    link:"https://drive.google.com/file/d/1_bvoXdYqmwpa8aMfqivTJFTfNivTVWLP/view?usp=drivesdk", subject:"Plant Pathology" },
+  { title:"Comparative Plant Virology", author:"Roger Hull",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjnlkz5qBrOKL2k4tpfFZdIcXtPo64yiocHBy2LxtvU38erL9P8Q6_cxUlBhIYqyg0DM81bV7Hk4TItaNnnqFXDvlY7G6jDVC9mCInJV4ghnD7jR2NtzkZxsv_rp35L7Jk33lcSmVeP4tVqdXon4MZL7Vml5qCg_vMkq3a_Y7KOTIneoarI40tBBMHY2g/s1600/comparative%20plant%20virology.webp",
+    link:"https://drive.google.com/file/d/1iiWSCzn5061vSvWUL_J3iIscE9lfoL2d/view?usp=drivesdk", subject:"Plant Pathology" },
+  { title:"MCQ's in Microbiology", author:"G.Vidya Sagar",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjiV2TdT8-Pz1pntbQbEe1KmzykfxqDTZZz7CyLZ0EMEOe_we55MmM-3ovSTyQ-JytkAJg7r0KmZRHQjfybBFGlBIHA0jQtUrFoCkN6pTbRxKTSnwbXdHj-vap8n_ts-Ah5RN_4--gIcG2R_kf-0HJTESOo73S5mPHf4_hAKvtSaydILBs2C4RilPJblw/s1600-rw/MCQs%20in%20microbiology.webp",
+    link:"https://drive.google.com/file/d/1i4cjzoKL2jOQ4O3Y_bcOEdHhAmXmDXW0/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"Treasure of Agriculture", author:"R.P. Yadav, Atul Dhansil, S. Yugender Reddy, K.L. Yadav",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjQtN8LOMn0oRD3f7gOVjqoOH15eU5M9N_x2FIGOwVqxpYEfCQT9bT9e-GEGh1uqlf_AyyCAGERYWK1ePe6zesc26oA3PaGV9z0DzGHh-buryd67eMSyIa9izGIjezhutJy8FA4j80MM4gNLMrIpDADF29pAUTJ549JNAsnWTGmlq2OVi5rRGKronN1KQ/s1600-rw/treasure%20of%20Agriculture.webp",
+    link:"https://drive.google.com/file/d/1iDpSFo6iEPIl-oFbFe1s_R6JnPbaPYKb/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"Plant Sciences: A Treatise", author:"P. Jalender, A. Srijan, S. Sandeep",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEihpZjYyVgYbcvDNSrwaZnTQIODVDWTZ59ZAJcwRxP1DoBG0wZqheelm67zn1dhMXZGxb4nFEB_vmOb7QE38GoOKNqBxzhqUDJws6cNIMM4EsmSJfz6sW1o8pu7eHud7z3F24PKtVlaxqTcdX-BGPwDiozOVhOJfwzd0bULUV5seOPHXDwcvyz2wqfBBg/s1600-rw/plant%20sciences%20a%20treatise.webp",
+    link:"https://drive.google.com/file/d/1hmgZQiQKOJ7zDeVkxfOlbsHi_HmGDD3X/view?usp=drivesdk", subject:"Plant Physiology" },
+  { title:"Objective Plant Sciences", author:"S.V.Sai Prasad",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhFPR94fqmF3Nf3DMMgcpBnSuMfJD6k4p1m6aWMay1ZIW4iOwygbfQrJKbauLU5ZBYkLB9YMYwkO6oAO2tJzJYE1GgzgRWeBkUMgXN5xO4odh2S544IKacEfjWGhrCTAhJFjGmIX9_w9SOu0m8P12Iaah-9OGCAElCeCDvNQ7iAzl3oYY7rky5X2UucQQ/s1600-rw/objectives%20plant%20sciences.webp",
+    link:"https://drive.google.com/file/d/1huYo7jCid-9Q8qyVN0UR-v1biB3VPk94/view?usp=drivesdk", subject:"Plant Physiology" },
+  { title:"Numerical Agronomy", author:"Abhijit Sarma",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjLAZrihbv__pg-4ShB8CukhIhxTrqapV_hO_1ffbUrfn3m6t3x_HtwZ-qaZy6wyIP-U4BJej6dUEt8DaI7vS5kvhhM9HL0zsxkmrYYeWYYcz7uRJgR5ClmPGIrkVO9UMWZqBWR1MPLzOIIL_fNgLZIcRHzqPcUXTXXw2e_i85E9bk5lIIKefv3q3h5SA/s1600-rw/numerical%20agronomy.webp",
+    link:"https://drive.google.com/file/d/1iDvrsb3Yfo_dBO-pGEe6d8vir0cEqaB-/view?usp=drivesdk", subject:"Agronomy" },
+  { title:"Microbiology", author:"Michael J. Pelczar Jr., E.C.S. Chan, Noel R. Krieg",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEglZprqLp5lgIsE5rrUJTMrvMIIpsxBi6SnaSA-mkdLZQfULJ9UY0g0NoWayHWCHc0eUq-91FK2YO7qRsCiFN9BAQ0_OeyWVqFY6L_mE3cFfjUDFbbcJwDnUi2a6D_lH0mJVr7EZkpXrwSm0pBw1l3ZJ6uQRe9d7NT_oAJ3oQhUoiS9dLONjN3HtmPg6w/s1600-rw/microbiology.webp",
+    link:"https://drive.google.com/file/d/1iAyaYDxtmi4wuxYcMzoh-mGXK4z9jOWC/view?usp=drivesdk", subject:"General Agriculture" },
+  { title:"Textbook of Introductory Plant Nematology", author:"Raman K. Walia, Harish K. Bajaj",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj0Q_HSghgTYF20Of-0qTCc6tLD6XefwoVMwK3wypEkfpwjiLKlg8xAVOIiyxuEnM7MdXjVX8dgcsFTPo8CCegzg_Ij2Z3Kg2yulsxSgH9z2orA_nMNRefvcMkyNFmfalVZ55X9zq3Dvo9jhb_W3KZJbUCt1ra8pW7NkMo8xJnSfrfV9h48Ee3M_t5R0A/s1600-rw/Introductory%20plant%20nematology.webp",
+    link:"https://drive.google.com/file/d/1iE1uJHB9xQ2GavufO83lHxqotkQO5QF7/view?usp=drivesdk", subject:"Entomology" },
+  { title:"An Introduction to Agroforestry", author:"P.K. Ramachandran Nair",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEha2pcgk7QWmPKbx0I2qAh0MzgwuNyo-3ocq4S95eLjOIg-VqP5riwtY_UoymOoR85leD0YqOrJAru1-JGHujeIfhNy6bkQYysLvV9GoYUiXKEiSKJNX1ezq6p9vjao9e7OfMuLHf21UdUYziQS5--hqEsYZbsWahwZ0VfsxYeE1q3M8Akxg2kMocovDA/s1600-rw/png_20230521_125057_0000.webp",
+    link:"https://drive.google.com/file/d/10wBI16CK9d2Xl_1U4QetykicNP_KwngR/view?usp=drivesdk", subject:"Agricultural Engineering" },
+  { title:"Dairy Chemistry and Biochemistry", author:"P.F. Fox, P.L.H. McSweeney",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiteg3Tme07Y9JNpibJ-3cp48i5eH1SPQqHnu1uExY--aMrWitrawQiYTcu_PSenqq914HmP_hmsQuBnt7wDjKp-cm-j3jVozKj3s_Vl7KqfJ4DZVxVEkZ9d5z2og-FZMuuuv_09JbmihOO-0g5h98jKNoXURXJvgt1gFqz88YaXirjY-RYlBko2u16Jw/s1600/dairy%20chemistry%20&biochemistry.webp",
+    link:"https://drive.google.com/file/d/19tNkvz1QZnLcMMTS9q0fjLN-geo9TBIG/view?usp=drivesdk", subject:"Animal Husbandry & Dairy Tech" },
+  { title:"A Handbook of Animal Husbandry and Dairying", author:"V. T. Subbiah Mudaliar",
+    image:"https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhdMKCE1r_B3PLDARbT_Eq_7qkOKG_m09HoErrKGVu1fAnLFLsmDtEreC48o82c3SrkBHEDu6icdSqp22_ZWG1FcM98N4Kigmd7puda1mIkWQ5ilQ7nNKTyPOPpb7220UiixsRlEbEYJwnzgBskPHSuKg-IIfnN7X0N1kOl0TvDWo6tlj4s_-s-R7cpJg/s1600/a%20handbook%20of%20animal%20husbandry%20&dairying.webp",
+    link:"https://drive.google.com/file/d/1A0i6WlOXeeH63-UqN0c3UTdS_IekNUl6/view?usp=drivesdk", subject:"Animal Husbandry & Dairy Tech" }
+];
+
+let _ebooksSearchTerm = "";
+
+function renderEbooksLibrary(){
+  const root = document.getElementById("ebooksLibraryRoot");
+  if(!root) return;
+
+  root.innerHTML = `
+    <div style="margin-bottom:14px;">
+      <div style="font-weight:800;font-size:17px;margin-bottom:4px;">📖 Agriculture E-Books Library</div>
+      <div style="color:#777;font-size:13px;">${EBOOKS_LIBRARY.length} free reference books — search, preview & download</div>
+    </div>
+    <div class="search-box" style="margin-bottom:16px;">
+      <span style="font-size:14px;color:#777;">🔍</span>
+      <input id="ebookSearchInput" type="text" placeholder="Search by title, author or subject…"
+        style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;"
+        oninput="_ebooksSearchTerm=this.value;renderEbooksGrid();">
+    </div>
+    <div id="ebooksGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));gap:14px;"></div>
+    <div id="ebooksEmpty" style="display:none;text-align:center;color:#777;padding:40px 20px;font-size:14px;">
+      No books match your search.
+    </div>`;
+  renderEbooksGrid();
+}
+
+function renderEbooksGrid(){
+  const grid = document.getElementById("ebooksGrid");
+  const emptyEl = document.getElementById("ebooksEmpty");
+  if(!grid) return;
+  const term = (_ebooksSearchTerm||"").toLowerCase();
+  const filtered = EBOOKS_LIBRARY.filter(b =>
+    !term ||
+    b.title.toLowerCase().includes(term) ||
+    b.author.toLowerCase().includes(term) ||
+    (b.subject||"").toLowerCase().includes(term)
+  );
+  if(!filtered.length){
+    grid.innerHTML = "";
+    emptyEl.style.display = "block";
+    return;
+  }
+  emptyEl.style.display = "none";
+  grid.innerHTML = filtered.map(b => `
+    <div class="card hov-card" style="padding:12px;display:flex;flex-direction:column;">
+      <img src="${b.image}" alt="${escapeHTML(b.title)}" loading="lazy"
+        style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:10px;margin-bottom:10px;background:#F2F5F2;">
+      <div style="font-weight:700;font-size:13px;line-height:1.35;margin-bottom:4px;flex:1;">${escapeHTML(b.title)}</div>
+      <div style="font-size:11px;color:#777;margin-bottom:4px;line-height:1.4;">${escapeHTML(b.author)}</div>
+      ${b.subject?`<span style="align-self:flex-start;background:#E8F5E9;color:#0F3D23;font-size:9px;padding:2px 8px;border-radius:50px;font-weight:600;margin-bottom:8px;">${escapeHTML(b.subject)}</span>`:""}
+      <button class="btn btn-primary" style="font-size:12px;padding:7px;width:100%;margin-top:auto;"
+        onclick="openDrivePreview('${b.link.replace(/'/g,"\\'")}','${b.title.replace(/'/g,"\\'")}')">
+        📥 View / Download
+      </button>
+    </div>`).join("");
+}
 
 </script>
 
