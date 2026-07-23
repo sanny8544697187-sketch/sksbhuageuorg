@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
-  ║           AGRI EDU RISE — e-Learning Portal  v10.0              ║
+  ║           KrishiGyan — e-Learning Portal  v10.0              ║
   ║   Firebase Sync × PWA × AI Chat × Premium Gates × PYQ Upload   ║
   ╠══════════════════════════════════════════════════════════════════╣
   ║  QUICK SETUP (5 minutes):                                        ║
@@ -17,19 +17,19 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="Agri Edu Rise — Agriculture e-Learning Portal — Notes, Videos, Quizzes, AI Professor"/>
+  <meta name="description" content="KrishiGyan — Agriculture e-Learning Portal — Notes, Videos, Quizzes, AI Professor"/>
   <meta name="theme-color" content="#0F3D23"/>
   <meta name="mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="Agri Edu Rise"/>
+  <meta name="apple-mobile-web-app-title" content="KrishiGyan"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png"/>
   <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png"/>
   <link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png"/>
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"/>
   <link rel="shortcut icon" href="./icons/icon-96.png"/>
   <link rel="manifest" href="./manifest.json"/>
-  <title>Agri Edu Rise — Agriculture e-Learning v10</title>
+  <title>KrishiGyan — Agriculture e-Learning v10</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
@@ -367,7 +367,7 @@
 <!-- SPLASH -->
 <div id="splash">
   <div style="font-size:52px">🌾</div>
-  <div style="font-size:18px;font-weight:800;color:#0F3D23">Agri Edu Rise</div>
+  <div style="font-size:18px;font-weight:800;color:#0F3D23">KrishiGyan</div>
   <p style="font-size:13px;color:#777">Loading resources…</p>
   <div class="splash-bar"><div></div></div>
 </div>
@@ -511,7 +511,7 @@ try {
   <div class="header-inner">
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;" onclick="setSection('home')">
       <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;">🌾</div>
-      <div><div style="font-weight:800;font-size:14px;line-height:1.1;">Agri Edu Rise</div><div style="font-size:9px;opacity:.6;font-weight:500;">e-Learning Hub</div></div>
+      <div><div style="font-weight:800;font-size:14px;line-height:1.1;">KrishiGyan</div><div style="font-size:9px;opacity:.6;font-weight:500;">e-Learning Hub</div></div>
     </div>
     <div class="header-search" style="flex:1;">
       <span style="font-size:13px;opacity:.6;">🔍</span>
@@ -539,7 +539,7 @@ try {
   <section id="home" class="section active fu">
     <div class="hero">
       <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;margin-bottom:14px;letter-spacing:.3px;">
-        🌾 AGRI EDU RISE — e-LEARNING PORTAL
+        🌾 KrishiGyan — e-LEARNING PORTAL
       </div>
       <h1>Your Complete<br>Agriculture Learning Hub</h1>
       <p>Study notes, PDFs, video lectures & AI-powered doubt solving — synced live across every device.</p>
@@ -1168,7 +1168,7 @@ try {
       <!-- Share App card -->
       <div class="card" style="padding:20px;margin-bottom:18px;">
         <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📤 Share App</div>
-        <div style="font-size:12px;color:#777;margin-bottom:14px;">Invite classmates to Agri Edu Rise — share the link below or send it directly.</div>
+        <div style="font-size:12px;color:#777;margin-bottom:14px;">Invite classmates to KrishiGyan — share the link below or send it directly.</div>
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
           <input id="shareAppLink" class="inp" readonly style="flex:1;min-width:180px;background:#F8FBF8;font-size:12px;" onclick="this.select();">
           <button class="btn btn-light" style="padding:9px 16px;font-size:12px;flex-shrink:0;" onclick="copyShareLink()">📋 Copy</button>
@@ -2257,6 +2257,7 @@ function gdriveSafeEmbed(url){
 }
 
 function openDrivePreview(link, title){
+  if(!currentUser){openLogin();return;}
   const embedUrl=gdriveSafeEmbed(link);
   document.getElementById("driveModalTitle").textContent=title||"Preview";
   document.getElementById("driveModalSpinner").style.display="flex";
@@ -2271,6 +2272,7 @@ function closeDriveModal(){
 }
 
 async function downloadNote(id){
+  if(!currentUser){openLogin();return;}
   const n=notes.find(x=>x.id===id); if(!n) return;
   if(n.isPremium&&!isSubActive(currentUser)){openPay();return;}
   if(n.hasFile){ const data=await sGet("bhu:file:"+id); if(data){b64Download(data,n.fileName||"file");return;} }
@@ -4581,6 +4583,7 @@ async function uploadQPPdfFile(){
 }
 
 async function downloadPYQPdf(id){
+  if(!currentUser){openLogin();return;}
   const p=pyqPdfs.find(x=>x.id===id); if(!p) return;
   if(p.hasFile){ const data=await sGet('bhu:file:pyqpdf_'+id); if(data){b64Download(data,p.fileName||'paper.pdf');return;} }
   if(p.link){ openDrivePreview(p.link,p.title); return; }
@@ -5822,8 +5825,8 @@ function getAppShareLink(){
 async function shareApp(){
   const link=getAppShareLink();
   const shareData={
-    title:"Agri Edu Rise 🌾",
-    text:"Join me on Agri Edu Rise — notes, quizzes, PYQs & AI Professor for BHU Agriculture students!",
+    title:"KrishiGyan 🌾",
+    text:"Join me on KrishiGyan — notes, quizzes, PYQs & AI Professor for BHU Agriculture students!",
     url:link
   };
   if(navigator.share){
@@ -5852,9 +5855,9 @@ function fallbackCopyLink(link){
 
 function shareAppVia(platform){
   const link=getAppShareLink();
-  const msg=encodeURIComponent("Join me on Agri Edu Rise 🌾 — notes, quizzes, PYQs & AI Professor for BHU Agriculture students!\n"+link);
+  const msg=encodeURIComponent("Join me on KrishiGyan 🌾 — notes, quizzes, PYQs & AI Professor for BHU Agriculture students!\n"+link);
   if(platform==="whatsapp") window.open("https://wa.me/?text="+msg,"_blank");
-  else if(platform==="telegram") window.open("https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent("Join me on Agri Edu Rise 🌾"),"_blank");
+  else if(platform==="telegram") window.open("https://t.me/share/url?url="+encodeURIComponent(link)+"&text="+encodeURIComponent("Join me on KrishiGyan 🌾"),"_blank");
 }
 
 function toggleDark(){
@@ -6197,7 +6200,7 @@ function syncPlannerToTab(){}
     banner.innerHTML =
       '<div style="font-size:28px;flex-shrink:0;">🌾</div>'
       + '<div style="flex:1;min-width:0;">'
-      +   '<div style="font-weight:700;font-size:13px;">Install Agri Edu Rise</div>'
+      +   '<div style="font-weight:700;font-size:13px;">Install KrishiGyan</div>'
       +   '<div style="font-size:11px;opacity:.75;margin-top:2px;">Works offline · No App Store needed</div>'
       + '</div>'
       + '<button onclick="installPWA()" style="background:#00B050;border:none;color:white;'
@@ -6215,7 +6218,7 @@ function syncPlannerToTab(){}
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(result => {
-      if (result.outcome === 'accepted') toast('🌾 Agri Edu Rise installed!');
+      if (result.outcome === 'accepted') toast('🌾 KrishiGyan installed!');
       deferredPrompt = null;
       const b = document.getElementById('pwaInstallBanner');
       if (b) b.remove();
