@@ -1,9 +1,5 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/api/ai", "destination": "/api/ai" },
-    { "source": "/((?!api|icons|manifest\\.json|sw\\.js|favicon\\.ico|apple-touch-icon\\.png).*)", "destination": "/index.html" }
-  ],
   "headers": [
     {
       "source": "/sw.js",
@@ -18,6 +14,12 @@
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         { "key": "X-Content-Type-Options", "value": "nosniff" }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/((?!api/|icons/|manifest\\.json|sw\\.js|favicon\\.ico|apple-touch-icon\\.png).*)",
+      "destination": "/index.html"
     }
   ]
 }
