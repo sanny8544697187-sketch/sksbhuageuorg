@@ -654,6 +654,7 @@ try {
           <span style="font-size:14px;color:#777;">🔍</span>
           <input id="resHierSearch" type="text" placeholder="Search by title, institution or subject…" oninput="renderResourcesHierarchy()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;width:100%;">
         </div>
+        <div id="typeFilters" class="chips-row" style="gap:8px;margin-bottom:12px;"></div>
         <div id="resourceHierarchy"></div>
       </div>
 
@@ -2738,7 +2739,7 @@ function clearChat(){
 }
 
 // ── AI Professor — OpenRouter (Netlify) → Gemini fallback ──────
-const _cfg = ["AQ.Ab8RN6", "J6ERCGjxDEmMpQF9", "Oo7NXfjNSij8lCB1vCz3mSkm5tMQ"].join("");
+const _cfg = ""; // API key is set via Netlify env var GEMINI_API_KEY — do not hardcode here
 const AI_SYS = "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). "+
   "You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, "+
   "Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Economics & Statistics, "+
@@ -2770,12 +2771,11 @@ async function sendAI(){
 
   let reply = null;
   try{
+    const headers = { "Content-Type": "application/json" };
+    if (_cfg) headers["X-Gemini-Key"] = _cfg;
     const r = await fetch(AI_ENDPOINT, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Gemini-Key": _cfg
-      },
+      headers,
       body: JSON.stringify({ messages })
     });
     if(r.ok){
@@ -2871,12 +2871,11 @@ async function callAIProfessor(userText){
   if(!isSubActive(currentUser) && !currentUser?.isAdmin) { toast("⭐ AI Professor is a Premium feature! Upgrade to unlock.","e"); openPay(); return null; }
   let reply = null;
   try{
+    const headers2 = { "Content-Type": "application/json" };
+    if (_cfg) headers2["X-Gemini-Key"] = _cfg;
     const r = await fetch(AI_ENDPOINT, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Gemini-Key": _cfg
-      },
+      headers: headers2,
       body: JSON.stringify({ messages: [{ role:"user", content: userText }] })
     });
     if(r.ok){
