@@ -1,5 +1,6 @@
-// api/ai.js — Vercel Serverless Function (converted from Netlify)
-// Uses Gemini 2.5 Flash API — set GEMINI_API_KEY in Vercel Environment Variables
+// api/ai.js — Vercel Serverless Function
+// Uses OpenRouter API (supports Gemini, Claude, GPT etc.)
+// Set OPENROUTER_API_KEY in Vercel Environment Variables
 
 const AI_SYS =
   "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). " +
@@ -11,25 +12,27 @@ const AI_SYS =
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type, X-Gemini-Key",
+  "Access-Control-Allow-Headers": "Content-Type, X-OpenRouter-Key",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Content-Type": "application/json",
 };
 
+// Free models on OpenRouter (no billing needed):
+// - google/gemini-2.0-flash-exp:free
+// - meta-llama/llama-3.1-8b-instruct:free
+// - mistralai/mistral-7b-instruct:free
+const MODEL = "google/gemini-2.0-flash-exp:free";
+
 export default async function handler(req, res) {
-  // Set CORS headers on every response
   Object.entries(CORS_HEADERS).forEach(([k, v]) => res.setHeader(k, v));
 
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  // API key: from client header (optional) or Vercel env var
-  const clientKey = req.headers["x-gemini-key"];
-  const apiKey = clientKey || process.env.GEMINI_API_KEY;
-  console.log("Gemini API key source:", clientKey ? "client-header" : "server-env");
-
+  // API key from Vercel env var
+  const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: "Server config error: GEMINI_API_KEY not set" });
+    return res.status(500).json({ error: "Server config error: OPENROUTER_API_KEY not set in Vercel" });
   }
 
   let messages;
@@ -43,62 +46,56 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "No messages provided" });
   }
 
-  // Convert messages to Gemini contents format
-  const contents = [];
+  // Convert Gemini-style messages to OpenAI-style (which OpenRouter uses)
+  const openaiMessages = [
+    { role: "system", content: AI_SYS }
+  ];
+
   for (const m of messages) {
     let role = "user";
     let text = "";
 
     if (m.parts && Array.isArray(m.parts)) {
-      role = m.role === "model" ? "model" : "user";
+      // Gemini format
+      role = m.role === "model" ? "assistant" : "user";
       text = m.parts[0]?.text || "";
     } else if (m.content) {
-      role = m.role === "assistant" ? "model" : "user";
+      // OpenAI/chat format
+      role = m.role === "assistant" ? "assistant" : "user";
       text = m.content;
     }
 
-    if (!text) continue;
-
-    // Merge consecutive messages of the same role
-    if (contents.length && contents[contents.length - 1].role === role) {
-      contents[contents.length - 1].parts[0].text += "\n" + text;
-    } else {
-      contents.push({ role, parts: [{ text }] });
-    }
+    if (text) openaiMessages.push({ role, content: text });
   }
 
-  // Ensure conversation starts with a user message
-  while (contents.length && contents[0].role === "model") contents.shift();
-
-  if (!contents.length) {
-    return res.status(400).json({ error: "No valid user message" });
-  }
-
-  console.log("Calling Gemini 2.5 Flash with", contents.length, "messages");
+  console.log("Calling OpenRouter with model:", MODEL, "messages:", openaiMessages.length);
 
   try {
-    const geminiRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: AI_SYS }] },
-          contents,
-          generationConfig: { maxOutputTokens: 1024, temperature: 0.7 },
-        }),
-      }
-    );
+    const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://krishigyan.vercel.app",
+        "X-Title": "KrishiGyan AI Professor",
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: openaiMessages,
+        max_tokens: 1024,
+        temperature: 0.7,
+      }),
+    });
 
-    const data = await geminiRes.json();
-    console.log("Gemini response status:", geminiRes.status);
+    const data = await orRes.json();
+    console.log("OpenRouter response status:", orRes.status);
 
-    if (!geminiRes.ok) {
-      console.error("Gemini API error:", JSON.stringify(data));
-      return res.status(500).json({ error: data?.error?.message || "Gemini API error" });
+    if (!orRes.ok) {
+      console.error("OpenRouter error:", JSON.stringify(data));
+      return res.status(500).json({ error: data?.error?.message || "OpenRouter API error" });
     }
 
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const text = data.choices?.[0]?.message?.content || "";
     console.log("Success! Reply length:", text.length);
     return res.status(200).json({ content: text });
 
