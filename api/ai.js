@@ -78,7 +78,7 @@ async function callOpenRouter(apiKey, userMessages) {
       "X-Title": "KrishiGyan AI Professor",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.0-flash-exp:free",
+      model: "google/gemini-2.0-flash-lite-preview-02-05:free",
       messages,
       max_tokens: 1024,
       temperature: 0.7,
