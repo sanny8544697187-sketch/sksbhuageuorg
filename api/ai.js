@@ -42,7 +42,7 @@ async function callGemini(apiKey, userMessages) {
 
   // Using gemini-1.5-flash for better free-tier stability
   const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
   const body = {
     systemInstruction: { parts: [{ text: AI_SYS }] },
@@ -78,7 +78,7 @@ async function callOpenRouter(apiKey, userMessages) {
       "X-Title": "KrishiGyan AI Professor",
     },
     body: JSON.stringify({
-      model: "meta-llama/llama-3.1-8b-instruct:free", // Extremely stable free model
+      model: "google/gemini-2.0-pro-exp-02-05:free", // Extremely stable free model
       messages,
       max_tokens: 1024,
       temperature: 0.7,
