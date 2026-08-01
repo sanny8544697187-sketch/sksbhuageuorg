@@ -147,8 +147,8 @@ module.exports = async function handler(req, res) {
       content: "Hi! I am currently offline because my API keys are not set up in Vercel. Please add GEMINI_API_KEY to the Vercel Environment Variables.",
     });
   }
-  // 3. Absolute worst-case scenario: Everything failed
+// 3. Absolute worst-case scenario: Everything failed
   return res.status(200).json({ 
-    content: "I am experiencing very high traffic right now and all backup servers are full. ⏳ Please wait a minute and try asking your question again!\n\n(Diagnostics: " + errors.join(" | ") + ")" 
+    content: "I am experiencing very high traffic right now. ⏳ Please wait a minute and try asking your question again!",
+    error: "AI Backup Servers Failed. Diagnostics: " + errors.join(" | ")
   });
-};
