@@ -1,7 +1,7 @@
 // api/ai.js — Vercel Serverless Function (CommonJS)
 // Multi-provider AI: tries Google Gemini first, then OpenRouter as fallback.
 // Set GEMINI_API_KEY or OPENROUTER_API_KEY in Vercel Environment Variables.
-const AI_SYS =
+ const AI_SYS =
   "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). " +
   "You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, " +
   "Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Economics & Statistics, " +
