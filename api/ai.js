@@ -77,8 +77,8 @@ async function callOpenRouter(apiKey, userMessages) {
       "HTTP-Referer": "https://www.krishigyan.online",
       "X-Title": "KrishiGyan AI Professor",
     },
-    body: JSON.stringify({
-      model: "google/gemini-2.0-pro-exp-02-05:free", // Extremely stable free model
+   body: JSON.stringify({
+      model: "mistralai/mistral-7b-instruct:free", // Extremely stable free model
       messages,
       max_tokens: 1024,
       temperature: 0.7,
