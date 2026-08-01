@@ -35,14 +35,14 @@ function normaliseMessages(raw) {
 // ── provider: Google Gemini ───────────────────────────────────────────────────
 
 async function callGemini(apiKey, userMessages) {
-  // Build Gemini-style contents (no system role in contents array for Gemini)
   const contents = userMessages.map((m) => ({
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }],
   }));
 
+  // Using gemini-1.5-flash for better free-tier stability
   const url =
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
   const body = {
     systemInstruction: { parts: [{ text: AI_SYS }] },
@@ -78,7 +78,7 @@ async function callOpenRouter(apiKey, userMessages) {
       "X-Title": "KrishiGyan AI Professor",
     },
     body: JSON.stringify({
-      model: "google/gemma-2-9b-it:free",
+      model: "meta-llama/llama-3.1-8b-instruct:free", // Extremely stable free model
       messages,
       max_tokens: 1024,
       temperature: 0.7,
@@ -105,27 +105,22 @@ module.exports = async function handler(req, res) {
   if (req.method !== "POST")
     return res.status(405).json({ error: "Method not allowed" });
 
-  // Parse body – Vercel already parses JSON but guard anyway
   let rawMessages;
   try {
-    rawMessages =
-      req.body?.messages || req.body?.contents || req.body?.history;
+    rawMessages = req.body?.messages || req.body?.contents || req.body?.history;
   } catch {
-    return res.status(400).json({ error: "Invalid request body" });
+    return res.status(200).json({ content: "Sorry, I couldn't understand that request." });
   }
 
   if (!Array.isArray(rawMessages) || rawMessages.length === 0)
-    return res.status(400).json({ error: "No messages provided" });
+    return res.status(200).json({ content: "No messages provided." });
 
   const userMessages = normaliseMessages(rawMessages);
   if (userMessages.length === 0)
-    return res.status(400).json({ error: "Could not parse messages" });
+    return res.status(200).json({ content: "Could not parse messages." });
 
   const geminiKey = process.env.GEMINI_API_KEY;
   const orKey = process.env.OPENROUTER_API_KEY;
-
-  // Try Gemini first, then OpenRouter
-  const errors = [];
 
   if (geminiKey) {
     try {
@@ -133,7 +128,6 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ content: text });
     } catch (e) {
       console.error("Gemini failed:", e.message);
-      errors.push("Gemini: " + e.message);
     }
   }
 
@@ -143,15 +137,17 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ content: text });
     } catch (e) {
       console.error("OpenRouter failed:", e.message);
-      errors.push("OpenRouter: " + e.message);
     }
   }
 
   if (!geminiKey && !orKey) {
-    return res.status(500).json({
-      error: "No API key configured. Set GEMINI_API_KEY or OPENROUTER_API_KEY in Vercel Environment Variables.",
+    return res.status(200).json({
+      content: "Hi! I am currently offline because my API keys are not set up in Vercel. Please add GEMINI_API_KEY to the Vercel Environment Variables.",
     });
   }
 
-  return res.status(500).json({ error: "All AI providers failed: " + errors.join(" | ") });
+  // Graceful fallback for rate limits
+  return res.status(200).json({ 
+    content: "I am experiencing very high traffic right now and reached my rate limit. ⏳ Please wait a minute and try asking your question again!" 
+  });
 };
