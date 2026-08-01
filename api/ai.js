@@ -122,13 +122,18 @@ module.exports = async function handler(req, res) {
   const geminiKey = process.env.GEMINI_API_KEY;
   const orKey = process.env.OPENROUTER_API_KEY;
 
+  const errors = [];
+
   if (geminiKey) {
     try {
       const text = await callGemini(geminiKey, userMessages);
       return res.status(200).json({ content: text });
     } catch (e) {
       console.error("Gemini failed:", e.message);
+      errors.push("Gemini: " + e.message);
     }
+  } else {
+    errors.push("Gemini: No API Key");
   }
 
   if (orKey) {
@@ -137,7 +142,10 @@ module.exports = async function handler(req, res) {
       return res.status(200).json({ content: text });
     } catch (e) {
       console.error("OpenRouter failed:", e.message);
+      errors.push("OpenRouter: " + e.message);
     }
+  } else {
+    errors.push("OpenRouter: No API Key");
   }
 
   if (!geminiKey && !orKey) {
@@ -146,8 +154,8 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // Graceful fallback for rate limits
+  // Graceful fallback for rate limits with diagnostics
   return res.status(200).json({ 
-    content: "I am experiencing very high traffic right now and reached my rate limit. ⏳ Please wait a minute and try asking your question again!" 
+    content: "I am experiencing very high traffic right now and reached my rate limit. ⏳ Please wait a minute and try asking your question again!\n\n(Diagnostics: " + errors.join(" | ") + ")" 
   });
 };
