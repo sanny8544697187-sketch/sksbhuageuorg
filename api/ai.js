@@ -61,7 +61,7 @@ async function callGroq(apiKey, userMessages) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "llama3-8b-8192", // Groq's extremely fast and reliable Llama 3 model
+      model: "llama-3.1-8b-instant", // The correct, updated Groq model!
       messages,
       max_tokens: 1024,
       temperature: 0.7,
