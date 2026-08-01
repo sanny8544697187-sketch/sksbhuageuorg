@@ -1,5 +1,5 @@
 // api/ai.js — Vercel Serverless Function (CommonJS)
-// Multi-provider AI: Gemini first, then OpenRouter fallback loop.
+// Multi-provider AI: Gemini first, then GROQ fallback.
 
 const AI_SYS =
   "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). " +
@@ -51,37 +51,28 @@ async function callGemini(apiKey, userMessages) {
   return text;
 }
 
-const OR_MODELS = [
-  "google/gemma-2-9b-it:free",
-  "meta-llama/llama-3.2-3b-instruct:free",
-  "qwen/qwen-2.5-7b-instruct:free",
-  "meta-llama/llama-3.2-1b-instruct:free",
-  "microsoft/phi-3-mini-128k-instruct:free",
-];
-
-async function callOpenRouter(apiKey, userMessages) {
+async function callGroq(apiKey, userMessages) {
   const messages = [{ role: "system", content: AI_SYS }, ...userMessages];
-  for (const model of OR_MODELS) {
-    try {
-      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: "Bearer " + apiKey,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://www.krishigyan.online",
-          "X-Title": "KrishiGyan AI Professor",
-        },
-        body: JSON.stringify({ model, messages, max_tokens: 1024, temperature: 0.7 }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error?.message || "error");
-      const text = data?.choices?.[0]?.message?.content;
-      if (text) return text;
-    } catch (e) {
-      console.warn("OR model failed:", model, e.message);
-    }
-  }
-  throw new Error("All OpenRouter models failed");
+  
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + apiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "llama3-8b-8192", // Groq's extremely fast and reliable Llama 3 model
+      messages,
+      max_tokens: 1024,
+      temperature: 0.7,
+    }),
+  });
+  
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || "Groq error");
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error("Empty Groq response");
+  return text;
 }
 
 module.exports = async function handler(req, res) {
@@ -93,7 +84,6 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-  // Safe body parsing
   let body = req.body;
   if (!body || typeof body === "string") {
     try { body = JSON.parse(body || "{}"); } catch { body = {}; }
@@ -108,7 +98,13 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ content: "Could not parse messages." });
 
   const geminiKey = process.env.GEMINI_API_KEY;
-  const orKey = process.env.OPENROUTER_API_KEY;
+  const groqKey = process.env.GROQ_API_KEY;
+
+  if (!geminiKey && !groqKey) {
+    return res.status(200).json({
+      content: "AI Professor is offline. Please add GEMINI_API_KEY or GROQ_API_KEY in Vercel Environment Variables.",
+    });
+  }
 
   // 1. Try Gemini first
   if (geminiKey) {
@@ -120,24 +116,17 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // 2. Fallback to OpenRouter loop
-  if (orKey) {
+  // 2. Fallback to Groq
+  if (groqKey) {
     try {
-      const text = await callOpenRouter(orKey, userMessages);
+      const text = await callGroq(groqKey, userMessages);
       return res.status(200).json({ content: text });
     } catch (e) {
-      console.error("OpenRouter failed:", e.message);
+      console.error("Groq failed:", e.message);
     }
   }
 
-  // 3. No keys configured
-  if (!geminiKey && !orKey) {
-    return res.status(200).json({
-      content: "AI Professor is offline. Please add GEMINI_API_KEY in Vercel Environment Variables.",
-    });
-  }
-
-  // 4. All failed — friendly message
+  // 3. All failed
   return res.status(200).json({
     content: "I am experiencing very high traffic right now. Please wait a moment and try again! ⏳",
   });
