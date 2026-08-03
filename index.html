@@ -1181,8 +1181,48 @@ try {
         <div style="font-weight:700;font-size:15px;margin-bottom:14px;">🏅 Achievements</div>
         <div id="profileAchievements" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
       </div>
+
+      <!-- Quick Links + Legal Card -->
+      <div class="card" style="padding:20px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:14px;">🔗 Quick Links</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;">
+          <a href="about.html" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#e8f5e9;border-radius:10px;text-decoration:none;color:#1B5E20;font-size:13px;font-weight:600;">🌿 About Us</a>
+          <a href="articles.html" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#e8f5e9;border-radius:10px;text-decoration:none;color:#1B5E20;font-size:13px;font-weight:600;">📚 Articles</a>
+          <a href="contact.html" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#e8f5e9;border-radius:10px;text-decoration:none;color:#1B5E20;font-size:13px;font-weight:600;">💬 Feedback</a>
+          <a href="sitemap.xml" target="_blank" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#e8f5e9;border-radius:10px;text-decoration:none;color:#1B5E20;font-size:13px;font-weight:600;">🗺️ Sitemap</a>
+        </div>
+
+        <!-- Privacy Policy (Short) -->
+        <details style="margin-bottom:10px;border:1px solid #e0eae0;border-radius:10px;overflow:hidden;">
+          <summary style="padding:12px 16px;font-weight:700;font-size:13px;color:#1B5E20;cursor:pointer;background:#f0faf0;list-style:none;display:flex;align-items:center;gap:8px;">🔒 Privacy Policy <span style="margin-left:auto;font-size:11px;opacity:.6;">Tap to expand</span></summary>
+          <div style="padding:14px 16px;font-size:12px;color:#555;line-height:1.7;border-top:1px solid #e0eae0;">
+            <p style="margin-bottom:8px;"><strong>Last updated: August 2025</strong></p>
+            <p style="margin-bottom:6px;">KrishiGyan collects your <strong>name, email, and quiz/study activity</strong> to provide personalized learning. We use <strong>Google Firebase</strong> for authentication and data storage. We do not sell your data to third parties.</p>
+            <p style="margin-bottom:6px;">We use <strong>Local Storage</strong> to save preferences and keep you logged in. No advertising cookies are used. You can clear your browser data at any time to remove stored information.</p>
+            <p style="margin-bottom:0;">Questions? Email: <a href="mailto:support@krishigyan.online" style="color:#00B050;">support@krishigyan.online</a></p>
+          </div>
+        </details>
+
+        <!-- Disclaimer (Short) -->
+        <details style="margin-bottom:14px;border:1px solid #e0eae0;border-radius:10px;overflow:hidden;">
+          <summary style="padding:12px 16px;font-weight:700;font-size:13px;color:#1B5E20;cursor:pointer;background:#f0faf0;list-style:none;display:flex;align-items:center;gap:8px;">⚠️ Disclaimer <span style="margin-left:auto;font-size:11px;opacity:.6;">Tap to expand</span></summary>
+          <div style="padding:14px 16px;font-size:12px;color:#555;line-height:1.7;border-top:1px solid #e0eae0;">
+            <p style="margin-bottom:6px;">All content on KrishiGyan is for <strong>educational and exam preparation purposes only</strong>. It is not professional agricultural advice.</p>
+            <p style="margin-bottom:6px;"><strong>AI Professor</strong> responses may occasionally contain inaccuracies. Always verify important information from official textbooks and advisors.</p>
+            <p style="margin-bottom:6px;">KrishiGyan is a <strong>student initiative</strong> and is not officially affiliated with or endorsed by Banaras Hindu University (BHU) or any government institution.</p>
+            <p style="margin-bottom:0;">Use of this platform is at your own discretion. We are not liable for any academic outcomes based on platform content.</p>
+          </div>
+        </details>
+
+        <div style="padding:10px;background:#f0faf0;border-radius:8px;font-size:12px;color:#555;text-align:center;">
+          Built by Agriculture Students, For Agriculture Students 🌾<br/>
+          <span style="color:#00B050;font-weight:700;">© 2025 krishigyan.online</span>
+        </div>
+      </div>
     </div>
   </section>
+
+
 
   <!-- ADMIN -->
   <section id="admin" class="section fu admin-panel">
@@ -2117,10 +2157,9 @@ function renderResources(){
 // ═══════════════════════════════════════════════════════════════
 // RESOURCES — Institution → Subject → Semester drill-down
 // ═══════════════════════════════════════════════════════════════
-let resOpenInst=null, resOpenSubjH=null, resOpenSemH=null;
-function toggleResInst(i){ resOpenInst=resOpenInst===i?null:i; resOpenSubjH=null; resOpenSemH=null; renderResourcesHierarchy(); }
-function toggleResSubjH(k){ resOpenSubjH=resOpenSubjH===k?null:k; resOpenSemH=null; renderResourcesHierarchy(); }
-function toggleResSemH(k){ resOpenSemH=resOpenSemH===k?null:k; renderResourcesHierarchy(); }
+let resOpenInst=null, resOpenSubjH=null;
+function toggleResInst(i){ resOpenInst=resOpenInst===i?null:i; resOpenSubjH=null; renderResourcesHierarchy(); }
+function toggleResSubjH(k){ resOpenSubjH=resOpenSubjH===k?null:k; renderResourcesHierarchy(); }
 
 function renderResourcesHierarchy(){
   const approved=getApproved();
@@ -2147,16 +2186,14 @@ function renderResourcesHierarchy(){
   filtered.forEach(n=>{
     const inst=n.institution||"General";
     const subj=n.subject||"General";
-    const sem=n.semester||"Unspecified";
     if(!byInst[inst]) byInst[inst]={};
-    if(!byInst[inst][subj]) byInst[inst][subj]={};
-    if(!byInst[inst][subj][sem]) byInst[inst][subj][sem]=[];
-    byInst[inst][subj][sem].push(n);
+    if(!byInst[inst][subj]) byInst[inst][subj]=[];
+    byInst[inst][subj].push(n);
   });
 
   el.innerHTML=Object.entries(byInst).map(([inst,subs])=>{
     const instOpen=resOpenInst===inst;
-    const instCount=Object.values(subs).reduce((s,ss)=>s+Object.values(ss).reduce((s2,arr)=>s2+arr.length,0),0);
+    const instCount=Object.values(subs).reduce((s,arr)=>s+arr.length,0);
     return `<div class="card" style="margin-bottom:10px;overflow:hidden;padding:0;">
       <div onclick="toggleResInst('${escapeHTML(inst)}')" style="padding:16px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${instOpen?"#0F3D23":"#fff"};color:${instOpen?"#fff":"#111"};transition:.15s;">
         <div style="font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px;">
@@ -2165,28 +2202,15 @@ function renderResourcesHierarchy(){
         <div style="font-size:12px;opacity:.85;">${instCount} files &nbsp;${instOpen?"▲":"▼"}</div>
       </div>
       ${instOpen?`<div style="padding:12px 14px;background:#F8FBF8;">
-        ${Object.entries(subs).map(([subj,sems])=>{
+        ${Object.entries(subs).map(([subj,items])=>{
           const subjKey=inst+"__"+subj;
           const subjOpen=resOpenSubjH===subjKey;
-          const subjCount=Object.values(sems).reduce((s,arr)=>s+arr.length,0);
           return `<div style="margin-bottom:8px;border:1px solid #E0EAE0;border-radius:12px;overflow:hidden;background:#fff;">
             <div onclick="toggleResSubjH('${escapeHTML(subjKey)}')" style="padding:11px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${subjOpen?"#E8F5E9":"#fff"};">
               <div style="font-weight:700;font-size:13px;color:#0F3D23;">📚 ${escapeHTML(subj)}</div>
-              <div style="font-size:11px;color:#777;">${subjCount} files &nbsp;${subjOpen?"▲":"▼"}</div>
+              <div style="font-size:11px;color:#777;">${items.length} files &nbsp;${subjOpen?"▲":"▼"}</div>
             </div>
-            ${subjOpen?`<div style="padding:8px 10px;background:#FAFCFA;">
-              ${Object.entries(sems).map(([sem,items])=>{
-                const semKey=subjKey+"__"+sem;
-                const semOpen=resOpenSemH===semKey;
-                return `<div style="margin-bottom:6px;border:1px solid #E0EAE0;border-radius:10px;overflow:hidden;background:#fff;">
-                  <div onclick="toggleResSemH('${escapeHTML(semKey)}')" style="padding:9px 13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${semOpen?"#F3E5F5":"#F8FBF8"};">
-                    <div style="font-weight:700;font-size:12px;color:#7B1FA2;">🗓️ ${escapeHTML(sem)}</div>
-                    <div style="font-size:10px;color:#777;">${items.length} files &nbsp;${semOpen?"▲":"▼"}</div>
-                  </div>
-                  ${semOpen?`<div style="padding:10px;">${items.map(n=>resCardHTML(n)).join("")}</div>`:""}
-                </div>`;
-              }).join("")}
-            </div>`:""}
+            ${subjOpen?`<div style="padding:10px;background:#FAFCFA;">${items.map(n=>resCardHTML(n)).join("")}</div>`:""}
           </div>`;
         }).join("")}
       </div>`:""}
@@ -4052,17 +4076,35 @@ function renderPYQHierarchy(){
     byExam[exam][year][subj].push(q);
   });
 
-  el.innerHTML=Object.entries(byExam).map(([exam,years])=>{
-    const examOpen=pyqOpenExam===exam;
-    const examCount=Object.values(years).reduce((s,ys)=>s+Object.values(ys).reduce((s2,ss)=>s2+ss.length,0),0);
-    return `<div class="card" style="margin-bottom:10px;overflow:hidden;padding:0;">
-      <div onclick="togglePYQExam('${escapeHTML(exam)}')" style="padding:16px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${examOpen?"#0F3D23":"#fff"};color:${examOpen?"#fff":"#111"};transition:.15s;">
-        <div style="font-weight:800;font-size:15px;">📘 ${escapeHTML(exam)}</div>
-        <div style="font-size:12px;opacity:.85;">${examCount} Qs &nbsp;${examOpen?"▲":"▼"}</div>
-      </div>
-      ${examOpen?`<div style="padding:12px 14px;background:#F8FBF8;">
-        ${Object.entries(years).sort((a,b)=>b[0].localeCompare(a[0])).map(([year,subs])=>{
-          const yearKey=exam+"__"+year;
+  const pyqExamIcons = {
+    "ICAR JRF": "🎓",
+    "IARI PG PAPER": "🏫",
+    "NABARD": "🏛️",
+    "IBPS AFO": "🏦",
+    "BHU ENTRANCE": "🏛️",
+    "OTHER": "🌾"
+  };
+
+  let html = `<label class="lbl">Select Exam</label>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px; margin-bottom:16px;">`;
+  
+  Object.entries(byExam).forEach(([exam, years]) => {
+    const examOpen = pyqOpenExam === exam;
+    const examCount = Object.values(years).reduce((s,ys)=>s+Object.values(ys).reduce((s2,ss)=>s2+ss.length,0),0);
+    const icon = pyqExamIcons[exam.toUpperCase()] || "📘";
+    html += `<div class="card hov-card exam-panel" onclick="togglePYQExam('${escapeHTML(exam)}')" style="padding:16px; border:2px solid ${examOpen ? '#00B050' : 'transparent'}; cursor:pointer; text-align:center;">
+        <div style="font-size:32px;">${icon}</div>
+        <div style="font-weight:800; font-size:13px; margin:6px 0;">${escapeHTML(exam)}</div>
+        <div style="font-size:11px; color:#777; margin-bottom:6px;">${examCount} Qs</div>
+        <button class="btn ${examOpen ? 'btn-primary' : 'btn-light'}" style="width:100%; font-size:11px;">${examOpen ? 'Selected' : 'Select'}</button>
+      </div>`;
+  });
+  html += `</div>`;
+
+  if(pyqOpenExam && byExam[pyqOpenExam]){
+    html += `<div style="padding:12px 14px;background:#F8FBF8;border-radius:12px;margin-bottom:20px;">
+        ${Object.entries(byExam[pyqOpenExam]).sort((a,b)=>b[0].localeCompare(a[0])).map(([year,subs])=>{
+          const yearKey=pyqOpenExam+"__"+year;
           const yearOpen=pyqOpenYear===yearKey;
           const yearCount=Object.values(subs).reduce((s,ss)=>s+ss.length,0);
           return `<div style="margin-bottom:8px;border:1px solid #E0EAE0;border-radius:12px;overflow:hidden;background:#fff;">
@@ -4085,9 +4127,10 @@ function renderPYQHierarchy(){
             </div>`:""}
           </div>`;
         }).join("")}
-      </div>`:""}
-    </div>`;
-  }).join("");
+      </div>`;
+  }
+  
+  el.innerHTML = html;
 }
 
 function togglePYQExam(exam){ pyqOpenExam = pyqOpenExam===exam?null:exam; pyqOpenYear=null; pyqOpenSubject=null; renderPYQHierarchy(); }
@@ -4468,15 +4511,33 @@ function renderPYQPdfLibrary(){
     byExam[exam][year][subj].push(p);
   });
 
-  let hHtml = adminUploadHtml + `<div style="font-weight:700;font-size:16px;margin-bottom:12px;">📄 PDF Question Papers (${filteredPdfs.length})</div><div style="display:flex;flex-direction:column;gap:8px;">`;
+  const pyqExamIcons = {
+    "ICAR JRF": "🎓",
+    "IARI PG PAPER": "🏫",
+    "NABARD": "🏛️",
+    "IBPS AFO": "🏦",
+    "BHU ENTRANCE": "🏛️",
+    "OTHER": "🌾"
+  };
+
+  let hHtml = adminUploadHtml + `<label class="lbl">Select Exam (PDFs)</label>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px; margin-bottom:16px;">`;
+  
   Object.keys(byExam).sort().forEach(exam=>{
     const examOpen = pyqPdfOpenExam===exam;
-    hHtml += `<div class="card hov-card" style="padding:14px;cursor:pointer;border-left:4px solid #00B050;" onclick="togglePYQPdfExam('${escapeHTML(exam)}')">
-      <div style="display:flex;justify-content:space-between;align-items:center;font-weight:700;">
-        <span>🎓 ${escapeHTML(exam)}</span>
-        <span style="color:#00B050;">${examOpen?"▲":"▼"}</span>
-      </div>
-    </div>`;
+    const icon = pyqExamIcons[exam.toUpperCase()] || "📘";
+    const examCount = Object.values(byExam[exam]).reduce((s,ys)=>s+Object.values(ys).reduce((s2,ss)=>s2+ss.length,0),0);
+    hHtml += `<div class="card hov-card exam-panel" onclick="togglePYQPdfExam('${escapeHTML(exam)}')" style="padding:16px; border:2px solid ${examOpen ? '#00B050' : 'transparent'}; cursor:pointer; text-align:center;">
+        <div style="font-size:32px;">${icon}</div>
+        <div style="font-weight:800; font-size:13px; margin:6px 0;">${escapeHTML(exam)}</div>
+        <div style="font-size:11px; color:#777; margin-bottom:6px;">${examCount} PDFs</div>
+        <button class="btn ${examOpen ? 'btn-primary' : 'btn-light'}" style="width:100%; font-size:11px;">${examOpen ? 'Selected' : 'Select'}</button>
+      </div>`;
+  });
+  hHtml += `</div>`;
+
+  Object.keys(byExam).sort().forEach(exam=>{
+    const examOpen = pyqPdfOpenExam===exam;
     if(examOpen){
       hHtml += `<div style="padding-left:14px;display:flex;flex-direction:column;gap:6px;margin-bottom:8px;margin-top:-2px;">`;
       Object.keys(byExam[exam]).sort((a,b)=>b.localeCompare(a)).forEach(year=>{
