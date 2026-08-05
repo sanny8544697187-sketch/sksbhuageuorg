@@ -1922,11 +1922,6 @@ let activeQuizTab="quiz";
 let activeLbTabQ="all";
 
 function setSubjectsTab(tab){
-  if(tab==="ebooks" && !isProActive(currentUser)){
-    toast("E-Books are a Premium feature! Upgrade to a Monthly or Yearly plan to access.","e");
-    openPay();
-    return;
-  }
   activeSubjectsTab=tab;
   ["subjects","resources","planner","ebooks"].forEach(t=>{
     const btn=document.getElementById("stab_"+t);
@@ -1971,12 +1966,6 @@ function setSection(s){
   if(s==="leaderboard"){ setSection("quiz");   setTimeout(()=>setQuizTab("leaderboard"),50); return; }
   if(s==="analytics"){ setSection("quiz");     setTimeout(()=>setQuizTab("analytics"),50); return; }
   if(s==="flashcards"){ setSection("quiz"); return; }
-  
-  if(s==="pyq" && !isProActive(currentUser)){
-    toast("Previous Papers are a Premium feature! Upgrade to a Monthly or Yearly plan to access.","e");
-    openPay();
-    return;
-  }
 
   section=s;
   document.querySelectorAll(".section").forEach(el=>el.classList.remove("active"));
@@ -4532,7 +4521,20 @@ function renderPYQPdfLibrary(){
     "OTHER": "🌾"
   };
 
-  let hHtml = adminUploadHtml + `<label class="lbl">Select Exam (PDFs)</label>
+  const isPro = isProActive(currentUser);
+  let bannerHtml = '';
+  if(!isPro) {
+    bannerHtml = `
+    <div style="background:linear-gradient(135deg,#1a0a00,#3d1f00);border:1px solid #f59e0b;border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="color:#f59e0b;font-weight:800;font-size:14px;margin-bottom:4px;">⭐ Special Offer! Unlock All E-Books & Previous Papers</div>
+        <div style="color:rgba(255,200,100,.8);font-size:12px;">Get full access for just ₹49 / month or ₹449 / year.</div>
+      </div>
+      <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="openPay()">Upgrade Now →</button>
+    </div>`;
+  }
+
+  let hHtml = adminUploadHtml + bannerHtml + `<label class="lbl">Select Exam (PDFs)</label>
     <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px; margin-bottom:16px;">`;
   
   Object.keys(byExam).sort().forEach(exam=>{
@@ -4583,8 +4585,8 @@ function renderPYQPdfLibrary(){
                     </div>
                     ${p.desc?`<div class="res-desc">${escapeHTML(p.desc)}</div>`:''}
                     <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;">
-                      ${p.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="event.stopPropagation();openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')">👁 View PDF</button>`:''}
-                      ${p.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="event.stopPropagation();downloadPYQPdf('${p.id}')">📥 Download</button>`:''}
+                      ${p.link?`<button class="btn ${isPro ? 'btn-light' : 'btn-gold'}" style="background:${isPro ? '#E3F2FD' : '#FFF3E0'};color:${isPro ? '#1565C0' : '#E65100'};padding:5px 12px;font-size:11px;font-weight:700;" onclick="event.stopPropagation();${isPro ? `openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')` : `toast('Previous Papers are available on Monthly and Yearly plans.','e'); openPay();`}">${isPro ? '👁 View PDF' : '🔒 Pro Only'}</button>`:''}
+                      ${p.hasFile?`<button class="btn ${isPro ? 'btn-primary' : 'btn-gold'}" style="padding:5px 12px;font-size:11px;" onclick="event.stopPropagation();${isPro ? `downloadPYQPdf('${p.id}')` : `toast('Previous Papers are available on Monthly and Yearly plans.','e'); openPay();`}">${isPro ? '📥 Download' : '🔒 Pro Only'}</button>`:''}
                       ${isAdmin?`<button class="btn" style="background:#FFF3E0;color:#E65100;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="event.stopPropagation();setSection('admin');setTimeout(()=>editPYQPdfEntry('${p.id}'),300)">✏️ Edit</button>`:''}
                       ${isAdmin?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;${!isAdmin?'margin-left:auto;':''}" onclick="event.stopPropagation();deletePYQPdf('${p.id}')">🗑</button>`:''}
                     </div>
@@ -7037,7 +7039,20 @@ function renderEbooksLibrary(){
   const root = document.getElementById("ebooksLibraryRoot");
   if(!root) return;
 
-  root.innerHTML = `
+  const isPro = isProActive(currentUser);
+  let bannerHtml = '';
+  if(!isPro) {
+    bannerHtml = `
+    <div style="background:linear-gradient(135deg,#1a0a00,#3d1f00);border:1px solid #f59e0b;border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+      <div>
+        <div style="color:#f59e0b;font-weight:800;font-size:14px;margin-bottom:4px;">⭐ Special Offer! Unlock All E-Books & Previous Papers</div>
+        <div style="color:rgba(255,200,100,.8);font-size:12px;">Get full access for just ₹49 / month or ₹449 / year.</div>
+      </div>
+      <button class="btn btn-gold" style="padding:7px 16px;font-size:12px;" onclick="openPay()">Upgrade Now →</button>
+    </div>`;
+  }
+
+  root.innerHTML = bannerHtml + `
     <div style="margin-bottom:14px;">
       <div style="font-weight:800;font-size:17px;margin-bottom:4px;">📖 Agriculture E-Books Library</div>
       <div style="color:#777;font-size:13px;">${EBOOKS_LIBRARY.length} free reference books — search, preview & download</div>
@@ -7072,6 +7087,7 @@ function renderEbooksGrid(){
     return;
   }
   emptyEl.style.display = "none";
+  const isPro = isProActive(currentUser);
   grid.innerHTML = filtered.map(b => `
     <div class="card hov-card" style="padding:12px;display:flex;flex-direction:column;">
       <img src="${b.image}" alt="${escapeHTML(b.title)}" loading="lazy"
@@ -7079,9 +7095,9 @@ function renderEbooksGrid(){
       <div style="font-weight:700;font-size:13px;line-height:1.35;margin-bottom:4px;flex:1;">${escapeHTML(b.title)}</div>
       <div style="font-size:11px;color:#777;margin-bottom:4px;line-height:1.4;">${escapeHTML(b.author)}</div>
       ${b.subject?`<span style="align-self:flex-start;background:#E8F5E9;color:#0F3D23;font-size:9px;padding:2px 8px;border-radius:50px;font-weight:600;margin-bottom:8px;">${escapeHTML(b.subject)}</span>`:""}
-      <button class="btn btn-primary" style="font-size:12px;padding:7px;width:100%;margin-top:auto;"
-        onclick="openDrivePreview('${b.link.replace(/'/g,"\\'")}','${b.title.replace(/'/g,"\\'")}')">
-        📥 View / Download
+      <button class="btn ${isPro ? 'btn-primary' : 'btn-gold'}" style="font-size:12px;padding:7px;width:100%;margin-top:auto;"
+        onclick="${isPro ? `openDrivePreview('${b.link.replace(/'/g,"\\'")}','${b.title.replace(/'/g,"\\'")}')` : `toast('E-Books are available on Monthly and Yearly plans.','e'); openPay();`}">
+        ${isPro ? "📥 View / Download" : "🔒 Pro Only"}
       </button>
     </div>`).join("");
 }
