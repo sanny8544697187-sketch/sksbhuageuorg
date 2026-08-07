@@ -1,0 +1,8 @@
+﻿# Build artifacts
+build/
+app/build/
+.gradle/
+*.aab
+*.apk
+*.keystore
+signing-key-info.txt
