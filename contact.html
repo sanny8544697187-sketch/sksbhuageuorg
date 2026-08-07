@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Contact Us – KrishiGyan | Agriculture Student Feedback</title>
+  <meta name="description" content="Contact KrishiGyan or send us your feedback, bug reports, or feature suggestions. We respond within 24-48 hours."/>
+  <link rel="canonical" href="https://www.krishigyan.online/contact.html"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#f4f7f4;color:#1a2e1a;line-height:1.7}
+    a{color:#00B050;text-decoration:none}
+    a:hover{text-decoration:underline}
+    header{background:linear-gradient(135deg,#1B5E20 0%,#2E7D32 50%,#00B050 100%);color:#fff}
+    .header-top{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;flex-wrap:wrap;gap:12px}
+    .logo{font-size:22px;font-weight:900;letter-spacing:-.5px}
+    .logo span{color:#A5D6A7}
+    nav a{color:rgba(255,255,255,.85);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:600;transition:.2s;display:inline-block}
+    nav a:hover,nav a.active{background:rgba(255,255,255,.2);color:#fff;text-decoration:none}
+    .hero{text-align:center;padding:50px 24px 44px}
+    .hero h1{font-size:clamp(26px,5vw,42px);font-weight:900;margin-bottom:12px}
+    .hero p{font-size:17px;opacity:.88;max-width:540px;margin:0 auto}
+    main{max-width:860px;margin:0 auto;padding:40px 20px 60px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+    @media(max-width:640px){main{grid-template-columns:1fr}}
+    .card{background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .card-full{grid-column:1/-1}
+    h2{font-size:20px;font-weight:800;color:#1B5E20;margin-bottom:18px}
+    label{display:block;font-weight:600;font-size:14px;color:#333;margin-bottom:6px;margin-top:16px}
+    label:first-of-type{margin-top:0}
+    input,textarea,select{width:100%;padding:11px 14px;border:2px solid #e0e0e0;border-radius:10px;font-family:'Inter',sans-serif;font-size:14px;color:#222;outline:none;transition:.2s;background:#fafafa}
+    input:focus,textarea:focus,select:focus{border-color:#00B050;background:#fff}
+    textarea{height:130px;resize:vertical}
+    .btn{display:inline-block;width:100%;padding:13px;border:none;border-radius:50px;font-weight:700;font-size:15px;cursor:pointer;transition:.2s;margin-top:20px}
+    .btn-green{background:linear-gradient(135deg,#1B5E20,#00B050);color:#fff}
+    .btn-green:hover{opacity:.9}
+    .error-msg{color:#d32f2f;font-size:12px;margin-top:4px;display:none}
+    .success-box{display:none;background:#e8f5e9;border:2px solid #00B050;border-radius:12px;padding:20px;text-align:center;margin-top:16px}
+    .success-box .icon{font-size:40px;margin-bottom:8px}
+    .success-box h3{color:#1B5E20;font-size:18px;font-weight:800}
+    .success-box p{color:#555;font-size:14px;margin-top:6px}
+    .info-card{display:flex;align-items:flex-start;gap:14px;background:#f0faf0;border-radius:12px;padding:18px;margin-bottom:14px;border:1px solid #c8e6c9}
+    .info-icon{font-size:28px;flex-shrink:0}
+    .info-title{font-weight:700;color:#1B5E20;font-size:14px;margin-bottom:4px}
+    .info-text{font-size:13px;color:#555}
+    footer{background:#1a2e1a;color:rgba(255,255,255,.7);text-align:center;padding:24px;font-size:13px}
+    footer a{color:#A5D6A7}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-top">
+    <div class="logo">🌿 Krishi<span>Gyan</span></div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="articles.html">Articles</a>
+      <a href="contact.html" class="active">Contact</a>
+    </nav>
+  </div>
+  <div class="hero">
+    <h1>Contact & Feedback 💬</h1>
+    <p>We love hearing from agriculture students! Your feedback helps us build a better platform for everyone.</p>
+  </div>
+</header>
+
+<main>
+  <!-- Feedback Form -->
+  <div class="card card-full">
+    <h2>✉️ Send Us Your Feedback</h2>
+    <form id="feedbackForm" onsubmit="submitFeedback(event)" novalidate>
+      <label for="fbName">Your Name *</label>
+      <input type="text" id="fbName" placeholder="e.g. Rahul Sharma" required/>
+      <div class="error-msg" id="errName">Please enter your name.</div>
+
+      <label for="fbEmail">Email Address *</label>
+      <input type="email" id="fbEmail" placeholder="e.g. rahul@example.com" required/>
+      <div class="error-msg" id="errEmail">Please enter a valid email address.</div>
+
+      <label for="fbSubject">Subject *</label>
+      <select id="fbSubject" required>
+        <option value="">-- Select a subject --</option>
+        <option value="General Feedback">General Feedback</option>
+        <option value="Report a Bug">Report a Bug</option>
+        <option value="Content Request">Content Request (Notes, PYQs, Books)</option>
+        <option value="Suggest a Feature">Suggest a Feature</option>
+        <option value="AI Professor Issue">AI Professor Issue</option>
+        <option value="Partnership">Partnership / Collaboration</option>
+      </select>
+      <div class="error-msg" id="errSubject">Please select a subject.</div>
+
+      <label for="fbMessage">Your Message *</label>
+      <textarea id="fbMessage" placeholder="Tell us what's on your mind... (minimum 20 characters)" required minlength="20"></textarea>
+      <div class="error-msg" id="errMessage">Please enter a message of at least 20 characters.</div>
+
+      <button type="submit" class="btn btn-green">Send Feedback 🚀</button>
+    </form>
+
+    <div class="success-box" id="successBox">
+      <div class="icon">🎉</div>
+      <h3>Thank You for Your Feedback!</h3>
+      <p>We appreciate you taking the time to write to us. We will review your message and get back to you within 24-48 hours.</p>
+    </div>
+  </div>
+
+  <!-- Contact Info -->
+  <div class="card">
+    <h2>📬 Ways to Connect</h2>
+    <div class="info-card">
+      <div class="info-icon">📧</div>
+      <div>
+        <div class="info-title">Email Us</div>
+        <div class="info-text"><a href="mailto:support@krishigyan.online">support@krishigyan.online</a></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">💻</div>
+      <div>
+        <div class="info-title">GitHub</div>
+        <div class="info-text"><a href="https://github.com/sanny8544697187-sketch/sksbhuageuorg" target="_blank">View our open source project</a></div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">⏰</div>
+      <div>
+        <div class="info-title">Response Time</div>
+        <div class="info-text">We typically respond within 24-48 hours on working days.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="card">
+    <h2>❓ Quick Answers</h2>
+    <div class="info-card">
+      <div class="info-icon">🆓</div>
+      <div>
+        <div class="info-title">Is KrishiGyan free?</div>
+        <div class="info-text">Yes! All resources including notes, PYQs, quizzes, books and the AI Professor are completely free.</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">📤</div>
+      <div>
+        <div class="info-title">How can I contribute?</div>
+        <div class="info-text">Log in and use the Upload section to share your notes or PYQs with other students.</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🤖</div>
+      <div>
+        <div class="info-title">AI Professor not working?</div>
+        <div class="info-text">Due to high traffic, the AI may take a moment to respond. Please wait 60 seconds and try again.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2025 KrishiGyan — Made with ❤️ by Agriculture Students &nbsp;|&nbsp;
+    <a href="privacy.html">Privacy Policy</a> &nbsp;|&nbsp;
+    <a href="disclaimer.html">Disclaimer</a> &nbsp;|&nbsp;
+    <a href="about.html">About Us</a>
+  </p>
+</footer>
+
+<script>
+function submitFeedback(e) {
+  e.preventDefault();
+  let valid = true;
+
+  const name = document.getElementById('fbName').value.trim();
+  const email = document.getElementById('fbEmail').value.trim();
+  const subject = document.getElementById('fbSubject').value;
+  const message = document.getElementById('fbMessage').value.trim();
+
+  // Reset errors
+  document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+
+  if (!name) { document.getElementById('errName').style.display = 'block'; valid = false; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { document.getElementById('errEmail').style.display = 'block'; valid = false; }
+  if (!subject) { document.getElementById('errSubject').style.display = 'block'; valid = false; }
+  if (!message || message.length < 20) { document.getElementById('errMessage').style.display = 'block'; valid = false; }
+
+  if (valid) {
+    document.getElementById('feedbackForm').style.display = 'none';
+    document.getElementById('successBox').style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>

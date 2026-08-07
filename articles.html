@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Agriculture Articles – KrishiGyan | Study Material for Agriculture Students</title>
+  <meta name="description" content="Read high-quality agriculture articles written for BHU and ICAR students. Topics cover Agronomy, Soil Science, Plant Pathology, Irrigation, Extension Education and more."/>
+  <link rel="canonical" href="https://www.krishigyan.online/articles.html"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',sans-serif;background:#f4f7f4;color:#1a2e1a;line-height:1.7}
+    a{color:#00B050;text-decoration:none}
+    a:hover{text-decoration:underline}
+    header{background:linear-gradient(135deg,#1B5E20,#00B050);color:#fff}
+    .header-top{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;flex-wrap:wrap;gap:12px}
+    .logo{font-size:22px;font-weight:900}
+    .logo span{color:#A5D6A7}
+    nav a{color:rgba(255,255,255,.85);padding:6px 14px;border-radius:20px;font-size:14px;font-weight:600;display:inline-block;transition:.2s}
+    nav a:hover,nav a.active{background:rgba(255,255,255,.2);color:#fff;text-decoration:none}
+    .hero{text-align:center;padding:50px 24px 44px}
+    .hero h1{font-size:clamp(26px,5vw,42px);font-weight:900;margin-bottom:12px}
+    .hero p{font-size:17px;opacity:.88;max-width:560px;margin:0 auto}
+    main{max-width:980px;margin:0 auto;padding:40px 20px 60px}
+    .search-bar{display:flex;gap:10px;margin-bottom:32px}
+    .search-bar input{flex:1;padding:12px 18px;border:2px solid #c8e6c9;border-radius:50px;font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:.2s}
+    .search-bar input:focus{border-color:#00B050}
+    .filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+    .filter-btn{padding:7px 18px;border-radius:50px;border:2px solid #c8e6c9;background:#fff;font-size:13px;font-weight:600;color:#555;cursor:pointer;transition:.2s}
+    .filter-btn:hover,.filter-btn.active{background:#00B050;color:#fff;border-color:#00B050}
+    .articles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+    .article-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);transition:transform .2s,box-shadow .2s;display:flex;flex-direction:column}
+    .article-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    .article-card-header{padding:22px 22px 0;position:relative}
+    .subject-tag{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.4px;margin-bottom:12px}
+    .tag-agronomy{background:#e8f5e9;color:#1B5E20}
+    .tag-soil{background:#efebe9;color:#4E342E}
+    .tag-pathology{background:#fce4ec;color:#880E4F}
+    .tag-irrigation{background:#e3f2fd;color:#01579B}
+    .tag-extension{background:#f3e5f5;color:#4A148C}
+    .article-card h3{font-size:16px;font-weight:800;line-height:1.4;color:#1a2e1a;margin-bottom:10px}
+    .article-card p{font-size:13px;color:#666;padding:0 22px;flex:1;margin-bottom:16px;line-height:1.6}
+    .article-card .meta{font-size:12px;color:#999;padding:0 22px 16px;display:flex;gap:12px}
+    .read-btn{margin:0 22px 22px;display:block;background:linear-gradient(135deg,#1B5E20,#00B050);color:#fff;padding:10px 18px;border-radius:50px;font-size:13px;font-weight:700;text-align:center;transition:.2s}
+    .read-btn:hover{opacity:.9;text-decoration:none;color:#fff}
+    .coming-soon{background:#f9fdf9;border:2px dashed #c8e6c9;border-radius:16px;padding:40px;text-align:center;color:#888;margin-top:20px}
+    .coming-soon .icon{font-size:40px;margin-bottom:12px}
+    footer{background:#1a2e1a;color:rgba(255,255,255,.7);text-align:center;padding:24px;font-size:13px;margin-top:40px}
+    footer a{color:#A5D6A7}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-top">
+    <div class="logo">🌿 Krishi<span>Gyan</span></div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="articles.html" class="active">Articles</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+  </div>
+  <div class="hero">
+    <h1>📚 Agriculture Articles</h1>
+    <p>High-quality, exam-focused articles written for BHU, ICAR JRF, and all agriculture competitive exam aspirants.</p>
+  </div>
+</header>
+
+<main>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="🔍 Search articles by topic, subject..." oninput="filterArticles()"/>
+  </div>
+
+  <div class="filter-row">
+    <button class="filter-btn active" onclick="filterByTag('all', this)">All Articles</button>
+    <button class="filter-btn" onclick="filterByTag('agronomy', this)">🌾 Agronomy</button>
+    <button class="filter-btn" onclick="filterByTag('soil', this)">🪱 Soil Science</button>
+    <button class="filter-btn" onclick="filterByTag('pathology', this)">🦠 Plant Pathology</button>
+    <button class="filter-btn" onclick="filterByTag('irrigation', this)">💧 Irrigation</button>
+    <button class="filter-btn" onclick="filterByTag('extension', this)">🏫 Extension</button>
+  </div>
+
+  <div class="articles-grid" id="articlesGrid">
+
+    <div class="article-card" data-tags="agronomy">
+      <div class="article-card-header">
+        <span class="subject-tag tag-agronomy">🌱 AGRONOMY</span>
+        <h3>Organic Farming in India: Principles, Benefits and Scope</h3>
+      </div>
+      <p>A complete guide covering IFOAM principles, organic inputs (vermicompost, bio-fertilizers), certification (NPOP, PGS), PKVY scheme, and Sikkim's organic success story.</p>
+      <div class="meta"><span>📅 Aug 2025</span><span>⏱ 8 min</span></div>
+      <a href="articles/organic-farming-india.html" class="read-btn">Read Article →</a>
+    </div>
+
+    <div class="article-card" data-tags="soil">
+      <div class="article-card-header">
+        <span class="subject-tag tag-soil">🪱 SOIL SCIENCE</span>
+        <h3>Soil Health and Soil Degradation: Causes, Effects and Management</h3>
+      </div>
+      <p>Covers soil health indicators (physical, chemical, biological), types of degradation (erosion, salinity, waterlogging), reclamation methods, and Soil Health Card Scheme.</p>
+      <div class="meta"><span>📅 Aug 2025</span><span>⏱ 9 min</span></div>
+      <a href="articles/soil-health-degradation.html" class="read-btn">Read Article →</a>
+    </div>
+
+    <div class="article-card" data-tags="pathology">
+      <div class="article-card-header">
+        <span class="subject-tag tag-pathology">🦠 PLANT PATHOLOGY</span>
+        <h3>Crop Diseases in India: Identification, Causes and IPM Management</h3>
+      </div>
+      <p>Disease triangle, major fungal diseases (rice blast, wheat rust, late blight), bacterial and viral diseases, biological control with Trichoderma, and IPM strategies.</p>
+      <div class="meta"><span>📅 Aug 2025</span><span>⏱ 10 min</span></div>
+      <a href="articles/crop-diseases-management.html" class="read-btn">Read Article →</a>
+    </div>
+
+    <div class="article-card" data-tags="irrigation agronomy">
+      <div class="article-card-header">
+        <span class="subject-tag tag-irrigation">💧 IRRIGATION</span>
+        <h3>Irrigation Methods in India: Types, Efficiency and Water Management</h3>
+      </div>
+      <p>Surface, sprinkler, and drip irrigation compared by WUE (40% to 95%), IW:CPE scheduling, waterlogging, salinity, and PMKSY scheme details.</p>
+      <div class="meta"><span>📅 Aug 2025</span><span>⏱ 9 min</span></div>
+      <a href="articles/irrigation-methods-india.html" class="read-btn">Read Article →</a>
+    </div>
+
+    <div class="article-card" data-tags="extension">
+      <div class="article-card-header">
+        <span class="subject-tag tag-extension">🏫 EXTENSION</span>
+        <h3>Agricultural Extension Education: Principles, Methods and Role in Rural India</h3>
+      </div>
+      <p>Definition by Kelsey & Hearne, IFOAM principles, individual/group/mass methods, Method vs Result Demonstration, KVK, ATMA, Kisan Call Centre, and women in extension.</p>
+      <div class="meta"><span>📅 Aug 2025</span><span>⏱ 9 min</span></div>
+      <a href="articles/agricultural-extension-education.html" class="read-btn">Read Article →</a>
+    </div>
+
+  </div>
+
+  <div class="coming-soon" id="noResults" style="display:none">
+    <div class="icon">🔍</div>
+    <strong>No articles found</strong><br>Try a different search term or filter.
+  </div>
+
+  <div class="coming-soon" style="margin-top:28px">
+    <div class="icon">✍️</div>
+    <strong>More articles coming soon!</strong><br>
+    We're working on 20+ more articles covering Genetics, Horticulture, Agricultural Economics, Entomology and more.<br>
+    <a href="contact.html" style="display:inline-block;margin-top:12px;background:#00B050;color:#fff;padding:8px 20px;border-radius:50px;font-weight:700;font-size:13px;">Suggest a Topic</a>
+  </div>
+</main>
+
+<footer>
+  <p>© 2025 KrishiGyan — Made with ❤️ by Agriculture Students &nbsp;|&nbsp;
+    <a href="about.html">About</a> &nbsp;|&nbsp;
+    <a href="privacy.html">Privacy Policy</a> &nbsp;|&nbsp;
+    <a href="disclaimer.html">Disclaimer</a> &nbsp;|&nbsp;
+    <a href="contact.html">Contact</a>
+  </p>
+</footer>
+
+<script>
+let activeTag = 'all';
+
+function filterArticles() {
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const cards = document.querySelectorAll('.article-card');
+  let visible = 0;
+  cards.forEach(card => {
+    const text = card.innerText.toLowerCase();
+    const tags = card.getAttribute('data-tags') || '';
+    const tagMatch = activeTag === 'all' || tags.includes(activeTag);
+    const searchMatch = !query || text.includes(query);
+    if (tagMatch && searchMatch) { card.style.display = 'flex'; visible++; }
+    else { card.style.display = 'none'; }
+  });
+  document.getElementById('noResults').style.display = visible === 0 ? 'block' : 'none';
+}
+
+function filterByTag(tag, btn) {
+  activeTag = tag;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterArticles();
+}
+</script>
+</body>
+</html>
