@@ -932,49 +932,49 @@ try {
           <div style="position:absolute; top:12px; right:12px; background:#f59e0b; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:50px;">FREE</div>
         </div>
         <div class="test-body">
-          <div class="test-title">ICAR JRF Agronomy 2024 Final Paper</div>
+          <div class="test-title">Previous Year Question Papers (PYQs)</div>
           <div class="test-meta">
-            <span>PYQ Paper</span>
-            <span>120 Qs</span>
+            <span>MCQ Banks</span>
+            <span>All Exams</span>
           </div>
           <div style="margin-top:auto; padding-top:16px;">
-            <button class="btn btn-primary" style="width:100%; box-shadow:0 4px 14px rgba(0,176,80,.2);">Attempt Now →</button>
+            <button class="btn btn-primary" style="width:100%; box-shadow:0 4px 14px rgba(0,176,80,.2);" onclick="setSection('pyq')">Attempt PYQs →</button>
           </div>
         </div>
       </div>
 
-      <!-- Card 2: PDF Note -->
+      <!-- Card 2: Saved / Wrong MCQs -->
       <div class="test-card">
         <div class="test-img" style="background:#1B6B3A;">
-          📄
-          <div style="position:absolute; top:12px; right:12px; background:#1565C0; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:50px;">PREMIUM</div>
+          ❌
+          <div style="position:absolute; top:12px; right:12px; background:#1565C0; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:50px;">REVIEW</div>
         </div>
         <div class="test-body">
-          <div class="test-title">Nem Raj Sunda Complete Highlighted Notes</div>
+          <div class="test-title">Saved & Incorrectly Answered MCQs</div>
           <div class="test-meta">
-            <span>PDF Note</span>
-            <span>245 Pages</span>
+            <span>Revision</span>
+            <span>Your Mistakes</span>
           </div>
           <div style="margin-top:auto; padding-top:16px;">
-            <button class="btn btn-gold" style="width:100%; box-shadow:0 4px 14px rgba(201,105,10,.2);">⭐ Unlock Premium</button>
+            <button class="btn btn-gold" style="width:100%; box-shadow:0 4px 14px rgba(201,105,10,.2);" onclick="setSection('quiz'); setTimeout(()=>setQuizTab('analytics'), 100);">Review Mistakes →</button>
           </div>
         </div>
       </div>
 
-      <!-- Card 3: Mock Test -->
+      <!-- Card 3: PDF Materials -->
       <div class="test-card">
         <div class="test-img" style="background:#09130B;">
-          🎯
-          <div style="position:absolute; top:12px; left:12px; background:#E53935; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:50px;">NEW</div>
+          📄
+          <div style="position:absolute; top:12px; left:12px; background:#E53935; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:50px;">STUDY</div>
         </div>
         <div class="test-body">
-          <div class="test-title">IBPS AFO Prelims Full Length Mock Test 1</div>
+          <div class="test-title">PDF Notes & E-Books</div>
           <div class="test-meta">
-            <span>Mock Test</span>
-            <span>150 Mins</span>
+            <span>Library</span>
+            <span>All Subjects</span>
           </div>
           <div style="margin-top:auto; padding-top:16px;">
-            <button class="btn btn-primary" style="width:100%;">Start Test</button>
+            <button class="btn btn-primary" style="width:100%;" onclick="setSection('subjects'); setTimeout(()=>setSubjectsTab('resources'), 100);">Open Library</button>
           </div>
         </div>
       </div>
