@@ -254,6 +254,50 @@
 
     /* ══ NEW FEATURES CSS ══════════════════════════════════════ */
 
+    /* Desktop Sidebar Layout */
+    .app-layout { display: flex; height: 100vh; overflow: hidden; }
+    .main-layout { flex: 1; display: flex; flex-direction: column; overflow-y: auto; height: 100vh; }
+    
+    .sidebar { width: 250px; background: #07150a; color: white; flex-direction: column; display: none; flex-shrink: 0; border-right: 1px solid #1a2f20; }
+    .sb-header { padding: 24px 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,.05); margin-bottom: 10px; }
+    .sb-nav { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; }
+    .sb-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; border: none; background: transparent; color: #a1bca1; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: .2s; text-align: left; }
+    .sb-item:hover { background: rgba(255,255,255,.05); color: white; }
+    .sb-item.active { background: #00B050; color: white; font-weight: 700; box-shadow: 0 4px 12px rgba(0,176,80,.3); }
+
+    /* Notices Section */
+    .promo-carousel { display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none; margin-bottom: 24px; padding-bottom: 8px; }
+    .promo-carousel::-webkit-scrollbar { display: none; }
+    .promo-card { min-width: 280px; flex-shrink: 0; border-radius: 16px; overflow: hidden; position: relative; color: white; box-shadow: 0 4px 16px rgba(0,0,0,.15); }
+    .promo-img { width: 100%; height: 140px; object-fit: cover; }
+    .promo-content { padding: 16px; background: linear-gradient(0deg, #111, transparent); position: absolute; bottom: 0; left: 0; right: 0; }
+    
+    .notice-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 18px; position: relative; margin-bottom: 12px; display: flex; gap: 14px; align-items: center; transition: transform .2s, box-shadow .2s; }
+    .notice-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .notice-icon { width: 48px; height: 48px; border-radius: 14px; background: #FFF3E0; color: #E65100; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+    body.dark .notice-card { background: #111814; }
+    body.dark .notice-icon { background: #2d1810; }
+
+    /* Test Series Premium Cards */
+    .test-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .test-card { background: #fff; border-radius: 18px; overflow: hidden; box-shadow: 0 2px 14px rgba(0,0,0,.08); transition: .2s; display: flex; flex-direction: column; }
+    .test-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,.15); }
+    .test-img { height: 120px; background: #0F3D23; position: relative; display: flex; align-items: center; justify-content: center; font-size: 42px; }
+    .test-body { padding: 16px; flex: 1; display: flex; flex-direction: column; }
+    .test-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; line-height: 1.3; }
+    .test-meta { display: flex; gap: 8px; font-size: 11px; color: #777; margin-bottom: 12px; font-weight: 600; }
+    .test-meta span { background: #F2F5F2; padding: 3px 8px; border-radius: 6px; }
+    body.dark .test-card { background: #111814; }
+    body.dark .test-meta span { background: #1a241a; }
+
+    @media(min-width: 769px) {
+      .sidebar { display: flex; }
+      body { padding-bottom: 0; } /* Remove padding for bottom nav */
+      .nav-chips { display: none !important; }
+      .bottom-nav { display: none !important; }
+      .main-layout > header { border-radius: 0; }
+    }
+    
     /* Streak / Daily */
     .streak-fire{font-size:32px;line-height:1;}
     .streak-count{font-size:36px;font-weight:800;color:#f59e0b;letter-spacing:-1px;}
@@ -486,6 +530,37 @@ try {
   </div>
 </div>
 
+<!-- APP LAYOUT WRAPPER (For Sidebar) -->
+<div class="app-layout">
+  
+  <!-- DESKTOP SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-header">
+      <div style="font-size:24px;">🌾</div>
+      <div>
+        <div style="font-weight:800;font-size:16px;">KrishiGyan</div>
+        <div style="font-size:10px;opacity:.6;letter-spacing:.5px;">PREMIUM HUB</div>
+      </div>
+    </div>
+    <div class="sb-nav">
+      <button class="sb-item active" onclick="setSection('home')" id="sb-home">🏠 Home</button>
+      <button class="sb-item" onclick="setSection('notices')" id="sb-notices">📢 Notices</button>
+      <button class="sb-item" onclick="setSection('test-series')" id="sb-test-series">📝 Test Series</button>
+      <button class="sb-item" onclick="setSection('subjects')" id="sb-subjects">📚 Subjects</button>
+      <button class="sb-item" onclick="setSection('quiz')" id="sb-quiz">🧠 Quiz</button>
+      <button class="sb-item" onclick="setSection('pyq')" id="sb-pyq" style="display:none;">📋 PYQ</button> <!-- Hidden, merged into test-series -->
+      <button class="sb-item" onclick="setSection('games')" id="sb-games">🎮 Games</button>
+      <button class="sb-item" onclick="setSection('chat')" id="sb-chat">💬 Doubts</button>
+      <button class="sb-item" onclick="setSection('profile')" id="sb-profile">👤 Profile</button>
+      <div style="margin-top:auto; padding-top:20px;"></div>
+      <button class="sb-item hidden admin-only" onclick="setSection('upload')" id="sb-upload">⬆️ Upload</button>
+      <button class="sb-item hidden" onclick="setSection('admin')" id="sb-admin">🛡️ Admin</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="main-layout">
+
 <!-- HEADER -->
 <header>
   <div class="header-inner">
@@ -502,9 +577,11 @@ try {
   </div>
   <div class="nav-chips chips-row">
     <button id="navHome"       class="btn btn-ghost active" onclick="setSection('home')">🏠 Home</button>
+    <button id="navNotices"    class="btn btn-ghost" onclick="setSection('notices')">📢 Notices</button>
+    <button id="navTestSeries" class="btn btn-ghost" onclick="setSection('test-series')">📝 Test Series</button>
     <button id="navSubjects"   class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
     <button id="navQuiz"       class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
-    <button id="navPyq"        class="btn btn-ghost" onclick="setSection('pyq')">📋 Previous Papers</button>
+    <button id="navPyq"        class="btn btn-ghost" style="display:none;" onclick="setSection('pyq')">📋 PYQ</button>
     <button id="navGames"      class="btn btn-ghost" onclick="setSection('games')">🎮 Games</button>
     <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
     <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
@@ -777,6 +854,134 @@ try {
   </section>
 
   <!-- UPLOAD -->
+  <!-- NOTICES -->
+  <section id="notices" class="section fu">
+    <h2 class="section-title">📢 Latest Notices</h2>
+    <p class="section-subtitle">Stay updated with the latest announcements, exams, and news.</p>
+
+    <div class="search-box" style="max-width:400px; margin-bottom:20px;">
+      <span style="opacity:0.5;">🔍</span>
+      <input type="text" class="inp" placeholder="Search Notices..." style="border:none; padding:0; background:transparent;">
+    </div>
+
+    <!-- PROMOTIONAL CAROUSEL -->
+    <div class="promo-carousel">
+      <div class="promo-card">
+        <img src="https://images.unsplash.com/photo-1495592822108-9e627184069a?w=500&q=80" class="promo-img" alt="Promo">
+        <div class="promo-content">
+          <div style="font-size:10px; font-weight:700; color:#f59e0b; letter-spacing:1px; margin-bottom:4px;">ADMISSIONS OPEN</div>
+          <div style="font-size:16px; font-weight:800; line-height:1.2;">UPSC Agriculture Optional 2026 Batch</div>
+        </div>
+      </div>
+      <div class="promo-card">
+        <img src="https://images.unsplash.com/photo-1590682680695-43b964a3ae17?w=500&q=80" class="promo-img" alt="Promo">
+        <div class="promo-content">
+          <div style="font-size:10px; font-weight:700; color:#00B050; letter-spacing:1px; margin-bottom:4px;">UPCOMING TEST</div>
+          <div style="font-size:16px; font-weight:800; line-height:1.2;">All India ICAR JRF Mock Test</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTICE CARDS -->
+    <div id="noticeList">
+      <div class="notice-card">
+        <div class="notice-icon">📝</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
+            <span style="font-size:10px; background:#E8F5E9; color:#00B050; padding:3px 8px; border-radius:4px; font-weight:700;">EXAM</span>
+            <span style="font-size:10px; color:#777;">Today</span>
+          </div>
+          <div style="font-weight:700; font-size:15px; margin-bottom:4px;">ICAR AIEEA (UG) Final Answer Key Released</div>
+          <div style="font-size:13px; color:#777; line-height:1.4;">The final answer keys for the ICAR AIEEA 2025 examination have been officially published on the NTA website.</div>
+        </div>
+        <button class="btn btn-primary" style="padding:8px 16px;">View</button>
+      </div>
+      
+      <div class="notice-card">
+        <div class="notice-icon">📅</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
+            <span style="font-size:10px; background:#F3E5F5; color:#7B1FA2; padding:3px 8px; border-radius:4px; font-weight:700;">SCHEDULE</span>
+            <span style="font-size:10px; color:#777;">Yesterday</span>
+          </div>
+          <div style="font-weight:700; font-size:15px; margin-bottom:4px;">IBPS AFO Mains 2025 Interview Dates</div>
+          <div style="font-size:13px; color:#777; line-height:1.4;">Interview dates and center allocations have been announced. Check your registered email for details.</div>
+        </div>
+        <button class="btn btn-primary" style="padding:8px 16px;">View</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEST SERIES & PDF MATERIALS -->
+  <section id="test-series" class="section fu">
+    <h2 class="section-title">📝 Test Series & Materials</h2>
+    <p class="section-subtitle">Premium mock tests, PYQs, and study PDFs all in one place.</p>
+    
+    <div class="sub-tabs" style="max-width:500px;">
+      <button class="sub-tab-btn active" onclick="alert('Mock Tests filtering (Coming soon)')">Mock Tests</button>
+      <button class="sub-tab-btn" onclick="alert('PYQ filtering (Coming soon)')">Previous Papers</button>
+      <button class="sub-tab-btn" onclick="alert('PDF filtering (Coming soon)')">PDF Notes</button>
+    </div>
+
+    <div class="test-grid" id="testGridList">
+      
+      <!-- Card 1: PYQ -->
+      <div class="test-card">
+        <div class="test-img">
+          📋
+          <div style="position:absolute; top:12px; right:12px; background:#f59e0b; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:50px;">FREE</div>
+        </div>
+        <div class="test-body">
+          <div class="test-title">ICAR JRF Agronomy 2024 Final Paper</div>
+          <div class="test-meta">
+            <span>PYQ Paper</span>
+            <span>120 Qs</span>
+          </div>
+          <div style="margin-top:auto; padding-top:16px;">
+            <button class="btn btn-primary" style="width:100%; box-shadow:0 4px 14px rgba(0,176,80,.2);">Attempt Now →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: PDF Note -->
+      <div class="test-card">
+        <div class="test-img" style="background:#1B6B3A;">
+          📄
+          <div style="position:absolute; top:12px; right:12px; background:#1565C0; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:50px;">PREMIUM</div>
+        </div>
+        <div class="test-body">
+          <div class="test-title">Nem Raj Sunda Complete Highlighted Notes</div>
+          <div class="test-meta">
+            <span>PDF Note</span>
+            <span>245 Pages</span>
+          </div>
+          <div style="margin-top:auto; padding-top:16px;">
+            <button class="btn btn-gold" style="width:100%; box-shadow:0 4px 14px rgba(201,105,10,.2);">⭐ Unlock Premium</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Mock Test -->
+      <div class="test-card">
+        <div class="test-img" style="background:#09130B;">
+          🎯
+          <div style="position:absolute; top:12px; left:12px; background:#E53935; color:white; font-size:10px; font-weight:700; padding:3px 8px; border-radius:50px;">NEW</div>
+        </div>
+        <div class="test-body">
+          <div class="test-title">IBPS AFO Prelims Full Length Mock Test 1</div>
+          <div class="test-meta">
+            <span>Mock Test</span>
+            <span>150 Mins</span>
+          </div>
+          <div style="margin-top:auto; padding-top:16px;">
+            <button class="btn btn-primary" style="width:100%;">Start Test</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
   <section id="upload" class="section fu upload-card">
     <div class="section-title">Upload Resource</div>
     <div class="section-subtitle" id="uploadHint">Your upload goes to admin review first.</div>
@@ -1970,12 +2175,16 @@ function setSection(s){
   document.querySelectorAll(".section").forEach(el=>el.classList.remove("active"));
   const el=document.getElementById(s); if(el) el.classList.add("active");
 
-  ["home","subjects","quiz","pyq","games","chat","profile","upload","admin"].forEach(k=>{
-    const btn=document.getElementById("nav"+k.charAt(0).toUpperCase()+k.slice(1));
+  ["home","notices","test-series","subjects","quiz","pyq","games","chat","profile","upload","admin"].forEach(k=>{
+    let camel = k.split('-').map((w,i) => i===0 ? w : w.charAt(0).toUpperCase()+w.slice(1)).join('');
+    const btn = document.getElementById("nav"+camel.charAt(0).toUpperCase()+camel.slice(1));
     if(btn){ btn.classList.toggle("btn-primary",k===s); btn.classList.toggle("btn-ghost",k!==s); }
+    const sbBtn = document.getElementById("sb-"+k);
+    if(sbBtn){ sbBtn.classList.toggle("active", k===s); }
   });
-  ["Home","Subjects","Quiz","Games","Chat","Profile"].forEach(k=>{
-    const btn=document.getElementById("bn"+k); if(btn) btn.classList.toggle("active",k.toLowerCase()===s);
+  ["Home","Notices","TestSeries","Profile","Pyq"].forEach(k=>{
+    const btn = document.getElementById("bn"+k);
+    if(btn) btn.classList.toggle("active", k.toLowerCase()===s.replace('-',''));
   });
 
   if(s==="subjects")  { renderSubjects(); setSubjectsTab(activeSubjectsTab); }
