@@ -2227,10 +2227,19 @@ function renderHeader(){
     if(adminBtn) adminBtn.classList.toggle("hidden",!u.isAdmin);
     const uploadBtn=document.getElementById("navUpload");
     if(uploadBtn) uploadBtn.classList.toggle("hidden",!u.isAdmin);
+    const sbAdminBtn=document.getElementById("sb-admin");
+    if(sbAdminBtn) sbAdminBtn.classList.toggle("hidden",!u.isAdmin);
+    const sbUploadBtn=document.getElementById("sb-upload");
+    if(sbUploadBtn) sbUploadBtn.classList.toggle("hidden",!u.isAdmin);
+    
+    document.querySelectorAll('.admin-only').forEach(e=>e.classList.toggle('hidden',!u.isAdmin));
   } else {
     huEl.innerHTML=`<button class="btn btn-white" style="font-size:12px;padding:7px 14px;" onclick="openLogin()">Login / Register</button>`;
     const adminBtn=document.getElementById("navAdmin"); if(adminBtn) adminBtn.classList.add("hidden");
     const uploadBtn=document.getElementById("navUpload"); if(uploadBtn) uploadBtn.classList.add("hidden");
+    const sbAdminBtn=document.getElementById("sb-admin"); if(sbAdminBtn) sbAdminBtn.classList.add("hidden");
+    const sbUploadBtn=document.getElementById("sb-upload"); if(sbUploadBtn) sbUploadBtn.classList.add("hidden");
+    document.querySelectorAll('.admin-only').forEach(e=>e.classList.add('hidden'));
   }
 }
 
