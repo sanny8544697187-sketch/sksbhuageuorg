@@ -1414,7 +1414,7 @@ try {
     <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
       <button id="atUploads"  class="btn btn-primary" onclick="setAdminTab('uploads')">📁 All Uploads</button>
       <button id="atPending"  class="btn btn-light" onclick="setAdminTab('pending')">⏳ Pending <span id="pendingBadge" class="hidden" style="background:white;color:#00B050;border-radius:50px;padding:1px 7px;font-size:11px;margin-left:4px;">0</span></button>
-      <button id="atRejected" class="btn btn-light"   onclick="setAdminTab('rejected')">❌ Rejected</button>
+      <button id="atNotices"  class="btn btn-light"   onclick="setAdminTab('notices')">📢 Notices</button>
       <button id="atUsers"    class="btn btn-light"   onclick="setAdminTab('users')">👥 Students</button>
       <button id="atSubs"     class="btn btn-light"   onclick="setAdminTab('subs')">⭐ Premium</button>
       <button id="atOffers"   class="btn btn-light"   onclick="setAdminTab('offers')">📢 Offers</button>
@@ -2010,7 +2010,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),
     sGet("bhu:session"),sGet("bhu:adminpass"),sGet("bhu:theme"),sGet("bhu:questions"),sGet("bhu:pyqdata"),sGet("bhu:subjects"),sGet("bhu:notices")
   ]);
-  if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q; if(pyq) pyqData=pyq; if(ntc) noticesList=ntc;
+  if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q; if(pyq) pyqData=pyq; 
+  if(ntc && ntc.length) { noticesList=ntc; } else {
+    noticesList = [
+      { id: "mock1", title: "ICAR AIEEA (UG) 2026 Notification Released", category: "EXAM", desc: "The National Testing Agency (NTA) has released the official notification for ICAR AIEEA (UG). Registration begins next week.", link: "https://icar.nta.nic.in", date: fmtDate(), timestamp: Date.now() },
+      { id: "mock2", title: "IBPS AFO Mains 2026 Interview Schedule", category: "SCHEDULE", desc: "Interview dates and center allocations have been announced. Check your registered email for details.", link: "https://ibps.in", date: fmtDate(), timestamp: Date.now()-86400000 },
+      { id: "mock3", title: "Agriculture Dept Job Vacancies (UPPSC)", category: "NEWS", desc: "UPPSC has announced 250+ vacancies for the post of Senior Agriculture Development Officer. Apply before 30th of this month.", link: "https://uppsc.up.nic.in", date: fmtDate(), timestamp: Date.now()-172800000 }
+    ];
+  }
   if(subjData && subjData.length) activeSubjects=subjData;
   if(saved_ap) adminPass=saved_ap;
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
@@ -3369,17 +3376,23 @@ async function renderAdmin(){
             </div>
           </div>
         </div>`).join("");
-  } else if(adminTab==="rejected"){
-    const rej=notes.filter(n=>n.status==="rejected");
-    el.innerHTML=rej.length===0?
-      `<div class="card" style="padding:40px;text-align:center;"><div style="font-size:44px;margin-bottom:10px;">👍</div><div style="font-weight:700;font-size:15px;">No rejected uploads</div></div>`:
-      rej.map(n=>`
-        <div class="card" style="padding:14px;margin-bottom:8px;background:#FFEBEE;">
-          <div style="font-weight:700;font-size:14px;color:#C62828;">${escapeHTML(n.title)}</div>
-          <div style="font-size:11px;color:#777;margin-top:2px;">${escapeHTML(n.subject)} · ${escapeHTML(n.type)} · ${escapeHTML(n.date)}</div>
-          ${n.rejectReason?`<div style="font-size:12px;color:#b91c1c;margin-top:4px;">Reason: ${escapeHTML(n.rejectReason)}</div>`:''}
-          <button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-top:8px;" onclick="deleteNote('${n.id}')">🗑 Delete</button>
-        </div>`).join("");
+  } else if(adminTab==="notices"){
+    el.innerHTML=`
+      <div class="card" style="padding:20px;margin-bottom:16px;border:2px dashed #00B050;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:#0F3D23;">📢 Post New Notice</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div><label class="lbl">Title *</label><input id="noticeTitle" class="inp" placeholder="e.g. ICAR JRF Results"></div>
+          <div><label class="lbl">Category</label>
+            <select id="noticeCat" class="inp"><option>EXAM</option><option>SCHEDULE</option><option>ALERT</option><option>NEWS</option></select>
+          </div>
+          <div style="grid-column:1 / span 2;"><label class="lbl">Link (Optional)</label><input id="noticeLink" class="inp" type="url" placeholder="https://..."></div>
+          <div style="grid-column:1 / span 2;"><label class="lbl">Description *</label><textarea id="noticeDesc" class="inp" rows="3" placeholder="Details about this notice..."></textarea></div>
+        </div>
+        <button class="btn btn-primary" onclick="adminPostNotice()">➕ Post Notice</button>
+      </div>
+      <div id="adminNoticeList"></div>
+    `;
+    renderAdminNotices();
   } else if(adminTab==="users"){
     el.innerHTML=usersDB.length===0?
       `<div class="card" style="padding:40px;text-align:center;"><div style="font-size:44px;margin-bottom:10px;">👥</div><div style="font-weight:700;font-size:15px;">No registered students</div></div>`:
