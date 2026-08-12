@@ -888,33 +888,7 @@ try {
     </div>
 
     <!-- NOTICE CARDS -->
-    <div id="noticeList">
-      <div class="notice-card">
-        <div class="notice-icon">📝</div>
-        <div style="flex:1;">
-          <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
-            <span style="font-size:10px; background:#E8F5E9; color:#00B050; padding:3px 8px; border-radius:4px; font-weight:700;">EXAM</span>
-            <span style="font-size:10px; color:#777;">Today</span>
-          </div>
-          <div style="font-weight:700; font-size:15px; margin-bottom:4px;">ICAR AIEEA (UG) Final Answer Key Released</div>
-          <div style="font-size:13px; color:#777; line-height:1.4;">The final answer keys for the ICAR AIEEA 2025 examination have been officially published on the NTA website.</div>
-        </div>
-        <button class="btn btn-primary" style="padding:8px 16px;">View</button>
-      </div>
-      
-      <div class="notice-card">
-        <div class="notice-icon">📅</div>
-        <div style="flex:1;">
-          <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
-            <span style="font-size:10px; background:#F3E5F5; color:#7B1FA2; padding:3px 8px; border-radius:4px; font-weight:700;">SCHEDULE</span>
-            <span style="font-size:10px; color:#777;">Yesterday</span>
-          </div>
-          <div style="font-weight:700; font-size:15px; margin-bottom:4px;">IBPS AFO Mains 2025 Interview Dates</div>
-          <div style="font-size:13px; color:#777; line-height:1.4;">Interview dates and center allocations have been announced. Check your registered email for details.</div>
-        </div>
-        <button class="btn btn-primary" style="padding:8px 16px;">View</button>
-      </div>
-    </div>
+    <div id="noticeList"></div>
   </section>
 
   <!-- TEST SERIES & PDF MATERIALS -->
@@ -1985,7 +1959,7 @@ const expiryDate  = plan => { const d=new Date(); if(plan==="trial") d.setDate(d
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
-let notes=[],pending=[],usersDB=[],questions=[],pyqData=[],currentUser=null,adminPass=ADMIN_PASS_DEFAULT;
+let notes=[],pending=[],usersDB=[],questions=[],pyqData=[],noticesList=[],currentUser=null,adminPass=ADMIN_PASS_DEFAULT;
 let section="home",dark=false,loginTab="login",catFilter="All",resType="All",resSubject="All";
 let uFileData="",uploading=false,folderFiles=[],uploadMode="file";
 let quizSubj="",quizQs=[],quizAns=[],quizIdx=0,quizDone=false;
@@ -2032,11 +2006,11 @@ function subCount(name){ return getApproved().filter(n=>n.subject===name).length
 // INIT
 // ═══════════════════════════════════════════════════════════════
 window.addEventListener("DOMContentLoaded", async () => {
-  const [n,p,u,sess,saved_ap,theme,q,pyq,subjData] = await Promise.all([
+  const [n,p,u,sess,saved_ap,theme,q,pyq,subjData,ntc] = await Promise.all([
     sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),
-    sGet("bhu:session"),sGet("bhu:adminpass"),sGet("bhu:theme"),sGet("bhu:questions"),sGet("bhu:pyqdata"),sGet("bhu:subjects"),
+    sGet("bhu:session"),sGet("bhu:adminpass"),sGet("bhu:theme"),sGet("bhu:questions"),sGet("bhu:pyqdata"),sGet("bhu:subjects"),sGet("bhu:notices")
   ]);
-  if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q; if(pyq) pyqData=pyq;
+  if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q; if(pyq) pyqData=pyq; if(ntc) noticesList=ntc;
   if(subjData && subjData.length) activeSubjects=subjData;
   if(saved_ap) adminPass=saved_ap;
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
@@ -2047,6 +2021,31 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   const cqb = await sGet("bhu:customquizbank");
   if(cqb){ customQuizBank=cqb; }
+
+  // Check for app updates via SW
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            let updateBanner = document.getElementById('updateBanner');
+            if(!updateBanner) {
+              updateBanner = document.createElement('div');
+              updateBanner.id = 'updateBanner';
+              updateBanner.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1565C0;color:white;padding:12px 24px;border-radius:50px;box-shadow:0 10px 24px rgba(0,0,0,0.3);z-index:9999;display:flex;align-items:center;gap:12px;font-weight:700;font-size:14px;cursor:pointer;";
+              updateBanner.innerHTML = "✨ New Update Available! <span style='background:white;color:#1565C0;padding:4px 10px;border-radius:20px;font-size:12px;'>RELOAD</span>";
+              updateBanner.onclick = () => {
+                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                window.location.reload();
+              };
+              document.body.appendChild(updateBanner);
+            }
+          }
+        });
+      });
+    });
+  }
   rebuildQuizBank();
 
   const mv = await sGet("bhu:mcqvotes");
@@ -2175,6 +2174,7 @@ function setSection(s){
   if(s==="leaderboard"){ setSection("quiz");   setTimeout(()=>setQuizTab("leaderboard"),50); return; }
   if(s==="analytics"){ setSection("quiz");     setTimeout(()=>setQuizTab("analytics"),50); return; }
   if(s==="flashcards"){ setSection("quiz"); return; }
+  if(s==="notices"){ renderNotices(); }
 
   section=s;
   document.querySelectorAll(".section").forEach(el=>el.classList.remove("active"));
@@ -7315,6 +7315,108 @@ function renderEbooksGrid(){
     </div>`).join("");
 }
 
+// ═══════════════════════════════════════════════════════════════
+// DYNAMIC NOTICES
+// ═══════════════════════════════════════════════════════════════
+function renderNotices() {
+  const el = document.getElementById("noticeList");
+  if(!el) return;
+  
+  if(noticesList.length === 0) {
+    el.innerHTML = `<div style="text-align:center; padding:40px; color:#777;">No recent notices available.</div>`;
+    return;
+  }
+  
+  const iconMap = { "EXAM": "📝", "SCHEDULE": "📅", "ALERT": "🚨", "NEWS": "📰" };
+  const colorMap = { 
+    "EXAM": { bg:"#E8F5E9", fg:"#00B050" },
+    "SCHEDULE": { bg:"#F3E5F5", fg:"#7B1FA2" },
+    "ALERT": { bg:"#FFEBEE", fg:"#E53935" },
+    "NEWS": { bg:"#E3F2FD", fg:"#1565C0" }
+  };
+
+  let html = "";
+  noticesList.forEach(n => {
+    const c = colorMap[n.category] || colorMap["NEWS"];
+    const i = iconMap[n.category] || "📰";
+    html += `
+      <div class="notice-card">
+        <div class="notice-icon">${i}</div>
+        <div style="flex:1;">
+          <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
+            <span style="font-size:10px; background:${c.bg}; color:${c.fg}; padding:3px 8px; border-radius:4px; font-weight:700;">${escapeHTML(n.category)}</span>
+            <span style="font-size:10px; color:#777;">${escapeHTML(n.date)}</span>
+          </div>
+          <div style="font-weight:700; font-size:15px; margin-bottom:4px;">${escapeHTML(n.title)}</div>
+          <div style="font-size:13px; color:#777; line-height:1.4;">${escapeHTML(n.desc)}</div>
+        </div>
+        ${n.link ? `<button class="btn btn-primary" style="padding:8px 16px;" onclick="window.open('${escapeHTML(n.link)}', '_blank')">View</button>` : ''}
+      </div>
+    `;
+  });
+  el.innerHTML = html;
+}
+
+async function adminPostNotice() {
+  if(!currentUser?.isAdmin) return;
+  const title = document.getElementById('noticeTitle')?.value?.trim();
+  const cat = document.getElementById('noticeCat')?.value || 'NEWS';
+  const desc = document.getElementById('noticeDesc')?.value?.trim();
+  const link = document.getElementById('noticeLink')?.value?.trim() || "";
+
+  if(!title || !desc) { toast("Title and Description are required", "e"); return; }
+
+  const notice = {
+    id: Date.now().toString(),
+    title,
+    category: cat,
+    desc,
+    link,
+    date: fmtDate(),
+    timestamp: Date.now()
+  };
+
+  noticesList = [notice, ...noticesList];
+  await sSet("bhu:notices", noticesList);
+  toast("Notice posted successfully!");
+  
+  document.getElementById('noticeTitle').value = "";
+  document.getElementById('noticeDesc').value = "";
+  document.getElementById('noticeLink').value = "";
+  
+  renderAdminNotices();
+}
+
+function renderAdminNotices() {
+  const el = document.getElementById('adminNoticeList');
+  if(!el) return;
+  if(noticesList.length === 0) {
+    el.innerHTML = `<div style="text-align:center; padding:20px; color:#777; font-size:13px;">No notices posted yet.</div>`;
+    return;
+  }
+  
+  let html = "";
+  noticesList.forEach(n => {
+    html += `
+    <div style="background:#F8FBF8; border-radius:10px; padding:10px 14px; margin-bottom:6px; display:flex; align-items:center; gap:10px;">
+      <div style="flex:1; font-size:13px;">
+        <strong>${escapeHTML(n.title)}</strong> <span style="font-size:10px; color:#777;">(${escapeHTML(n.category)})</span><br>
+        <span style="font-size:11px; color:#777;">${escapeHTML(n.date)}</span>
+      </div>
+      <button onclick="deleteNotice('${n.id}')" style="background:#FFEBEE; color:#E53935; border:none; padding:4px 8px; border-radius:7px; cursor:pointer; font-size:11px;">🗑️ Delete</button>
+    </div>
+    `;
+  });
+  el.innerHTML = html;
+}
+
+async function deleteNotice(id) {
+  if(!confirm("Are you sure you want to delete this notice?")) return;
+  noticesList = noticesList.filter(n => n.id !== id);
+  await sSet("bhu:notices", noticesList);
+  toast("Notice deleted");
+  renderAdminNotices();
+}
 </script>
 
 </body>
