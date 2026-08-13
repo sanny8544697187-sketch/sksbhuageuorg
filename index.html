@@ -372,20 +372,30 @@
       .content{padding:12px 10px 80px;}
     }
     @media(max-width:600px){
-      .content{padding:10px 10px 20px;}
+      .content{padding:8px 8px 16px;}
       .chat-layout{flex-direction:column!important;}
       .chat-sidebar{display:none!important;}
       .header-search{display:none;}
-      .hero{padding:18px 16px !important; border-radius:18px !important; margin-bottom:12px !important;}
-      .hero h1{font-size:22px;}
-      .hero p{font-size:12px;}
-      .hero-stats{gap:12px; margin-top:14px; padding-top:14px;}
-      .hero-stats strong{font-size:18px;}
+      
+      /* Shorten Hero / Banner */
+      .hero{padding:14px 12px !important; border-radius:14px !important; margin-bottom:10px !important;}
+      .hero h1{font-size:18px; line-height:1.2; margin-bottom:6px;}
+      .hero p{font-size:11px; margin-bottom:12px;}
+      .hero-actions .btn { padding: 8px 14px !important; font-size: 12px !important; }
+      .hero-stats{gap:10px; margin-top:10px; padding-top:10px;}
+      .hero-stats strong{font-size:16px;}
+      .hero-stats span{font-size:9.5px;}
+
+      /* Shorten Quick Grid */
+      .quick-grid { gap: 8px; }
+      .quick-card { padding: 10px; }
+      .quick-icon { width: 32px; height: 32px; font-size: 16px; margin-bottom: 6px; }
+
       .res-card{flex-direction:column;align-items:flex-start;}
       .upload-grid{grid-template-columns:1fr;}
       .gamesHub{grid-template-columns:repeat(auto-fill, minmax(130px, 1fr))!important;}
-      .promo-carousel { gap: 10px; }
-      .promo-card { min-width: 85%; }
+      .promo-carousel { gap: 8px; margin-bottom: 16px; }
+      .promo-card { min-width: 85%; padding: 14px; }
       .notice-card { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; }
       .notice-icon { width: 36px; height: 36px; font-size: 18px; }
     }
