@@ -391,6 +391,270 @@
       .subject-grid{grid-template-columns:1fr!important;}
       .test-grid{grid-template-columns:1fr!important;}
     }
+
+    /* ══ ANDROID MOBILE REDESIGN CSS ══════════════════════════════ */
+
+    /* Mobile sidebar drawer (off-canvas) */
+    #mobileDrawer {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 280px;
+      background: #07150a;
+      color: white;
+      z-index: 9800;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    #mobileDrawer.open { transform: translateX(0); }
+    #drawerOverlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 9700;
+      display: none;
+    }
+    #drawerOverlay.open { display: block; }
+    .drawer-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .drawer-header-logo { display: flex; align-items: center; gap: 10px; }
+    .drawer-close-btn {
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,.1);
+      border: none; border-radius: 50%; color: white;
+      font-size: 20px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .drawer-nav { padding: 12px 10px; flex: 1; }
+    .drawer-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px 16px; border-radius: 12px;
+      border: none; background: transparent;
+      color: #a1bca1; font-family: inherit;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; width: 100%; text-align: left;
+      transition: background 0.15s, color 0.15s;
+    }
+    .drawer-item:hover { background: rgba(255,255,255,.06); color: white; }
+    .drawer-item.active { background: #00B050; color: white; box-shadow: 0 4px 12px rgba(0,176,80,.3); }
+    .drawer-item-icon { font-size: 20px; width: 26px; text-align: center; }
+
+    /* Mobile top header (hamburger style) */
+    .mobile-header {
+      display: none;
+      align-items: center; justify-content: space-between;
+      padding: 12px 16px;
+      background: #0F3D23;
+      color: white;
+      position: sticky; top: 0; z-index: 800;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+    }
+    .mobile-header-logo { display: flex; align-items: center; gap: 10px; }
+    .hamburger-btn {
+      background: none; border: none; color: white;
+      font-size: 24px; cursor: pointer; padding: 4px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mobile-lang-btn {
+      width: 38px; height: 38px;
+      background: rgba(255,255,255,.12);
+      border: 1.5px solid rgba(255,255,255,.2);
+      border-radius: 50%; color: white;
+      font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* 3-tab bottom nav for mobile */
+    .bottom-nav-android {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #E0EAE0;
+      display: none; z-index: 900;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.1);
+    }
+    .bottom-nav-android button {
+      flex: 1; border: none; background: none;
+      padding: 10px 4px 8px;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      cursor: pointer; font-family: inherit;
+      font-size: 10px; font-weight: 600; color: #999;
+      transition: color .15s;
+    }
+    .bottom-nav-android button.active { color: #0F3D23; }
+    .bottom-nav-android button span:first-child { font-size: 22px; }
+
+    /* Android Dashboard Widgets */
+    .android-home { display: none; padding: 16px 14px 0; }
+    .weather-widget {
+      background: linear-gradient(135deg, #1B6B3A 0%, #0F3D23 100%);
+      border-radius: 20px; padding: 22px 20px;
+      color: white; margin-bottom: 14px;
+    }
+    .weather-title { font-size: 13px; font-weight: 700; opacity: .8; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+    .weather-main { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .weather-left h2 { font-size: 24px; font-weight: 800; line-height: 1.1; }
+    .weather-left p { font-size: 12px; opacity: .7; margin-top: 2px; }
+    .weather-temp { font-size: 52px; font-weight: 800; letter-spacing: -2px; }
+    .weather-details {
+      background: rgba(255,255,255,.15);
+      border-radius: 14px; padding: 12px 16px;
+      display: flex; gap: 0; margin-bottom: 14px;
+    }
+    .weather-detail-item { flex: 1; display: flex; align-items: center; gap: 8px; }
+    .weather-detail-item:first-child { border-right: 1px solid rgba(255,255,255,.15); padding-right: 14px; margin-right: 14px; }
+    .weather-detail-item span:first-child { font-size: 20px; }
+    .weather-detail-label { font-size: 10px; opacity: .7; }
+    .weather-detail-value { font-size: 14px; font-weight: 800; }
+    .weather-forecast-btn {
+      background: rgba(255,255,255,.15);
+      border: none; border-radius: 12px;
+      color: white; font-family: inherit;
+      font-size: 13px; font-weight: 700;
+      padding: 11px 16px; width: 100%;
+      cursor: pointer; text-align: center;
+      letter-spacing: .2px;
+    }
+
+    /* Heal Your Crop Widget */
+    .heal-widget {
+      background: white;
+      border-radius: 20px;
+      padding: 18px 18px 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 14px rgba(0,0,0,.08);
+    }
+    .heal-title { font-size: 13px; font-weight: 700; color: #555; margin-bottom: 14px; }
+    .heal-steps { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .heal-step { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; flex: 1; }
+    .heal-step-circle {
+      width: 60px; height: 60px; border-radius: 50%;
+      overflow: hidden; border: 2px solid #e0e0e0;
+      position: relative;
+    }
+    .heal-step-circle img { width: 100%; height: 100%; object-fit: cover; }
+    .heal-step-num {
+      position: absolute; bottom: 0; right: 0;
+      background: #0F3D23; color: white;
+      width: 20px; height: 20px;
+      border-radius: 50%; font-size: 10px;
+      font-weight: 800; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .heal-step-label { font-size: 11px; font-weight: 600; color: #444; line-height: 1.3; }
+    .heal-step-dot { color: #ccc; font-size: 18px; margin: 0 2px; margin-bottom: 20px; }
+    .heal-btn {
+      background: #0F3D23; color: white;
+      border: none; border-radius: 14px;
+      padding: 14px; width: 100%;
+      font-family: inherit; font-size: 15px;
+      font-weight: 700; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .heal-btn:hover { opacity: .88; }
+
+    /* Farm / Crop Widget */
+    .farm-widget {
+      background: #EBF3EF;
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .farm-widget-inner {
+      display: flex; gap: 12px;
+      align-items: flex-start;
+    }
+    .farm-widget-text { flex: 1; }
+    .farm-widget h3 { font-size: 16px; font-weight: 800; color: #0F3D23; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .farm-widget p { font-size: 12px; color: #555; line-height: 1.5; margin-bottom: 14px; }
+    .farm-widget-img {
+      width: 90px; height: 90px;
+      border-radius: 50%;
+      background: white;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 40px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,.1);
+    }
+    .farm-actions { display: flex; align-items: center; gap: 12px; }
+    .farm-add-btn {
+      background: #0F3D23; color: white;
+      border: none; border-radius: 12px;
+      padding: 10px 16px; font-family: inherit;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer; display: flex;
+      align-items: center; gap: 6px;
+    }
+    .farm-view-btn {
+      color: #0F3D23; background: none;
+      border: none; font-family: inherit;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* KrishiGyan AI Widget */
+    .ai-widget {
+      background: white;
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 14px rgba(0,0,0,.08);
+      display: flex; gap: 14px;
+      align-items: flex-start;
+    }
+    .ai-widget-icon {
+      width: 50px; height: 50px;
+      background: #E8F5E9; border-radius: 14px;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 26px;
+      flex-shrink: 0;
+    }
+    .ai-widget-content { flex: 1; }
+    .ai-widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .ai-widget-title { font-weight: 800; font-size: 15px; }
+    .ai-smart-badge { background: #FFF3E0; color: #E65100; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 50px; }
+    .ai-widget p { font-size: 12px; color: #666; line-height: 1.5; margin-bottom: 12px; }
+    .ai-explore-btn {
+      border: 1.5px solid #0F3D23; color: #0F3D23;
+      background: none; border-radius: 12px;
+      padding: 8px 14px; font-family: inherit;
+      font-size: 12px; font-weight: 700;
+      cursor: pointer; display: flex;
+      align-items: center; gap: 6px;
+    }
+    .ai-widget-img {
+      width: 90px; flex-shrink: 0;
+      border-radius: 10px; overflow: hidden;
+    }
+    .ai-widget-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+
+    /* Show mobile views on small screens */
+    @media(max-width: 768px) {
+      .mobile-header { display: flex !important; }
+      .bottom-nav-android { display: flex !important; }
+      .android-home { display: block !important; }
+      /* Hide the desktop header's nav-chips on mobile */
+      .nav-chips { display: none !important; }
+      /* Hide original bottom nav */
+      .bottom-nav { display: none !important; }
+      /* Hide desktop header on mobile (we use our new mobile header) */
+      header { display: none !important; }
+      /* padding for fixed bottom nav */
+      body { padding-bottom: 70px; }
+      .content { padding: 0 14px 80px; }
+      /* Hero section - hide on mobile since we have widgets */
+      #home .hero { display: none; }
+    }
+    body.dark #mobileDrawer { background: #030a05; }
+    body.dark .heal-widget, body.dark .ai-widget { background: #111814; }
+    body.dark .farm-widget { background: #0d200f; }
+    body.dark .weather-left h2, body.dark .weather-temp { color: white; }
+    body.dark .bottom-nav-android { background: #0d1510; border-color: #1e2e1e; }
+    body.dark .bottom-nav-android button { color: #5a7a5a; }
+    body.dark .bottom-nav-android button.active { color: #00B050; }
   </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591814606015176" crossorigin="anonymous"></script>
 </head>
@@ -535,6 +799,186 @@ try {
   </div>
 </div>
 
+
+<!-- MOBILE DRAWER OVERLAY -->
+<div id="drawerOverlay" onclick="closeMobileDrawer()"></div>
+
+<!-- MOBILE SLIDE-OUT DRAWER -->
+<div id="mobileDrawer">
+  <div class="drawer-header">
+    <div class="drawer-header-logo">
+      <div style="font-size:28px;">🌾</div>
+      <div>
+        <div style="font-weight:800;font-size:16px;">KrishiGyan</div>
+        <div style="font-size:10px;opacity:.5;letter-spacing:.5px;">e-LEARNING HUB</div>
+      </div>
+    </div>
+    <button class="drawer-close-btn" onclick="closeMobileDrawer()">✕</button>
+  </div>
+  <div class="drawer-nav">
+    <button class="drawer-item active" id="di-home" onclick="setSection('home');closeMobileDrawer()">
+      <span class="drawer-item-icon">🏠</span> Home
+    </button>
+    <button class="drawer-item" id="di-notices" onclick="setSection('notices');closeMobileDrawer()">
+      <span class="drawer-item-icon">📢</span> Notices
+    </button>
+    <button class="drawer-item" id="di-test-series" onclick="setSection('test-series');closeMobileDrawer()">
+      <span class="drawer-item-icon">📝</span> Test Series
+    </button>
+    <button class="drawer-item" id="di-subjects" onclick="setSection('subjects');closeMobileDrawer()">
+      <span class="drawer-item-icon">📚</span> Subjects
+    </button>
+    <button class="drawer-item" id="di-quiz" onclick="setSection('quiz');closeMobileDrawer()">
+      <span class="drawer-item-icon">🧠</span> Quiz
+    </button>
+    <button class="drawer-item" id="di-games" onclick="setSection('games');closeMobileDrawer()">
+      <span class="drawer-item-icon">🎮</span> Games
+    </button>
+    <button class="drawer-item" id="di-chat" onclick="setSection('chat');closeMobileDrawer()">
+      <span class="drawer-item-icon">💬</span> Doubts / Community
+    </button>
+    <button class="drawer-item" id="di-profile" onclick="setSection('profile');closeMobileDrawer()">
+      <span class="drawer-item-icon">👤</span> Profile
+    </button>
+    <div style="height:1px;background:rgba(255,255,255,.08);margin:10px 0;"></div>
+    <button class="drawer-item hidden admin-only" id="di-upload" onclick="setSection('upload');closeMobileDrawer()">
+      <span class="drawer-item-icon">⬆️</span> Upload Resource
+    </button>
+    <button class="drawer-item hidden" id="di-admin" onclick="setSection('admin');closeMobileDrawer()">
+      <span class="drawer-item-icon">🛡️</span> Admin Panel
+    </button>
+  </div>
+</div>
+
+<!-- MOBILE TOP HEADER (Hamburger style - only visible on mobile) -->
+<div class="mobile-header" id="mobileHeader">
+  <button class="hamburger-btn" onclick="openMobileDrawer()" aria-label="Menu">
+    ☰
+  </button>
+  <div class="mobile-header-logo">
+    <div style="font-size:22px;">🌾</div>
+    <div style="font-weight:800;font-size:16px;color:white;">KrishiGyan AI</div>
+  </div>
+  <button class="mobile-lang-btn" onclick="toast('Language selection coming soon!')" aria-label="Language">
+    🌐
+  </button>
+</div>
+
+<!-- ANDROID DASHBOARD WIDGETS (only visible on mobile, at top of Home) -->
+<div class="android-home" id="androidHome">
+
+  <!-- Weather Widget -->
+  <div class="weather-widget">
+    <div class="weather-title">☀️ Current Weather</div>
+    <div class="weather-main">
+      <div class="weather-left">
+        <h2>Varanasi</h2>
+        <p>Uttar Pradesh</p>
+        <p style="font-weight:700;margin-top:4px;">Cloudy</p>
+      </div>
+      <div>
+        <div style="font-size:52px;margin-bottom:4px;">🌥️</div>
+        <div class="weather-temp">34°C</div>
+      </div>
+    </div>
+    <div class="weather-details">
+      <div class="weather-detail-item">
+        <span>💧</span>
+        <div>
+          <div class="weather-detail-label">Humidity</div>
+          <div class="weather-detail-value">66%</div>
+        </div>
+      </div>
+      <div class="weather-detail-item">
+        <span>🌬️</span>
+        <div>
+          <div class="weather-detail-label">Wind</div>
+          <div class="weather-detail-value">3 km/h</div>
+        </div>
+      </div>
+    </div>
+    <button class="weather-forecast-btn" onclick="toast('5-day forecast coming soon!')">View 5 Days Forecast ›</button>
+  </div>
+
+  <!-- Heal Your Crop Widget -->
+  <div class="heal-widget">
+    <p class="heal-title">Bring your crop back to health in 3 simple steps.</p>
+    <div class="heal-steps">
+      <div class="heal-step">
+        <div class="heal-step-circle">
+          <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=100&q=80" alt="Upload">
+          <div class="heal-step-num">1</div>
+        </div>
+        <div class="heal-step-label">Upload<br>Image</div>
+      </div>
+      <div class="heal-step-dot">···</div>
+      <div class="heal-step">
+        <div class="heal-step-circle">
+          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="AI">
+          <div class="heal-step-num">2</div>
+        </div>
+        <div class="heal-step-label">AI<br>Diagnosis</div>
+      </div>
+      <div class="heal-step-dot">···</div>
+      <div class="heal-step">
+        <div class="heal-step-circle">
+          <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=100&q=80" alt="Treatment">
+          <div class="heal-step-num">3</div>
+        </div>
+        <div class="heal-step-label">Get<br>Treatment</div>
+      </div>
+    </div>
+    <button class="heal-btn" onclick="setSection('chat')">Heal Your Crop Now</button>
+  </div>
+
+  <!-- My Farms Widget -->
+  <div class="farm-widget">
+    <div class="farm-widget-inner">
+      <div class="farm-widget-text">
+        <h3>🚜 My Farms</h3>
+        <p>Create your farms and explore expert tips on cultivation, farm soil monitoring and agricultural practices</p>
+        <div class="farm-actions">
+          <button class="farm-add-btn" onclick="setSection('subjects')">+ Add Farm</button>
+          <button class="farm-view-btn" onclick="setSection('subjects')">View Details ›</button>
+        </div>
+      </div>
+      <div class="farm-widget-img">🐄</div>
+    </div>
+  </div>
+
+  <!-- My Crops Widget -->
+  <div class="farm-widget">
+    <div class="farm-widget-inner">
+      <div class="farm-widget-text">
+        <h3>🌱 My Crops</h3>
+        <p>Create your crops and explore expert tips on cultivation, crop health and optimal harvest strategies</p>
+        <div class="farm-actions">
+          <button class="farm-add-btn" onclick="setSection('subjects')">+ Add Crop</button>
+          <button class="farm-view-btn" onclick="setSection('subjects')">View Details ›</button>
+        </div>
+      </div>
+      <div class="farm-widget-img">🌾</div>
+    </div>
+  </div>
+
+  <!-- KrishiGyan AI Widget -->
+  <div class="ai-widget">
+    <div class="ai-widget-icon">🤖</div>
+    <div class="ai-widget-content">
+      <div class="ai-widget-header">
+        <div class="ai-widget-title">KrishiGyan AI</div>
+        <div class="ai-smart-badge">SMART</div>
+      </div>
+      <p>Use our AI tools to get instant insights on your farming activities and diagnose crop diseases.</p>
+      <button class="ai-explore-btn" onclick="setSection('chat')">Explore AI ›</button>
+    </div>
+    <div class="ai-widget-img">
+      <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=120&q=80" alt="AI">
+    </div>
+  </div>
+
+</div>
+
 <!-- APP LAYOUT WRAPPER (For Sidebar) -->
 <div class="app-layout">
   
@@ -594,6 +1038,22 @@ try {
     <button id="navAdmin"      class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
   </div>
 </header>
+
+<!-- BOTTOM NAV (3-tab Android style - only on mobile) -->
+<div class="bottom-nav-android" id="bottomNavAndroid">
+  <button id="bna-home" class="active" onclick="setSection('home')">
+    <span>🏠</span>
+    <span>Home</span>
+  </button>
+  <button id="bna-products" onclick="setSection('test-series')">
+    <span>📦</span>
+    <span>Our Products</span>
+  </button>
+  <button id="bna-community" onclick="setSection('chat')">
+    <span>👥</span>
+    <span>Community</span>
+  </button>
+</div>
 
 <main class="content">
 
@@ -2193,7 +2653,18 @@ function setSection(s){
     if(btn){ btn.classList.toggle("btn-primary",k===s); btn.classList.toggle("btn-ghost",k!==s); }
     const sbBtn = document.getElementById("sb-"+k);
     if(sbBtn){ sbBtn.classList.toggle("active", k===s); }
+    // Sync drawer items
+    const diBtn = document.getElementById("di-"+k);
+    if(diBtn){ diBtn.classList.toggle("active", k===s); }
   });
+
+  // Sync android 3-tab bottom nav
+  const bnaMap = { "home": "bna-home", "test-series": "bna-products", "chat": "bna-community" };
+  ["bna-home","bna-products","bna-community"].forEach(id=>{
+    const b=document.getElementById(id); if(b) b.classList.remove("active");
+  });
+  if(bnaMap[s]){ const b=document.getElementById(bnaMap[s]); if(b) b.classList.add("active"); }
+
   ["Home","Notices","TestSeries","Profile","Pyq"].forEach(k=>{
     const btn = document.getElementById("bn"+k);
     if(btn) btn.classList.toggle("active", k.toLowerCase()===s.replace('-',''));
@@ -2206,6 +2677,11 @@ function setSection(s){
   if(s==="profile")   renderProfile();
   if(s==="pyq")     { setPYQTab(pyqTab||'mcq'); }
   if(s==="games")     renderGamesHub();
+
+  // Show/hide android home widgets
+  const androidHome = document.getElementById("androidHome");
+  if(androidHome) androidHome.style.display = (s==="home") ? "block" : "none";
+
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -2238,6 +2714,11 @@ function renderHeader(){
     if(sbAdminBtn) sbAdminBtn.classList.toggle("hidden",!u.isAdmin);
     const sbUploadBtn=document.getElementById("sb-upload");
     if(sbUploadBtn) sbUploadBtn.classList.toggle("hidden",!u.isAdmin);
+    // Sync mobile drawer admin buttons
+    const diAdminBtn=document.getElementById("di-admin");
+    if(diAdminBtn) diAdminBtn.classList.toggle("hidden",!u.isAdmin);
+    const diUploadBtn=document.getElementById("di-upload");
+    if(diUploadBtn) diUploadBtn.classList.toggle("hidden",!u.isAdmin);
     
     document.querySelectorAll('.admin-only').forEach(e=>e.classList.toggle('hidden',!u.isAdmin));
   } else {
@@ -2246,8 +2727,22 @@ function renderHeader(){
     const uploadBtn=document.getElementById("navUpload"); if(uploadBtn) uploadBtn.classList.add("hidden");
     const sbAdminBtn=document.getElementById("sb-admin"); if(sbAdminBtn) sbAdminBtn.classList.add("hidden");
     const sbUploadBtn=document.getElementById("sb-upload"); if(sbUploadBtn) sbUploadBtn.classList.add("hidden");
+    const diAdminBtn=document.getElementById("di-admin"); if(diAdminBtn) diAdminBtn.classList.add("hidden");
+    const diUploadBtn=document.getElementById("di-upload"); if(diUploadBtn) diUploadBtn.classList.add("hidden");
     document.querySelectorAll('.admin-only').forEach(e=>e.classList.add('hidden'));
   }
+}
+
+function openMobileDrawer(){
+  document.getElementById("mobileDrawer").classList.add("open");
+  document.getElementById("drawerOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+
+function closeMobileDrawer(){
+  document.getElementById("mobileDrawer").classList.remove("open");
+  document.getElementById("drawerOverlay").classList.remove("open");
+  document.body.style.overflow = "";
 }
 
 function renderHome(){
