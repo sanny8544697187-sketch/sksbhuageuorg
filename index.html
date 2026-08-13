@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
   ║           KrishiGyan — e-Learning Portal  v10.0              ║
@@ -636,8 +636,17 @@
       .mobile-header { display: flex !important; }
       /* Hide the desktop header's nav-chips on mobile */
       .nav-chips { display: none !important; }
+      /* Hide original bottom nav since we use drawer */
+      .bottom-nav { display: none !important; }
       /* Hide desktop header on mobile (we use our new mobile header) */
       header { display: none !important; }
+      /* Make hero card dimensions match the weather widget on mobile */
+      .hero {
+        padding: 22px 20px !important;
+        border-radius: 20px !important;
+        margin-bottom: 14px !important;
+        background: linear-gradient(135deg, #1B6B3A 0%, #0F3D23 100%) !important;
+      }
     }
     body.dark #mobileDrawer { background: #030a05; }
     body.dark .heal-widget, body.dark .ai-widget { background: #111814; }
@@ -848,7 +857,7 @@ try {
   </button>
   <div class="mobile-header-logo">
     <div style="font-size:22px;">🌾</div>
-    <div style="font-weight:800;font-size:16px;color:white;">KrishiGyan AI</div>
+    <div style="font-weight:800;font-size:16px;color:white;">KrishiGyan</div>
   </div>
   <button class="mobile-lang-btn" onclick="toast('Language selection coming soon!')" aria-label="Language">
     🌐
