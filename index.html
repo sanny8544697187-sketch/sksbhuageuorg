@@ -2249,7 +2249,16 @@ async function sGet(key) {
   try {
     if (LOCAL_KEYS.includes(key)) { const v=localStorage.getItem(key); return v?JSON.parse(v):null; }
     if (key.startsWith("bhu:file:")) {
-      if(fbOK) return await st.ref("files/"+key.slice(9)).getDownloadURL();
+      if(fbOK) {
+        try {
+          // Try SDK getDownloadURL — may fail with CORS if bucket rules block preflight
+          return await st.ref("files/"+key.slice(9)).getDownloadURL();
+        } catch(corsErr) {
+          // CORS fallback: build the public REST URL directly so browser navigation works
+          const filePath = encodeURIComponent("files/"+key.slice(9));
+          return `https://firebasestorage.googleapis.com/v0/b/bhuagorg.firebasestorage.app/o/${filePath}?alt=media`;
+        }
+      }
       return await idbGet(key);
     }
     if (!fbOK) { const v=localStorage.getItem(key); return v?JSON.parse(v):null; }
@@ -2282,8 +2291,9 @@ async function sDel(key) {
 
 function b64Download(data, filename) {
   if(!data) return;
+  // For HTTP URLs (Firebase Storage etc.), open directly in new tab — avoids CORS issues
+  if(data.startsWith("http")){ window.open(data,"_blank","noopener,noreferrer"); return; }
   const a=document.createElement("a"); a.href=data; a.download=filename||"file";
-  if(data.startsWith("http")){a.target="_blank";a.rel="noopener";}
   a.click();
 }
 function loadRazorpay() {
@@ -2879,8 +2889,16 @@ function closeDriveModal(){
 async function downloadNote(id){
   if(!currentUser){openLogin();return;}
   const n=notes.find(x=>x.id===id); if(!n) return;
-  if(n.isPremium&&!isSubActive(currentUser)){openPay();return;}
-  if(n.hasFile){ const data=await sGet("bhu:file:"+id); if(data){b64Download(data,n.fileName||"file");return;} }
+  // Admin always gets full access — skip premium check
+  if(n.isPremium && !currentUser.isAdmin && !isSubActive(currentUser)){openPay();return;}
+  if(n.hasFile){
+    const data=await sGet("bhu:file:"+id);
+    if(data){
+      // Firebase Storage URL — open in new tab to bypass CORS
+      if(data.startsWith("http")){ window.open(data,"_blank","noopener,noreferrer"); return; }
+      b64Download(data,n.fileName||"file"); return;
+    }
+  }
   if(n.link){ openDrivePreview(n.link, n.title); return; }
   toast("No file found.","e");
 }
@@ -5245,9 +5263,19 @@ async function uploadQPPdfFile(){
 async function downloadPYQPdf(id){
   if(!currentUser){openLogin();return;}
   const p=pyqPdfs.find(x=>x.id===id); if(!p) return;
-  if(p.hasFile){ const data=await sGet('bhu:file:pyqpdf_'+id); if(data){b64Download(data,p.fileName||'paper.pdf');return;} }
+  // Admin has full access to all files always
+  const u=currentUser;
+  if(!isProActive(u) && !u.isAdmin){ toast('Previous Papers require a Premium plan.','e'); openPay(); return; }
+  if(p.hasFile){
+    const data=await sGet('bhu:file:pyqpdf_'+id);
+    if(data){
+      // If it's a URL (Firebase Storage), open in new tab to bypass CORS
+      if(data.startsWith('http')){ window.open(data,'_blank','noopener,noreferrer'); return; }
+      b64Download(data,p.fileName||'paper.pdf'); return;
+    }
+  }
   if(p.link){ openDrivePreview(p.link,p.title); return; }
-  toast('No file found.','e');
+  toast('No file found for this paper.','e');
 }
 
 async function deletePYQPdf(id){
