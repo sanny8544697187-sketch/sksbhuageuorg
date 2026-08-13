@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
   ║           KrishiGyan — e-Learning Portal  v10.0              ║
@@ -634,19 +634,10 @@
     /* Show mobile views on small screens */
     @media(max-width: 768px) {
       .mobile-header { display: flex !important; }
-      .bottom-nav-android { display: flex !important; }
-      .android-home { display: block !important; }
       /* Hide the desktop header's nav-chips on mobile */
       .nav-chips { display: none !important; }
-      /* Hide original bottom nav */
-      .bottom-nav { display: none !important; }
       /* Hide desktop header on mobile (we use our new mobile header) */
       header { display: none !important; }
-      /* padding for fixed bottom nav */
-      body { padding-bottom: 70px; }
-      .content { padding: 0 14px 80px; }
-      /* Hero section - hide on mobile since we have widgets */
-      #home .hero { display: none; }
     }
     body.dark #mobileDrawer { background: #030a05; }
     body.dark .heal-widget, body.dark .ai-widget { background: #111814; }
@@ -864,121 +855,6 @@ try {
   </button>
 </div>
 
-<!-- ANDROID DASHBOARD WIDGETS (only visible on mobile, at top of Home) -->
-<div class="android-home" id="androidHome">
-
-  <!-- Weather Widget -->
-  <div class="weather-widget">
-    <div class="weather-title">☀️ Current Weather</div>
-    <div class="weather-main">
-      <div class="weather-left">
-        <h2>Varanasi</h2>
-        <p>Uttar Pradesh</p>
-        <p style="font-weight:700;margin-top:4px;">Cloudy</p>
-      </div>
-      <div>
-        <div style="font-size:52px;margin-bottom:4px;">🌥️</div>
-        <div class="weather-temp">34°C</div>
-      </div>
-    </div>
-    <div class="weather-details">
-      <div class="weather-detail-item">
-        <span>💧</span>
-        <div>
-          <div class="weather-detail-label">Humidity</div>
-          <div class="weather-detail-value">66%</div>
-        </div>
-      </div>
-      <div class="weather-detail-item">
-        <span>🌬️</span>
-        <div>
-          <div class="weather-detail-label">Wind</div>
-          <div class="weather-detail-value">3 km/h</div>
-        </div>
-      </div>
-    </div>
-    <button class="weather-forecast-btn" onclick="toast('5-day forecast coming soon!')">View 5 Days Forecast ›</button>
-  </div>
-
-  <!-- Heal Your Crop Widget -->
-  <div class="heal-widget">
-    <p class="heal-title">Bring your crop back to health in 3 simple steps.</p>
-    <div class="heal-steps">
-      <div class="heal-step">
-        <div class="heal-step-circle">
-          <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=100&q=80" alt="Upload">
-          <div class="heal-step-num">1</div>
-        </div>
-        <div class="heal-step-label">Upload<br>Image</div>
-      </div>
-      <div class="heal-step-dot">···</div>
-      <div class="heal-step">
-        <div class="heal-step-circle">
-          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="AI">
-          <div class="heal-step-num">2</div>
-        </div>
-        <div class="heal-step-label">AI<br>Diagnosis</div>
-      </div>
-      <div class="heal-step-dot">···</div>
-      <div class="heal-step">
-        <div class="heal-step-circle">
-          <img src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=100&q=80" alt="Treatment">
-          <div class="heal-step-num">3</div>
-        </div>
-        <div class="heal-step-label">Get<br>Treatment</div>
-      </div>
-    </div>
-    <button class="heal-btn" onclick="setSection('chat')">Heal Your Crop Now</button>
-  </div>
-
-  <!-- My Farms Widget -->
-  <div class="farm-widget">
-    <div class="farm-widget-inner">
-      <div class="farm-widget-text">
-        <h3>🚜 My Farms</h3>
-        <p>Create your farms and explore expert tips on cultivation, farm soil monitoring and agricultural practices</p>
-        <div class="farm-actions">
-          <button class="farm-add-btn" onclick="setSection('subjects')">+ Add Farm</button>
-          <button class="farm-view-btn" onclick="setSection('subjects')">View Details ›</button>
-        </div>
-      </div>
-      <div class="farm-widget-img">🐄</div>
-    </div>
-  </div>
-
-  <!-- My Crops Widget -->
-  <div class="farm-widget">
-    <div class="farm-widget-inner">
-      <div class="farm-widget-text">
-        <h3>🌱 My Crops</h3>
-        <p>Create your crops and explore expert tips on cultivation, crop health and optimal harvest strategies</p>
-        <div class="farm-actions">
-          <button class="farm-add-btn" onclick="setSection('subjects')">+ Add Crop</button>
-          <button class="farm-view-btn" onclick="setSection('subjects')">View Details ›</button>
-        </div>
-      </div>
-      <div class="farm-widget-img">🌾</div>
-    </div>
-  </div>
-
-  <!-- KrishiGyan AI Widget -->
-  <div class="ai-widget">
-    <div class="ai-widget-icon">🤖</div>
-    <div class="ai-widget-content">
-      <div class="ai-widget-header">
-        <div class="ai-widget-title">KrishiGyan AI</div>
-        <div class="ai-smart-badge">SMART</div>
-      </div>
-      <p>Use our AI tools to get instant insights on your farming activities and diagnose crop diseases.</p>
-      <button class="ai-explore-btn" onclick="setSection('chat')">Explore AI ›</button>
-    </div>
-    <div class="ai-widget-img">
-      <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=120&q=80" alt="AI">
-    </div>
-  </div>
-
-</div>
-
 <!-- APP LAYOUT WRAPPER (For Sidebar) -->
 <div class="app-layout">
   
@@ -1038,22 +914,6 @@ try {
     <button id="navAdmin"      class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
   </div>
 </header>
-
-<!-- BOTTOM NAV (3-tab Android style - only on mobile) -->
-<div class="bottom-nav-android" id="bottomNavAndroid">
-  <button id="bna-home" class="active" onclick="setSection('home')">
-    <span>🏠</span>
-    <span>Home</span>
-  </button>
-  <button id="bna-products" onclick="setSection('test-series')">
-    <span>📦</span>
-    <span>Our Products</span>
-  </button>
-  <button id="bna-community" onclick="setSection('chat')">
-    <span>👥</span>
-    <span>Community</span>
-  </button>
-</div>
 
 <main class="content">
 
@@ -2658,12 +2518,7 @@ function setSection(s){
     if(diBtn){ diBtn.classList.toggle("active", k===s); }
   });
 
-  // Sync android 3-tab bottom nav
-  const bnaMap = { "home": "bna-home", "test-series": "bna-products", "chat": "bna-community" };
-  ["bna-home","bna-products","bna-community"].forEach(id=>{
-    const b=document.getElementById(id); if(b) b.classList.remove("active");
-  });
-  if(bnaMap[s]){ const b=document.getElementById(bnaMap[s]); if(b) b.classList.add("active"); }
+
 
   ["Home","Notices","TestSeries","Profile","Pyq"].forEach(k=>{
     const btn = document.getElementById("bn"+k);
@@ -2678,9 +2533,7 @@ function setSection(s){
   if(s==="pyq")     { setPYQTab(pyqTab||'mcq'); }
   if(s==="games")     renderGamesHub();
 
-  // Show/hide android home widgets
-  const androidHome = document.getElementById("androidHome");
-  if(androidHome) androidHome.style.display = (s==="home") ? "block" : "none";
+
 
   window.scrollTo({top:0,behavior:"smooth"});
 }
