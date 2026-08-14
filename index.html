@@ -455,28 +455,55 @@
     .drawer-item.active { background: #00B050; color: white; box-shadow: 0 4px 12px rgba(0,176,80,.3); }
     .drawer-item-icon { font-size: 20px; width: 26px; text-align: center; }
 
-    /* Mobile top header (hamburger style) */
+    /* Mobile top header */
     .mobile-header {
       display: none;
       align-items: center; justify-content: space-between;
-      padding: 12px 16px;
+      padding: 11px 16px;
       background: #0F3D23;
       color: white;
       position: sticky; top: 0; z-index: 800;
       box-shadow: 0 2px 16px rgba(0,0,0,0.2);
     }
-    .mobile-header-logo { display: flex; align-items: center; gap: 10px; }
+    .mobile-header-logo {
+      display: flex; align-items: center; gap: 9px;
+    }
+    .mobile-logo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .mobile-logo-text { display: flex; flex-direction: column; }
+    .mobile-logo-text span:first-child { font-weight: 800; font-size: 15px; color: white; line-height: 1.1; }
+    .mobile-logo-text span:last-child { font-size: 9px; opacity: .65; color: white; letter-spacing: .2px; }
+    .mobile-header-controls { display: flex; align-items: center; gap: 8px; }
+    .mobile-dark-btn {
+      width: 34px; height: 34px;
+      background: rgba(255,255,255,.13);
+      border: none; border-radius: 50%; color: white;
+      font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mobile-login-btn {
+      background: rgba(255,255,255,.13);
+      border: 1.5px solid rgba(255,255,255,.3);
+      border-radius: 50px; color: white;
+      font-size: 12px; font-weight: 700;
+      padding: 6px 14px; cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .mobile-user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg,#00B050,#0F3D23);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800; color: white;
+      cursor: pointer;
+    }
     .hamburger-btn {
       background: none; border: none; color: white;
       font-size: 24px; cursor: pointer; padding: 4px;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .mobile-lang-btn {
-      width: 38px; height: 38px;
-      background: rgba(255,255,255,.12);
-      border: 1.5px solid rgba(255,255,255,.2);
-      border-radius: 50%; color: white;
-      font-size: 16px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     }
 
@@ -643,20 +670,84 @@
     }
     .ai-widget-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
 
+    /* Circular nav strip (mobile only) */
+    .mobile-circle-nav {
+      display: none;
+      background: #0F3D23;
+      padding: 10px 14px 16px;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .mobile-circle-nav::-webkit-scrollbar { display: none; }
+    .circle-nav-btn {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+      background: rgba(255,255,255,.12);
+      border: none; border-radius: 50px;
+      color: rgba(255,255,255,.8);
+      padding: 0;
+      cursor: pointer;
+      font-family: inherit;
+      min-width: 72px;
+      flex-shrink: 0;
+      transition: all .2s;
+    }
+    .circle-nav-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(255,255,255,.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      transition: background .2s;
+    }
+    .circle-nav-btn.active .circle-nav-icon {
+      background: rgba(255,255,255,.25);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.2);
+    }
+    .circle-nav-btn.active { color: white; }
+    .circle-nav-label { font-size: 11px; font-weight: 700; padding-bottom: 6px; text-align: center; line-height: 1.2; }
+
+    /* Improved Quick-Grid cards for mobile */
+    @media(max-width: 768px) {
+      .quick-card {
+        border-radius: 18px !important;
+        padding: 18px 12px !important;
+        display: flex; flex-direction: column;
+        align-items: center; text-align: center;
+        box-shadow: 0 2px 12px rgba(0,0,0,.07) !important;
+        cursor: pointer;
+      }
+      .quick-icon {
+        width: 52px !important; height: 52px !important;
+        border-radius: 16px !important;
+        font-size: 24px !important;
+        margin-bottom: 10px !important;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .quick-card > div:nth-child(2) { font-size: 14px !important; font-weight: 700 !important; }
+      .quick-card > div:nth-child(3) { font-size: 11px !important; color: #888 !important; margin-top: 3px !important; }
+      .quick-grid { gap: 10px !important; }
+    }
+
     /* Show mobile views on small screens */
     @media(max-width: 768px) {
       .mobile-header { display: flex !important; }
+      .mobile-circle-nav { display: flex !important; }
       /* Hide the desktop header's nav-chips on mobile */
       .nav-chips { display: none !important; }
-      /* Hide original bottom nav since we use drawer */
-      .bottom-nav { display: none !important; }
-      /* Hide desktop header on mobile (we use our new mobile header) */
+      /* Restore the original bottom nav on mobile */
+      .bottom-nav { display: flex !important; }
+      /* Hide desktop header on mobile */
       header { display: none !important; }
-      /* Make hero card dimensions match the weather widget on mobile */
+      /* Add bottom padding so content doesn't hide behind bottom nav */
+      body { padding-bottom: 66px; }
+      .content { padding-bottom: 74px; }
+      /* Hero card on mobile */
       .hero {
-        padding: 22px 20px !important;
-        border-radius: 20px !important;
-        margin-bottom: 14px !important;
+        padding: 20px 16px !important;
+        border-radius: 18px !important;
+        margin-bottom: 12px !important;
         background: linear-gradient(135deg, #1B6B3A 0%, #0F3D23 100%) !important;
       }
     }
@@ -862,17 +953,52 @@ try {
   </div>
 </div>
 
-<!-- MOBILE TOP HEADER (Hamburger style - only visible on mobile) -->
+<!-- MOBILE TOP HEADER (App style - only visible on mobile) -->
 <div class="mobile-header" id="mobileHeader">
-  <button class="hamburger-btn" onclick="openMobileDrawer()" aria-label="Menu">
-    ☰
-  </button>
-  <div class="mobile-header-logo">
-    <div style="font-size:22px;">🌾</div>
-    <div style="font-weight:800;font-size:16px;color:white;">KrishiGyan</div>
+  <div class="mobile-header-logo" onclick="openMobileDrawer()" style="cursor:pointer;">
+    <div class="mobile-logo-icon">🌾</div>
+    <div class="mobile-logo-text">
+      <span>KrishiGyan</span>
+      <span>e-Learning Hub</span>
+    </div>
   </div>
-  <button class="mobile-lang-btn" onclick="toast('Language selection coming soon!')" aria-label="Language">
-    🌐
+  <div class="mobile-header-controls">
+    <button class="mobile-dark-btn" onclick="toggleDark()" aria-label="Toggle dark mode">🌙</button>
+    <div id="mobileHeaderUser">
+      <button class="mobile-login-btn" onclick="openLogin()">Login / Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE CIRCULAR NAV STRIP (only on mobile) -->
+<div class="mobile-circle-nav" id="mobileCircleNav">
+  <button class="circle-nav-btn active" id="cnb-home" onclick="setSection('home')">
+    <div class="circle-nav-icon">🏠</div>
+    <span class="circle-nav-label">Home</span>
+  </button>
+  <button class="circle-nav-btn" id="cnb-subjects" onclick="setSection('subjects')">
+    <div class="circle-nav-icon">📚</div>
+    <span class="circle-nav-label">Subjects</span>
+  </button>
+  <button class="circle-nav-btn" id="cnb-quiz" onclick="setSection('quiz')">
+    <div class="circle-nav-icon">🧠</div>
+    <span class="circle-nav-label">Quiz</span>
+  </button>
+  <button class="circle-nav-btn" id="cnb-pyq" onclick="setSection('pyq')">
+    <div class="circle-nav-icon">📋</div>
+    <span class="circle-nav-label">Previous Papers</span>
+  </button>
+  <button class="circle-nav-btn" id="cnb-notices" onclick="setSection('notices')">
+    <div class="circle-nav-icon">📢</div>
+    <span class="circle-nav-label">Notices</span>
+  </button>
+  <button class="circle-nav-btn" id="cnb-games" onclick="setSection('games')">
+    <div class="circle-nav-icon">🎮</div>
+    <span class="circle-nav-label">Games</span>
+  </button>
+  <button class="circle-nav-btn" id="cnb-chat" onclick="setSection('chat')">
+    <div class="circle-nav-icon">💬</div>
+    <span class="circle-nav-label">Doubts</span>
   </button>
 </div>
 
@@ -2547,6 +2673,9 @@ function setSection(s){
     // Sync drawer items
     const diBtn = document.getElementById("di-"+k);
     if(diBtn){ diBtn.classList.toggle("active", k===s); }
+    // Sync circle nav buttons
+    const cnBtn = document.getElementById("cnb-"+k);
+    if(cnBtn){ cnBtn.classList.toggle("active", k===s); }
   });
 
 
@@ -2582,6 +2711,7 @@ function renderAll(){
 function renderHeader(){
   const u=currentUser;
   const huEl=document.getElementById("headerUser");
+  const mhuEl=document.getElementById("mobileHeaderUser");
   if(u){
     const isPrem=isSubActive(u);
     huEl.innerHTML=`
@@ -2590,6 +2720,8 @@ function renderHeader(){
         <div style="width:32px;height:32px;border-radius:10px;background:${u.isAdmin?'linear-gradient(135deg,#FF7B00,#FFB347)':'linear-gradient(135deg,#1565C0,#42A5F5)'};display:flex;align-items:center;justify-content:center;font-size:13px;color:white;font-weight:800;">${u.name[0].toUpperCase()}</div>
         <button class="btn btn-ghost" style="padding:5px 11px;font-size:11px;" onclick="doLogout()">Logout</button>
       </div>`;
+    // Mobile header: show avatar + logout
+    if(mhuEl) mhuEl.innerHTML=`<div class="mobile-user-avatar" onclick="setSection('profile')" title="${escapeHTML(u.name)}">${u.name[0].toUpperCase()}</div>`;
     const adminBtn=document.getElementById("navAdmin");
     if(adminBtn) adminBtn.classList.toggle("hidden",!u.isAdmin);
     const uploadBtn=document.getElementById("navUpload");
@@ -2607,6 +2739,7 @@ function renderHeader(){
     document.querySelectorAll('.admin-only').forEach(e=>e.classList.toggle('hidden',!u.isAdmin));
   } else {
     huEl.innerHTML=`<button class="btn btn-white" style="font-size:12px;padding:7px 14px;" onclick="openLogin()">Login / Register</button>`;
+    if(mhuEl) mhuEl.innerHTML=`<button class="mobile-login-btn" onclick="openLogin()">Login / Register</button>`;
     const adminBtn=document.getElementById("navAdmin"); if(adminBtn) adminBtn.classList.add("hidden");
     const uploadBtn=document.getElementById("navUpload"); if(uploadBtn) uploadBtn.classList.add("hidden");
     const sbAdminBtn=document.getElementById("sb-admin"); if(sbAdminBtn) sbAdminBtn.classList.add("hidden");
