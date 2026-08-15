@@ -4905,25 +4905,22 @@ function renderPYQ(){
 let pyqOpenExam=null, pyqOpenYear=null, pyqOpenSubject=null;
 let pyqUserAnswers={}; // qid -> selected option index
 
-window.launchMockTest = function(exam, year, subj) {
-  const u = currentUser;
-  if(!isProActive(u) && !u?.isAdmin){ toast('Mock Tests require a Premium plan.','e'); openPay(); return; }
-  
-  const qs = pyqData.filter(q => q.exam === exam && String(q.year) === year && q.subject === subj);
-  if(!qs.length) return toast("No questions found.");
+window.launchMockTest = function(exam, subj) {
+  const qs = pyqData.filter(q => (q.exam||"Other") === exam && (q.subject||"General") === subj);
+  if(!qs.length) return toast("No questions uploaded yet for " + subj);
   
   quizQs = qs.map(q => ({
-    q: q.text,
-    options: q.options,
-    answerIndex: q.answerIndex,
-    explanation: q.explanation,
+    q: q.q,
+    options: q.opts,
+    answerIndex: q.ans,
+    explanation: q.exp,
     subj: exam
   }));
   quizAns = Array(quizQs.length).fill(-1);
   quizFlagged = Array(quizQs.length).fill(false);
   quizIdx = 0;
   quizScore = 0;
-  quizSubj = `${exam} - ${year} - ${subj}`;
+  quizSubj = `${exam} - ${subj}`;
   
   setSection('quiz');
   document.getElementById("quizMain").classList.add("hidden");
@@ -4941,83 +4938,29 @@ window.launchMockTest = function(exam, year, subj) {
 function renderPYQHierarchy(){
   const el=document.getElementById("pyqHierarchy"); if(!el) return;
 
-  if(!pyqData.length){
-    el.innerHTML=`<div class="card" style="padding:44px;text-align:center;">
-      <div style="font-size:44px;margin-bottom:10px;">📋</div>
-      <div style="font-weight:700;font-size:15px;margin-bottom:6px;">No previous papers uploaded yet</div>
-      <div style="color:#777;font-size:13px;">Admin is adding questions — check back soon!</div>
-      ${currentUser?.isAdmin?`<button class="btn btn-primary" style="margin-top:16px;" onclick="setSection('admin');setTimeout(()=>setAdminTab('pyq'),80);">+ Add Questions →</button>`:""}
-    </div>`; return;
-  }
+  const filtered = ec_activeFilter === "All"
+    ? EC_SUBJECTS
+    : EC_SUBJECTS.filter(s => s.exam === ec_activeFilter);
 
-  // Group: exam → year → subject → [questions]
-  const byExam={};
-  pyqData.forEach(q=>{
-    const exam=q.exam||"Other";
-    const year=String(q.year||"Unknown");
-    const subj=q.subject||"General";
-    if(!byExam[exam]) byExam[exam]={};
-    if(!byExam[exam][year]) byExam[exam][year]={};
-    if(!byExam[exam][year][subj]) byExam[exam][year][subj]=[];
-    byExam[exam][year][subj].push(q);
-  });
+  let html = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
+    ${EC_EXAM_FILTERS.map(f =>
+      `<button class="btn ${ec_activeFilter===f?'btn-primary':'btn-light'}" style="font-size:12px;padding:7px 14px;" onclick="ec_activeFilter='${f}';renderPYQHierarchy()">${f}</button>`
+    ).join('')}
+  </div>`;
 
-  const pyqExamIcons = {
-    "ICAR JRF": "🎓",
-    "IARI PG PAPER": "🏫",
-    "NABARD": "🏛️",
-    "IBPS AFO": "🏦",
-    "BHU ENTRANCE": "🏛️",
-    "OTHER": "🌾"
-  };
-
-  let html = `<label class="lbl">Select Exam</label>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:12px; margin-bottom:16px;">`;
-  
-  Object.entries(byExam).forEach(([exam, years]) => {
-    const examOpen = pyqOpenExam === exam;
-    const examCount = Object.values(years).reduce((s,ys)=>s+Object.values(ys).reduce((s2,ss)=>s2+ss.length,0),0);
-    const icon = pyqExamIcons[exam.toUpperCase()] || "📘";
-    html += `<div class="card hov-card exam-panel" onclick="togglePYQExam('${escapeHTML(exam)}')" style="padding:16px; border:2px solid ${examOpen ? '#00B050' : 'transparent'}; cursor:pointer; text-align:center;">
-        <div style="font-size:32px;">${icon}</div>
-        <div style="font-weight:800; font-size:13px; margin:6px 0;">${escapeHTML(exam)}</div>
-        <div style="font-size:11px; color:#777; margin-bottom:6px;">${examCount} Qs</div>
-        <button class="btn ${examOpen ? 'btn-primary' : 'btn-light'}" style="width:100%; font-size:11px;">${examOpen ? 'Selected' : 'Select'}</button>
-      </div>`;
-  });
-  html += `</div>`;
-
-  if(pyqOpenExam && byExam[pyqOpenExam]){
-    html += `<div style="padding:12px 14px;background:#F8FBF8;border-radius:12px;margin-bottom:20px;">
-        ${Object.entries(byExam[pyqOpenExam]).sort((a,b)=>b[0].localeCompare(a[0])).map(([year,subs])=>{
-          const yearKey=pyqOpenExam+"__"+year;
-          const yearOpen=pyqOpenYear===yearKey;
-          const yearCount=Object.values(subs).reduce((s,ss)=>s+ss.length,0);
-          return `<div style="margin-bottom:8px;border:1px solid #E0EAE0;border-radius:12px;overflow:hidden;background:#fff;">
-            <div onclick="togglePYQYear('${yearKey}')" style="padding:11px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${yearOpen?"#E8F5E9":"#fff"};">
-              <div style="font-weight:700;font-size:13px;color:#0F3D23;">📅 ${escapeHTML(year)}</div>
-              <div style="font-size:11px;color:#777;">${yearCount} Qs &nbsp;${yearOpen?"▲":"▼"}</div>
-            </div>
-            ${yearOpen?`<div style="padding:8px 10px;background:#FAFCFA;">
-              ${Object.entries(subs).map(([subj,qs])=>{
-                const subjKey=yearKey+"__"+subj;
-                const subjOpen=pyqOpenSubject===subjKey;
-                return `<div style="margin-bottom:6px;border:1px solid #E0EAE0;border-radius:10px;overflow:hidden;background:#fff;">
-                  <div onclick="togglePYQSubject('${subjKey}')" style="padding:9px 13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${subjOpen?"#F3E5F5":"#F8FBF8"};">
-                    <div style="font-weight:700;font-size:12px;color:#7B1FA2;">🌿 ${escapeHTML(subj)}</div>
-                    <div style="font-size:10px;color:#777;">${qs.length} Qs &nbsp;${subjOpen?"▲":"▼"}</div>
-                  </div>
-                  ${subjOpen?`<div style="padding:16px;text-align:center;">
-                    <button class="btn btn-primary" style="font-size:14px;padding:10px 24px;box-shadow:0 4px 14px rgba(0,176,80,.3);" onclick="launchMockTest('${escapeHTML(pyqOpenExam)}', '${escapeHTML(year)}', '${escapeHTML(subj)}')">▶ Start Mock Test (${qs.length} Qs)</button>
-                  </div>`:""}
-                </div>`;
-              }).join("")}
-            </div>`:""}
-          </div>`;
-        }).join("")}
-      </div>`;
-  }
-  
+  html += `<div class="ec-subjects-grid">
+    ${filtered.map(sub => {
+      const qCount = pyqData.filter(q => (q.exam||"Other") === sub.exam && (q.subject||"General") === sub.name).length;
+      return \`<div class="ec-subject-card" style="cursor:pointer;" onclick="launchMockTest('\${escapeHTML(sub.exam)}', '\${escapeHTML(sub.name)}')">
+        <div style="position:absolute;top:14px;right:14px;background:#00B050;color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:30px;">FREE</div>
+        <div class="ec-subject-icon">\${sub.icon}</div>
+        <div class="ec-subject-name">\${sub.name}</div>
+        <div style="font-size:11px;background:#f0f9f0;color:#2e7d32;padding:3px 10px;border-radius:30px;display:inline-block;margin-bottom:12px;">\${sub.exam} • \${qCount} Qs</div>
+        <ul class="ec-feature-list">\${sub.features.map(f=>\`<li><i class="fas fa-check-circle"></i>\${f}</li>\`).join('')}</ul>
+        <div style="margin-top:auto;padding-top:14px;text-align:center;font-size:12px;color:#00B050;font-weight:700;">✅ Start Mock Test ▶</div>
+      </div>\`;
+    }).join('')}
+  </div>`;
   el.innerHTML = html;
 }
 
@@ -7883,17 +7826,19 @@ function ec_renderSubjectsGrid() {
   const mySec = document.getElementById('ec-mySubjectsSection');
   if(mySec) mySec.style.display = 'none';
 
-  // Subject cards — FREE, no buy button
-  container.innerHTML = filtered.map(sub => `
-    <div class="ec-subject-card" data-subject-id="${sub.id}">
+  // Subject cards — FREE, no buy button, clickable to launch mock test
+  container.innerHTML = filtered.map(sub => {
+    const qCount = pyqData ? pyqData.filter(q => (q.exam||"Other") === sub.exam && (q.subject||"General") === sub.name).length : 0;
+    return `
+    <div class="ec-subject-card" data-subject-id="${sub.id}" style="cursor:pointer;" onclick="launchMockTest('${escapeHTML(sub.exam)}', '${escapeHTML(sub.name)}')">
       <div style="position:absolute;top:14px;right:14px;background:#00B050;color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:30px;">FREE</div>
       <div class="ec-subject-icon">${sub.icon}</div>
       <div class="ec-subject-name">${sub.name}</div>
-      <div style="font-size:11px;background:#f0f9f0;color:#2e7d32;padding:3px 10px;border-radius:30px;display:inline-block;margin-bottom:12px;">${sub.exam}</div>
+      <div style="font-size:11px;background:#f0f9f0;color:#2e7d32;padding:3px 10px;border-radius:30px;display:inline-block;margin-bottom:12px;">${sub.exam} • ${qCount} Qs</div>
       <ul class="ec-feature-list">${sub.features.map(f=>`<li><i class="fas fa-check-circle"></i>${f}</li>`).join('')}</ul>
-      <div style="margin-top:auto;padding-top:14px;text-align:center;font-size:12px;color:#00B050;font-weight:700;">✅ Completely Free Access</div>
+      <div style="margin-top:auto;padding-top:14px;text-align:center;font-size:12px;color:#00B050;font-weight:700;">✅ Start Mock Test ▶</div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 window.ec_setFilter = function(f) {
