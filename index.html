@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
   ║           KrishiGyan — e-Learning Portal  v10.0              ║
@@ -1441,54 +1441,16 @@ try {
   <!-- EXPLORE COURSES SECTION -->
   <section id="explore-courses" class="section fu">
     <div class="ec-hero-section">
-        <h1>📚 ICAR JRF Subject Store</h1>
-        <p>Flexible plans for every aspirant — 7-day trial, monthly, quarterly & yearly access with PYQs + Mock tests</p>
-        <div class="ec-offer-badge">
-            <div class="ec-offer-top">
-                <i class="fas fa-flag"></i>
-                <u>Independence Day Sale Live</u>
-            </div>
-            <div>
-                Use Coupon <span class="ec-coupon">INDEPENDENCE40</span>
-            </div>
-            <div class="ec-discount">
-                🎉 Flat 40% Discount
-            </div>
+        <h1>📚 Explore Courses</h1>
+        <p>Free access to all subjects — ICAR JRF, IBPS-AFO, NABARD and more. Study smarter, crack your exam!</p>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:#e8f5e9;border:1px solid #c8e6c9;border-radius:12px;padding:10px 20px;margin-top:18px;font-weight:700;color:#2e7d32;font-size:0.95rem;">
+            <i class="fas fa-unlock-alt"></i> 100% Free — No Payment Required
         </div>
-    </div>
-    
-    <div id="ec-mySubjectsSection" style="display: none; background:var(--card-bg); border-radius:20px; padding:20px 25px; margin:30px 0; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
-        <div style="font-size:1.3rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;"><i class="fas fa-crown" style="color:#f9a825;"></i> Your Active Subscriptions</div>
-        <div id="ec-purchasedSubjectsList" style="display:flex;flex-wrap:wrap;gap:12px;"></div>
-        <p style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);"><i class="fas fa-info-circle"></i> Click on any active subject to start practicing</p>
     </div>
     
     <div id="ec-subjectsContainer" class="ec-subjects-grid"></div>
   </section>
 
-  <!-- Payment Modal -->
-  <div class="ec-payment-modal" id="ec-paymentModal">
-      <div class="ec-modal-content">
-          <div class="ec-modal-header"><h3>Complete Your Purchase</h3><button class="ec-close-btn" onclick="ec_closePaymentModal()"><i class="fas fa-times"></i></button></div>
-          <div id="ec-selectedPlanDetails" style="background:var(--bg-main); padding:18px; border-radius:14px; margin-bottom:20px;"></div>
-          <div class="ec-form-group">
-              <label><i class="fas fa-tag"></i> Coupon Code</label>
-              <div style="display:flex; gap:10px; margin:10px 0;">
-                  <input type="text" id="ec-couponCodeInput" placeholder="Have A Coupon?">
-                  <button type="button" class="ec-apply-btn" id="ec-applyCouponBtn"><i class="fas fa-gift"></i> Apply</button>
-              </div>
-              <div id="ec-couponMessage" class="ec-message"></div>
-          </div>
-          <div id="ec-paymentMessage" class="ec-message"></div>
-          <form id="ec-paymentForm">
-              <div class="ec-form-group"><label>Full Name</label><input type="text" id="ec-customerName" required></div>
-              <div class="ec-form-group"><label>Phone Number</label><input type="tel" id="ec-customerPhone" maxlength="10" required></div>
-              <div class="ec-form-group"><label>Email</label><input type="email" id="ec-customerEmail" required></div>
-              <div class="ec-form-group"><label>Payment Method</label><select id="ec-paymentMethod" required><option value="Razorpay">Razorpay (UPI/Card/NetBanking)</option></select></div>
-              <button type="submit" class="btn btn-primary" id="ec-payButton" style="width:100%;margin-top:10px;font-size:15px;padding:14px;"><i class="fas fa-lock"></i> Pay ₹<span id="ec-payAmount">0</span></button>
-          </form>
-      </div>
-  </div>
 
   <!-- TEST SERIES & PDF MATERIALS -->
   <section id="test-series" class="section fu">
@@ -7876,31 +7838,7 @@ async function finishDuelPlay(){
 // END GAMES MODULE
 // ═══════════════════════════════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════════════
-// EXPLORE COURSES / SUBJECT STORE MODULE  (no-premium version)
-// ═══════════════════════════════════════════════════════════════
 
-const EC_RAZORPAY_KEY = "rzp_live_SMdQqXXnqY87rh";
-
-const EC_PLANS = [
-  { id:"trial7",        name:"7 Days Trial",  days:7,   price:49,  badge:"🔥 Try" },
-  { id:"monthly30",     name:"1 Month",       days:30,  price:149, badge:"Popular" },
-  { id:"quarterly90",   name:"3 Months",      days:90,  price:349, badge:"Value" },
-  { id:"halfyearly180", name:"6 Months",      days:180, price:599, badge:"Best" },
-  { id:"yearly365",     name:"1 Year",        days:365, price:999, badge:"Save 58%" }
-];
-
-const EC_COUPONS = [
-  { code:"INDEPENDENCE40",                    discountType:"percentage", value:40,   minAmount:49 },
-  { code:"ICARJRF",                           discountType:"percentage", value:15,   minAmount:49 },
-  { code:"SMRUTI10",                          discountType:"percentage", value:10,   minAmount:49 },
-  { code:"BHU15",                             discountType:"percentage", value:15,   minAmount:49 },
-  { code:"GOURI1717",                         discountType:"percentage", value:15,   minAmount:49 },
-  { code:"TESTINGRK100",                      discountType:"percentage", value:99.5, minAmount:49 },
-  { code:"AGRIACHIEVERSPECIAL100",            discountType:"percentage", value:50,   minAmount:49 },
-  { code:"STAR140",                           discountType:"percentage", value:10,   minAmount:49 },
-  { code:"THEOPAGRIACHIEVERINFLUENCER100",    discountType:"percentage", value:99.5, minAmount:49 }
-];
 
 const EC_SUBJECTS = [
   { id:"Agronomy",          name:"Agronomy",           icon:"🌾", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
@@ -7918,14 +7856,9 @@ const EC_SUBJECTS = [
 ];
 
 const EC_EXAM_FILTERS = ["All", "ICAR JRF", "IBPS AFO", "NABARD"];
+let ec_activeFilter = "All";
 
-let ec_selectedSubject = null;
-let ec_selectedPlan    = { ...EC_PLANS[0] };
-let ec_appliedCoupon   = null;
-let ec_discountedPrice = null;
-let ec_activeFilter    = "All";
-
-// ── Render grid of subject cards ──────────────────────────────
+// ── Render grid of subject cards (FREE — no payment) ──────────
 function ec_renderSubjectsGrid() {
   const container = document.getElementById('ec-subjectsContainer');
   if(!container) return;
@@ -7946,208 +7879,27 @@ function ec_renderSubjectsGrid() {
     `<button class="btn ${ec_activeFilter===f?'btn-primary':'btn-light'}" style="font-size:12px;padding:7px 14px;" onclick="ec_setFilter('${f}')">${f}</button>`
   ).join('');
 
-  // Hide the "my subscriptions" panel — not used in this version
+  // Hide my subscriptions panel
   const mySec = document.getElementById('ec-mySubjectsSection');
   if(mySec) mySec.style.display = 'none';
 
-  // Subject cards
-  container.innerHTML = filtered.map(sub => {
-    const planOptions = EC_PLANS.map(p =>
-      `<option value="${p.id}" data-price="${p.price}" data-days="${p.days}" data-name="${p.name}">${p.name} — ₹${p.price}</option>`
-    ).join('');
-
-    return `<div class="ec-subject-card" data-subject-id="${sub.id}">
+  // Subject cards — FREE, no buy button
+  container.innerHTML = filtered.map(sub => `
+    <div class="ec-subject-card" data-subject-id="${sub.id}">
+      <div style="position:absolute;top:14px;right:14px;background:#00B050;color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:30px;">FREE</div>
       <div class="ec-subject-icon">${sub.icon}</div>
       <div class="ec-subject-name">${sub.name}</div>
-      <div style="font-size:11px;background:#f0f9f0;color:#2e7d32;padding:3px 10px;border-radius:30px;display:inline-block;margin-bottom:10px;">${sub.exam}</div>
-      <div class="ec-plan-selector">
-        <select class="ec-plan-dropdown" data-subject="${sub.id}">${planOptions}</select>
-      </div>
-      <div class="ec-price-tag" id="ec-price-${sub.id}">₹${EC_PLANS[0].price}<span> / ${EC_PLANS[0].name}</span></div>
+      <div style="font-size:11px;background:#f0f9f0;color:#2e7d32;padding:3px 10px;border-radius:30px;display:inline-block;margin-bottom:12px;">${sub.exam}</div>
       <ul class="ec-feature-list">${sub.features.map(f=>`<li><i class="fas fa-check-circle"></i>${f}</li>`).join('')}</ul>
-      <button class="btn btn-primary" style="width:100%;margin-top:auto;" onclick="ec_openModal('${sub.id}')">🔒 Buy Now</button>
-    </div>`;
-  }).join('');
-
-  // Plan dropdown → live price update
-  filtered.forEach(sub => {
-    const dd = document.querySelector(`.ec-plan-dropdown[data-subject="${sub.id}"]`);
-    const priceEl = document.getElementById(`ec-price-${sub.id}`);
-    if(dd && priceEl) {
-      dd.addEventListener('change', () => {
-        const opt = dd.options[dd.selectedIndex];
-        priceEl.innerHTML = `₹${opt.getAttribute('data-price')}<span> / ${opt.getAttribute('data-name')}</span>`;
-      });
-    }
-  });
+      <div style="margin-top:auto;padding-top:14px;text-align:center;font-size:12px;color:#00B050;font-weight:700;">✅ Completely Free Access</div>
+    </div>
+  `).join('');
 }
 
 window.ec_setFilter = function(f) {
   ec_activeFilter = f;
   ec_renderSubjectsGrid();
 };
-
-// ── Open payment modal ─────────────────────────────────────────
-window.ec_openModal = function(subjectId) {
-  if(!currentUser) { toast("Please login to purchase!", "e"); return; }
-  ec_selectedSubject = EC_SUBJECTS.find(s => s.id === subjectId);
-  if(!ec_selectedSubject) return;
-
-  const dd = document.querySelector(`.ec-plan-dropdown[data-subject="${subjectId}"]`);
-  ec_selectedPlan = (dd && dd.value)
-    ? (EC_PLANS.find(p => p.id === dd.value) || EC_PLANS[0])
-    : EC_PLANS[0];
-
-  ec_appliedCoupon = null;
-  ec_discountedPrice = null;
-
-  // Pre-fill user email
-  const em = document.getElementById('ec-customerEmail');
-  if(em && currentUser.email) em.value = currentUser.email;
-
-  ec_updateModalPrice();
-  document.getElementById('ec-paymentModal').classList.add('active');
-};
-
-window.ec_closePaymentModal = function() {
-  document.getElementById('ec-paymentModal').classList.remove('active');
-};
-
-// ── Update modal price display ─────────────────────────────────
-function ec_updateModalPrice() {
-  const base  = ec_selectedPlan.price;
-  const final = ec_discountedPrice !== null ? ec_discountedPrice : base;
-  document.getElementById('ec-payAmount').textContent = final;
-
-  const det = document.getElementById('ec-selectedPlanDetails');
-  if(!det) return;
-  const discHtml = (ec_appliedCoupon && ec_discountedPrice < base)
-    ? `<div class="ec-detail-row" style="color:#00B050;"><span>Coupon (${ec_appliedCoupon.code}):</span><span>−₹${base - ec_discountedPrice}</span></div>`
-    : '';
-  det.innerHTML = `
-    <div class="ec-detail-row"><span>Course:</span><span><strong>${ec_selectedSubject.name}</strong></span></div>
-    <div class="ec-detail-row"><span>Plan:</span><span>${ec_selectedPlan.name} (${ec_selectedPlan.days} days)</span></div>
-    <div class="ec-detail-row"><span>Price:</span><span>₹${base}</span></div>
-    ${discHtml}
-    <div class="ec-detail-row"><strong>Total:</strong><strong style="color:#00B050;">₹${final}</strong></div>
-  `;
-}
-
-// ── Coupon apply ───────────────────────────────────────────────
-document.getElementById('ec-applyCouponBtn')?.addEventListener('click', () => {
-  const code   = document.getElementById('ec-couponCodeInput')?.value.trim().toUpperCase();
-  const coupon = EC_COUPONS.find(c => c.code.toUpperCase() === code);
-  if(!coupon) { ec_showMsg('ec-couponMessage', '❌ Invalid coupon code', 'ec-error'); return; }
-  const base = ec_selectedPlan.price;
-  if(base < coupon.minAmount) { ec_showMsg('ec-couponMessage', `Min ₹${coupon.minAmount} required`, 'ec-error'); return; }
-  let np = coupon.discountType === "percentage"
-    ? base - (base * coupon.value / 100)
-    : base - coupon.value;
-  np = Math.max(1, Math.round(np));
-  ec_appliedCoupon   = coupon;
-  ec_discountedPrice = np;
-  ec_updateModalPrice();
-  ec_showMsg('ec-couponMessage', `✅ Applied! You save ₹${base - np}`, 'ec-success');
-});
-
-function ec_showMsg(id, msg, cls) {
-  const el = document.getElementById(id);
-  if(!el) return;
-  el.textContent = msg;
-  el.className   = `ec-message show ${cls}`;
-  setTimeout(() => el.classList.remove('show'), 4000);
-}
-
-// ── Payment form submit ────────────────────────────────────────
-document.getElementById('ec-paymentForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if(!currentUser) { toast("Please login first", "e"); return; }
-  const name  = document.getElementById('ec-customerName')?.value.trim();
-  const phone = document.getElementById('ec-customerPhone')?.value.trim();
-  const email = document.getElementById('ec-customerEmail')?.value.trim();
-  if(!name || !phone || !email) { ec_showMsg('ec-paymentMessage','All fields required','ec-error'); return; }
-  const amount = ec_discountedPrice !== null ? ec_discountedPrice : ec_selectedPlan.price;
-  await ec_processPayment(name, phone, email, amount);
-});
-
-// ── Razorpay payment flow ──────────────────────────────────────
-async function ec_processPayment(name, phone, email, amount) {
-  const payBtn = document.getElementById('ec-payButton');
-  if(payBtn) payBtn.disabled = true;
-  try {
-    const rzpLoaded = await loadRazorpay();
-    if(!rzpLoaded) throw new Error("Razorpay failed to load. Check your internet.");
-
-    const orderRes  = await fetch('https://agriachiever.vercel.app/api/create-order', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ amount })
-    });
-    const orderData = await orderRes.json();
-    if(!orderData.success) throw new Error(orderData.message || "Order creation failed");
-
-    new Razorpay({
-      key:         EC_RAZORPAY_KEY,
-      amount:      orderData.order.amount,
-      currency:    'INR',
-      name:        'KrishiGyan',
-      description: `${ec_selectedSubject.name} — ${ec_selectedPlan.name}`,
-      order_id:    orderData.order.id,
-      prefill:     { name, email, contact: phone },
-      theme:       { color: "#00B050" },
-      handler: async (response) => {
-        try {
-          // Verify payment
-          const vRes  = await fetch('https://agriachiever.vercel.app/api/verify-payment', {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_order_id:   response.razorpay_order_id,
-              razorpay_signature:  response.razorpay_signature
-            })
-          });
-          const vData = await vRes.json();
-          if(!vData.success) throw new Error("Payment verification failed.");
-
-          // Log order to Firebase (for admin records) — no premium fields
-          const db = firebase.firestore();
-          await db.collection("course_orders").add({
-            userId:      currentUser.uid,
-            userEmail:   email,
-            userName:    name,
-            userPhone:   phone,
-            courseId:    ec_selectedSubject.id,
-            courseName:  ec_selectedSubject.name,
-            planId:      ec_selectedPlan.id,
-            planName:    ec_selectedPlan.name,
-            planDays:    ec_selectedPlan.days,
-            amount:      amount,
-            couponCode:  ec_appliedCoupon ? ec_appliedCoupon.code : null,
-            paymentId:   response.razorpay_payment_id,
-            orderId:     response.razorpay_order_id,
-            status:      "paid",
-            createdAt:   firebase.firestore.FieldValue.serverTimestamp()
-          });
-
-          ec_closePaymentModal();
-          toast(`🎉 Payment successful! We'll activate ${ec_selectedSubject.name} shortly.`, 's');
-          if(payBtn) payBtn.disabled = false;
-        } catch(err) {
-          console.error(err);
-          ec_showMsg('ec-paymentMessage', err.message, 'ec-error');
-          if(payBtn) payBtn.disabled = false;
-        }
-      },
-      modal: { ondismiss: () => { if(payBtn) payBtn.disabled = false; } }
-    }).open();
-  } catch(err) {
-    console.error(err);
-    ec_showMsg('ec-paymentMessage', err.message, 'ec-error');
-    if(payBtn) payBtn.disabled = false;
-  }
-}
-
-// ═══════════════════════════════════════════════════════════════
-// END EXPLORE COURSES MODULE
 // ═══════════════════════════════════════════════════════════════
 
 
