@@ -8016,11 +8016,54 @@ function renderEbooksGrid(){
 // ═══════════════════════════════════════════════════════════════
 // DYNAMIC NOTICES
 // ═══════════════════════════════════════════════════════════════
+let fetchedRSSNotices = [];
+let hasFetchedRSS = false;
+
+async function fetchLiveExamNotices() {
+  if(hasFetchedRSS) return;
+  try {
+    const rssUrl = 'https://news.google.com/rss/search?q="ICAR"+OR+"IBPS+AFO"+OR+"NABARD+Agriculture"+exam+notification&hl=en-IN&gl=IN&ceid=IN:en';
+    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+    
+    const res = await fetch(apiUrl);
+    const data = await res.json();
+    
+    if(data.status === "ok" && data.items) {
+      fetchedRSSNotices = data.items.slice(0, 8).map((item, i) => {
+        const d = new Date(item.pubDate);
+        const fDate = !isNaN(d) ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : "Recent";
+        
+        // Clean up title/desc
+        let cleanTitle = item.title.split(' - ')[0]; // Remove source name from Google News
+        let cleanDesc = item.description ? item.description.replace(/<[^>]*>?/gm, '') : "Tap View to read this exam update.";
+        if(cleanDesc.length > 120) cleanDesc = cleanDesc.substring(0, 120) + "...";
+
+        return {
+          id: `rss_${Date.now()}_${i}`,
+          title: cleanTitle,
+          category: "NEWS",
+          desc: cleanDesc,
+          link: item.link,
+          date: fDate,
+          timestamp: d.getTime(),
+          isLive: true
+        };
+      });
+      hasFetchedRSS = true;
+      if(section === 'notices') renderNotices();
+    }
+  } catch(e) { console.error("Failed to fetch RSS notices:", e); }
+}
+
 function renderNotices() {
   const el = document.getElementById("noticeList");
   if(!el) return;
   
-  if(noticesList.length === 0) {
+  if(!hasFetchedRSS) fetchLiveExamNotices();
+  
+  const allNotices = [...noticesList, ...fetchedRSSNotices].sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+  
+  if(allNotices.length === 0) {
     el.innerHTML = `<div style="text-align:center; padding:40px; color:#777;">No recent notices available.</div>`;
     return;
   }
@@ -8034,15 +8077,18 @@ function renderNotices() {
   };
 
   let html = "";
-  noticesList.forEach(n => {
+  allNotices.forEach(n => {
     const c = colorMap[n.category] || colorMap["NEWS"];
     const i = iconMap[n.category] || "📰";
+    const liveBadge = n.isLive ? `<span style="font-size:10px; background:#e3f2fd; color:#0d47a1; padding:3px 8px; border-radius:4px; font-weight:700; border:1px solid #bbdefb;"><i class="fas fa-globe"></i> Live Web Update</span>` : "";
+
     html += `
       <div class="notice-card">
         <div class="notice-icon">${i}</div>
         <div style="flex:1;">
-          <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center;">
+          <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center; flex-wrap:wrap;">
             <span style="font-size:10px; background:${c.bg}; color:${c.fg}; padding:3px 8px; border-radius:4px; font-weight:700;">${escapeHTML(n.category)}</span>
+            ${liveBadge}
             <span style="font-size:10px; color:#777;">${escapeHTML(n.date)}</span>
           </div>
           <div style="font-weight:700; font-size:15px; margin-bottom:4px;">${escapeHTML(n.title)}</div>
