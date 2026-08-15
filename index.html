@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
   ║           KrishiGyan — e-Learning Portal  v10.0              ║
@@ -7877,112 +7877,64 @@ async function finishDuelPlay(){
 // ═══════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════
-// EXPLORE COURSES / SUBJECT STORE MODULE
+// EXPLORE COURSES / SUBJECT STORE MODULE  (no-premium version)
 // ═══════════════════════════════════════════════════════════════
 
 const EC_RAZORPAY_KEY = "rzp_live_SMdQqXXnqY87rh";
 
 const EC_PLANS = [
-  { id:"monthly30",     name:"1 Month",       days:30,  price:149, badge:"Popular" },
   { id:"trial7",        name:"7 Days Trial",  days:7,   price:49,  badge:"🔥 Try" },
+  { id:"monthly30",     name:"1 Month",       days:30,  price:149, badge:"Popular" },
   { id:"quarterly90",   name:"3 Months",      days:90,  price:349, badge:"Value" },
   { id:"halfyearly180", name:"6 Months",      days:180, price:599, badge:"Best" },
   { id:"yearly365",     name:"1 Year",        days:365, price:999, badge:"Save 58%" }
 ];
 
 const EC_COUPONS = [
-  { code:"INDEPENDENCE40", discountType:"percentage", value:40, minAmount:149 },
-  { code:"ICARJRF",        discountType:"percentage", value:15, minAmount:49  },
-  { code:"SMRUTI10",       discountType:"percentage", value:10, minAmount:49  },
-  { code:"BHU15",          discountType:"percentage", value:15, minAmount:49  },
-  { code:"GOURI1717",      discountType:"percentage", value:15, minAmount:49  },
-  { code:"TESTINGRK100",   discountType:"percentage", value:99.5, minAmount:49 },
-  { code:"AGRIACHIEVERSPECIAL100", discountType:"percentage", value:50, minAmount:149 },
-  { code:"THEOPAGRIACHIEVERINFLUENCER100", discountType:"percentage", value:99.5, minAmount:49 }
+  { code:"INDEPENDENCE40",                    discountType:"percentage", value:40,   minAmount:49 },
+  { code:"ICARJRF",                           discountType:"percentage", value:15,   minAmount:49 },
+  { code:"SMRUTI10",                          discountType:"percentage", value:10,   minAmount:49 },
+  { code:"BHU15",                             discountType:"percentage", value:15,   minAmount:49 },
+  { code:"GOURI1717",                         discountType:"percentage", value:15,   minAmount:49 },
+  { code:"TESTINGRK100",                      discountType:"percentage", value:99.5, minAmount:49 },
+  { code:"AGRIACHIEVERSPECIAL100",            discountType:"percentage", value:50,   minAmount:49 },
+  { code:"STAR140",                           discountType:"percentage", value:10,   minAmount:49 },
+  { code:"THEOPAGRIACHIEVERINFLUENCER100",    discountType:"percentage", value:99.5, minAmount:49 }
 ];
 
 const EC_SUBJECTS = [
-  { id:"Agronomy",          name:"Agronomy",              icon:"🌾", exam:"ICAR JRF",     features:["7 Years PYQs (2019–2025)","Expert Explanations","Mock Tests","Analytics Dashboard","Rank Predictor"] },
-  { id:"Horticulture",      name:"Horticulture",          icon:"🍎", exam:"ICAR JRF",     features:["7 Years PYQs (2019–2025)","Expert Explanations","Mock Tests","Analytics Dashboard","Rank Predictor"] },
-  { id:"PlantSciences",     name:"Plant Sciences",        icon:"🌱", exam:"ICAR JRF",     features:["7 Years PYQs (2019–2025)","Expert Explanations","Mock Tests","Analytics Dashboard","Rank Predictor"] },
-  { id:"Entomology",        name:"Entomology",            icon:"🐞", exam:"ICAR JRF",     features:["7 Years PYQs (2019–2025)","Expert Explanations","Mock Tests","Analytics Dashboard","Rank Predictor"] },
-  { id:"PlantPathology",    name:"Plant Pathology",       icon:"🔬", exam:"ICAR JRF",     features:["7 Years PYQs (2019–2025)","Expert Explanations","Mock Tests","Analytics Dashboard","Rank Predictor"] },
-  { id:"SoilScience",       name:"Soil Science",          icon:"🪨", exam:"ICAR JRF",     features:["7 Years PYQs (2019–2025)","Expert Explanations","Mock Tests","Analytics Dashboard","Rank Predictor"] },
-  { id:"FoodScience",       name:"Food Science",          icon:"🍽️", exam:"ICAR JRF",     features:["7 Years PYQs (2019–2025)","Expert Explanations","Mock Tests","Analytics Dashboard","Rank Predictor"] },
-  { id:"DairyScience",      name:"Dairy Science",         icon:"🥛", exam:"ICAR JRF",     features:["7 Years PYQs (2019–2025)","Expert Explanations","Mock Tests","Analytics Dashboard","Rank Predictor"] },
-  { id:"IBPSAFOMain",       name:"IBPS-AFO (Main)",       icon:"🏦", exam:"IBPS AFO",     features:["Full-length Mock Tests","Previous Year Papers","Detailed Solutions","Score Analytics","National Rank"] },
-  { id:"IBPSAFOPrelims",    name:"IBPS-AFO (Prelims)",    icon:"📋", exam:"IBPS AFO",     features:["Speed-based Section Tests","Previous Year Papers","Cutoff Analysis","Score Analytics","National Rank"] },
-  { id:"NABARD",            name:"NABARD Grade A/B",      icon:"🏛️", exam:"NABARD",       features:["PYQs + Mock Tests","Agriculture Specialist Paper","Detailed Solutions","Score Analytics"] },
-  { id:"StatisticalScience",name:"Statistical Science",   icon:"📊", exam:"ICAR JRF",     features:["7 Years PYQs (2019–2025)","Expert Explanations","Mock Tests","Analytics Dashboard","Rank Predictor"] }
+  { id:"Agronomy",          name:"Agronomy",           icon:"🌾", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
+  { id:"Horticulture",      name:"Horticulture",        icon:"🍎", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
+  { id:"PlantSciences",     name:"Plant Sciences",      icon:"🌱", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
+  { id:"Entomology",        name:"Entomology",          icon:"🐞", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
+  { id:"PlantPathology",    name:"Plant Pathology",     icon:"🔬", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
+  { id:"SoilScience",       name:"Soil Science",        icon:"🪨", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
+  { id:"FoodScience",       name:"Food Science",        icon:"🍽️", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
+  { id:"DairyScience",      name:"Dairy Science",       icon:"🥛", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
+  { id:"StatisticalScience",name:"Statistical Science", icon:"📊", exam:"ICAR JRF", features:["7 Years PYQs (2019–2025)","Expert Explanations","Full-length Mock Tests","Analytics Dashboard","JRF Rank Predictor"] },
+  { id:"IBPSAFOMain",       name:"IBPS-AFO (Main)",     icon:"🏦", exam:"IBPS AFO", features:["Full Syllabus Mock Tests","Previous Year Papers","Detailed Explanations","Score Analytics","All India Ranking"] },
+  { id:"IBPSAFOPrelims",    name:"IBPS-AFO (Prelims)",  icon:"📋", exam:"IBPS AFO", features:["Speed-based Practice Sets","Previous Year Papers","Section-wise Tests","Cutoff Analysis","All India Ranking"] },
+  { id:"NABARD",            name:"NABARD Grade A/B",    icon:"🏛️", exam:"NABARD",   features:["Agriculture Paper PYQs","Full-length Mock Tests","Detailed Explanations","Score Analytics"] }
 ];
 
 const EC_EXAM_FILTERS = ["All", "ICAR JRF", "IBPS AFO", "NABARD"];
 
 let ec_selectedSubject = null;
-let ec_selectedPlan = { ...EC_PLANS[0] };
-let ec_appliedCoupon = null;
+let ec_selectedPlan    = { ...EC_PLANS[0] };
+let ec_appliedCoupon   = null;
 let ec_discountedPrice = null;
-let ec_activeFilter = "All";
-let ec_activeSubscriptions = [];
+let ec_activeFilter    = "All";
 
-async function ec_loadActiveSubscriptions() {
-  ec_activeSubscriptions = [];
-  if(!currentUser) return;
-  try {
-    const premDoc = await firebase.firestore().collection("premium_users").doc(currentUser.uid).get();
-    if(premDoc.exists()) {
-      const data = premDoc.data();
-      if(data.subscriptions && Array.isArray(data.subscriptions)) {
-        ec_activeSubscriptions = data.subscriptions.filter(s => {
-          const expiry = s.expiryDate?.toDate ? s.expiryDate.toDate() : new Date(s.expiryDate);
-          return expiry > new Date();
-        });
-      }
-    }
-  } catch(e) { console.error("EC load subs:", e); }
-}
-
-async function ec_addSubscription(subjectId, planDetails, paymentDetails) {
-  const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + planDetails.days);
-  const db = firebase.firestore();
-  const Timestamp = firebase.firestore.Timestamp;
-  const newSub = {
-    subjectId, planId: planDetails.id, planDays: planDetails.days,
-    purchaseDate: new Date(), expiryDate: Timestamp.fromDate(expiryDate),
-    paymentId: paymentDetails.paymentId, amount: paymentDetails.amount
-  };
-  const ref = db.collection("premium_users").doc(currentUser.uid);
-  const snap = await ref.get();
-  let existing = (snap.exists() && snap.data().subscriptions) ? snap.data().subscriptions : [];
-  existing = existing.filter(s => s.subjectId !== subjectId);
-  existing.push(newSub);
-  await ref.set({ subscriptions: existing, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-  await db.collection("users").doc(currentUser.uid).set({ isPremium: true, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-  await db.collection("subscriptions").add({
-    userId: currentUser.uid, subjectId, planName: subjectId,
-    planDetails: planDetails.name, planDays: planDetails.days,
-    amount: paymentDetails.amount, paymentId: paymentDetails.paymentId,
-    status: "active", createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    expiryDate: Timestamp.fromDate(expiryDate)
-  });
-}
-
-function ec_getDaysLeft(expiryDate) {
-  const exp = expiryDate?.toDate ? expiryDate.toDate() : new Date(expiryDate);
-  return Math.ceil((exp - new Date()) / 86400000);
-}
-
+// ── Render grid of subject cards ──────────────────────────────
 function ec_renderSubjectsGrid() {
-  const activeIds = ec_activeSubscriptions.map(s => s.subjectId);
   const container = document.getElementById('ec-subjectsContainer');
   if(!container) return;
 
-  // Filter header
-  const filtered = ec_activeFilter === "All" ? EC_SUBJECTS : EC_SUBJECTS.filter(s => s.exam === ec_activeFilter);
+  const filtered = ec_activeFilter === "All"
+    ? EC_SUBJECTS
+    : EC_SUBJECTS.filter(s => s.exam === ec_activeFilter);
 
-  // Build filter chips above grid
-  const parentSection = document.getElementById('explore-courses');
+  // Filter chips
   let filterEl = document.getElementById('ec-filterRow');
   if(!filterEl) {
     filterEl = document.createElement('div');
@@ -7994,37 +7946,17 @@ function ec_renderSubjectsGrid() {
     `<button class="btn ${ec_activeFilter===f?'btn-primary':'btn-light'}" style="font-size:12px;padding:7px 14px;" onclick="ec_setFilter('${f}')">${f}</button>`
   ).join('');
 
-  // Active subscriptions panel
+  // Hide the "my subscriptions" panel — not used in this version
   const mySec = document.getElementById('ec-mySubjectsSection');
-  const myList = document.getElementById('ec-purchasedSubjectsList');
-  if(mySec && myList) {
-    if(ec_activeSubscriptions.length > 0) {
-      mySec.style.display = 'block';
-      myList.innerHTML = ec_activeSubscriptions.map(sub => {
-        const subj = EC_SUBJECTS.find(s => s.id === sub.subjectId);
-        const days = ec_getDaysLeft(sub.expiryDate);
-        const isExpiring = days <= 7;
-        return `<div style="background:${isExpiring?'#fff3e0':'#e8f5e9'};border:1px solid ${isExpiring?'#ffe0b2':'#c8e6c9'};border-radius:60px;padding:10px 20px;display:inline-flex;align-items:center;gap:10px;font-weight:600;cursor:pointer;" onclick="toast('Active: ${subj?subj.name:sub.subjectId} — ${days} days left','s')">
-          <span>${subj?subj.icon:'📚'}</span> ${subj?subj.name:sub.subjectId}
-          <span style="font-size:0.7rem;color:#666;">${days}d left</span>
-        </div>`;
-      }).join('');
-    } else if(currentUser) {
-      mySec.style.display = 'block';
-      myList.innerHTML = '<p style="color:#757575;font-size:13px;">No active subscriptions yet. Choose a plan below!</p>';
-    } else {
-      mySec.style.display = 'none';
-    }
-  }
+  if(mySec) mySec.style.display = 'none';
 
   // Subject cards
   container.innerHTML = filtered.map(sub => {
-    const isActive = activeIds.includes(sub.id);
     const planOptions = EC_PLANS.map(p =>
       `<option value="${p.id}" data-price="${p.price}" data-days="${p.days}" data-name="${p.name}">${p.name} — ₹${p.price}</option>`
     ).join('');
+
     return `<div class="ec-subject-card" data-subject-id="${sub.id}">
-      ${isActive ? '<div class="ec-purchased-badge">✓ Active</div>' : ''}
       <div class="ec-subject-icon">${sub.icon}</div>
       <div class="ec-subject-name">${sub.name}</div>
       <div style="font-size:11px;background:#f0f9f0;color:#2e7d32;padding:3px 10px;border-radius:30px;display:inline-block;margin-bottom:10px;">${sub.exam}</div>
@@ -8033,13 +7965,11 @@ function ec_renderSubjectsGrid() {
       </div>
       <div class="ec-price-tag" id="ec-price-${sub.id}">₹${EC_PLANS[0].price}<span> / ${EC_PLANS[0].name}</span></div>
       <ul class="ec-feature-list">${sub.features.map(f=>`<li><i class="fas fa-check-circle"></i>${f}</li>`).join('')}</ul>
-      ${isActive
-        ? `<button class="btn btn-primary" style="width:100%;margin-top:auto;" onclick="toast('Already active! ${ec_getDaysLeft(ec_activeSubscriptions.find(s=>s.subjectId===sub.id)?.expiryDate)} days left','s')">✓ Active Subscription</button>`
-        : `<button class="btn btn-primary" style="width:100%;margin-top:auto;" onclick="ec_openModal('${sub.id}')">🔒 Buy Now</button>`}
+      <button class="btn btn-primary" style="width:100%;margin-top:auto;" onclick="ec_openModal('${sub.id}')">🔒 Buy Now</button>
     </div>`;
   }).join('');
 
-  // Plan dropdown listeners
+  // Plan dropdown → live price update
   filtered.forEach(sub => {
     const dd = document.querySelector(`.ec-plan-dropdown[data-subject="${sub.id}"]`);
     const priceEl = document.getElementById(`ec-price-${sub.id}`);
@@ -8057,20 +7987,23 @@ window.ec_setFilter = function(f) {
   ec_renderSubjectsGrid();
 };
 
+// ── Open payment modal ─────────────────────────────────────────
 window.ec_openModal = function(subjectId) {
-  if(!currentUser) { toast("Please login to purchase!","e"); return; }
+  if(!currentUser) { toast("Please login to purchase!", "e"); return; }
   ec_selectedSubject = EC_SUBJECTS.find(s => s.id === subjectId);
   if(!ec_selectedSubject) return;
 
-  // Get plan from dropdown
   const dd = document.querySelector(`.ec-plan-dropdown[data-subject="${subjectId}"]`);
-  if(dd && dd.value) ec_selectedPlan = EC_PLANS.find(p => p.id === dd.value) || EC_PLANS[0];
-  else ec_selectedPlan = EC_PLANS[0];
+  ec_selectedPlan = (dd && dd.value)
+    ? (EC_PLANS.find(p => p.id === dd.value) || EC_PLANS[0])
+    : EC_PLANS[0];
 
-  ec_appliedCoupon = null; ec_discountedPrice = null;
+  ec_appliedCoupon = null;
+  ec_discountedPrice = null;
 
-  // Pre-fill user info
-  if(currentUser.email) { const em = document.getElementById('ec-customerEmail'); if(em) em.value = currentUser.email; }
+  // Pre-fill user email
+  const em = document.getElementById('ec-customerEmail');
+  if(em && currentUser.email) em.value = currentUser.email;
 
   ec_updateModalPrice();
   document.getElementById('ec-paymentModal').classList.add('active');
@@ -8080,50 +8013,55 @@ window.ec_closePaymentModal = function() {
   document.getElementById('ec-paymentModal').classList.remove('active');
 };
 
+// ── Update modal price display ─────────────────────────────────
 function ec_updateModalPrice() {
-  const base = ec_selectedPlan.price;
+  const base  = ec_selectedPlan.price;
   const final = ec_discountedPrice !== null ? ec_discountedPrice : base;
   document.getElementById('ec-payAmount').textContent = final;
 
   const det = document.getElementById('ec-selectedPlanDetails');
-  if(det) {
-    let discHtml = '';
-    if(ec_appliedCoupon && ec_discountedPrice !== null && ec_discountedPrice < base) {
-      discHtml = `<div class="ec-detail-row" style="color:#00B050;"><span>Discount (${ec_appliedCoupon.code}):</span><span>−₹${base - ec_discountedPrice}</span></div>`;
-    }
-    det.innerHTML = `
-      <div class="ec-detail-row"><span>Subject:</span><span><strong>${ec_selectedSubject.name}</strong></span></div>
-      <div class="ec-detail-row"><span>Plan:</span><span>${ec_selectedPlan.name} (${ec_selectedPlan.days} days)</span></div>
-      <div class="ec-detail-row"><span>Price:</span><span>₹${base}</span></div>
-      ${discHtml}
-      <div class="ec-detail-row"><strong>Total:</strong><strong style="color:#00B050;">₹${final}</strong></div>
-    `;
-  }
+  if(!det) return;
+  const discHtml = (ec_appliedCoupon && ec_discountedPrice < base)
+    ? `<div class="ec-detail-row" style="color:#00B050;"><span>Coupon (${ec_appliedCoupon.code}):</span><span>−₹${base - ec_discountedPrice}</span></div>`
+    : '';
+  det.innerHTML = `
+    <div class="ec-detail-row"><span>Course:</span><span><strong>${ec_selectedSubject.name}</strong></span></div>
+    <div class="ec-detail-row"><span>Plan:</span><span>${ec_selectedPlan.name} (${ec_selectedPlan.days} days)</span></div>
+    <div class="ec-detail-row"><span>Price:</span><span>₹${base}</span></div>
+    ${discHtml}
+    <div class="ec-detail-row"><strong>Total:</strong><strong style="color:#00B050;">₹${final}</strong></div>
+  `;
 }
 
+// ── Coupon apply ───────────────────────────────────────────────
 document.getElementById('ec-applyCouponBtn')?.addEventListener('click', () => {
-  const code = document.getElementById('ec-couponCodeInput')?.value.trim().toUpperCase();
+  const code   = document.getElementById('ec-couponCodeInput')?.value.trim().toUpperCase();
   const coupon = EC_COUPONS.find(c => c.code.toUpperCase() === code);
-  if(!coupon) { ec_showMsg('ec-couponMessage', 'Invalid coupon code', 'ec-error'); return; }
+  if(!coupon) { ec_showMsg('ec-couponMessage', '❌ Invalid coupon code', 'ec-error'); return; }
   const base = ec_selectedPlan.price;
-  if(base < coupon.minAmount) { ec_showMsg('ec-couponMessage', `Minimum ₹${coupon.minAmount} required`, 'ec-error'); return; }
-  let newPrice = coupon.discountType === "percentage" ? base - (base * coupon.value / 100) : base - coupon.value;
-  newPrice = Math.max(1, Math.round(newPrice));
-  ec_appliedCoupon = coupon; ec_discountedPrice = newPrice;
+  if(base < coupon.minAmount) { ec_showMsg('ec-couponMessage', `Min ₹${coupon.minAmount} required`, 'ec-error'); return; }
+  let np = coupon.discountType === "percentage"
+    ? base - (base * coupon.value / 100)
+    : base - coupon.value;
+  np = Math.max(1, Math.round(np));
+  ec_appliedCoupon   = coupon;
+  ec_discountedPrice = np;
   ec_updateModalPrice();
-  ec_showMsg('ec-couponMessage', `✓ Applied! You save ₹${base - newPrice}`, 'ec-success');
+  ec_showMsg('ec-couponMessage', `✅ Applied! You save ₹${base - np}`, 'ec-success');
 });
 
 function ec_showMsg(id, msg, cls) {
   const el = document.getElementById(id);
   if(!el) return;
-  el.textContent = msg; el.className = `ec-message show ${cls}`;
+  el.textContent = msg;
+  el.className   = `ec-message show ${cls}`;
   setTimeout(() => el.classList.remove('show'), 4000);
 }
 
+// ── Payment form submit ────────────────────────────────────────
 document.getElementById('ec-paymentForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  if(!currentUser) { toast("Please login first","e"); return; }
+  if(!currentUser) { toast("Please login first", "e"); return; }
   const name  = document.getElementById('ec-customerName')?.value.trim();
   const phone = document.getElementById('ec-customerPhone')?.value.trim();
   const email = document.getElementById('ec-customerEmail')?.value.trim();
@@ -8132,32 +8070,34 @@ document.getElementById('ec-paymentForm')?.addEventListener('submit', async (e) 
   await ec_processPayment(name, phone, email, amount);
 });
 
+// ── Razorpay payment flow ──────────────────────────────────────
 async function ec_processPayment(name, phone, email, amount) {
   const payBtn = document.getElementById('ec-payButton');
   if(payBtn) payBtn.disabled = true;
   try {
     const rzpLoaded = await loadRazorpay();
-    if(!rzpLoaded) throw new Error("Razorpay failed to load. Check internet.");
+    if(!rzpLoaded) throw new Error("Razorpay failed to load. Check your internet.");
 
-    const orderRes = await fetch('https://agriachiever.vercel.app/api/create-order', {
+    const orderRes  = await fetch('https://agriachiever.vercel.app/api/create-order', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ amount })
     });
     const orderData = await orderRes.json();
     if(!orderData.success) throw new Error(orderData.message || "Order creation failed");
 
-    const rzp = new Razorpay({
-      key: EC_RAZORPAY_KEY,
-      amount: orderData.order.amount,
-      currency: 'INR',
-      name: 'KrishiGyan',
+    new Razorpay({
+      key:         EC_RAZORPAY_KEY,
+      amount:      orderData.order.amount,
+      currency:    'INR',
+      name:        'KrishiGyan',
       description: `${ec_selectedSubject.name} — ${ec_selectedPlan.name}`,
-      order_id: orderData.order.id,
-      prefill: { name, email, contact: phone },
-      theme: { color: "#00B050" },
+      order_id:    orderData.order.id,
+      prefill:     { name, email, contact: phone },
+      theme:       { color: "#00B050" },
       handler: async (response) => {
         try {
-          const vRes = await fetch('https://agriachiever.vercel.app/api/verify-payment', {
+          // Verify payment
+          const vRes  = await fetch('https://agriachiever.vercel.app/api/verify-payment', {
             method:'POST', headers:{'Content-Type':'application/json'},
             body: JSON.stringify({
               razorpay_payment_id: response.razorpay_payment_id,
@@ -8168,14 +8108,28 @@ async function ec_processPayment(name, phone, email, amount) {
           const vData = await vRes.json();
           if(!vData.success) throw new Error("Payment verification failed.");
 
-          await ec_addSubscription(ec_selectedSubject.id, ec_selectedPlan, {
-            paymentId: response.razorpay_payment_id, amount
+          // Log order to Firebase (for admin records) — no premium fields
+          const db = firebase.firestore();
+          await db.collection("course_orders").add({
+            userId:      currentUser.uid,
+            userEmail:   email,
+            userName:    name,
+            userPhone:   phone,
+            courseId:    ec_selectedSubject.id,
+            courseName:  ec_selectedSubject.name,
+            planId:      ec_selectedPlan.id,
+            planName:    ec_selectedPlan.name,
+            planDays:    ec_selectedPlan.days,
+            amount:      amount,
+            couponCode:  ec_appliedCoupon ? ec_appliedCoupon.code : null,
+            paymentId:   response.razorpay_payment_id,
+            orderId:     response.razorpay_order_id,
+            status:      "paid",
+            createdAt:   firebase.firestore.FieldValue.serverTimestamp()
           });
 
           ec_closePaymentModal();
-          toast(`🎉 ${ec_selectedSubject.name} activated! Happy learning!`, 's');
-          await ec_loadActiveSubscriptions();
-          ec_renderSubjectsGrid();
+          toast(`🎉 Payment successful! We'll activate ${ec_selectedSubject.name} shortly.`, 's');
           if(payBtn) payBtn.disabled = false;
         } catch(err) {
           console.error(err);
@@ -8184,8 +8138,7 @@ async function ec_processPayment(name, phone, email, amount) {
         }
       },
       modal: { ondismiss: () => { if(payBtn) payBtn.disabled = false; } }
-    });
-    rzp.open();
+    }).open();
   } catch(err) {
     console.error(err);
     ec_showMsg('ec-paymentMessage', err.message, 'ec-error');
@@ -8193,21 +8146,14 @@ async function ec_processPayment(name, phone, email, amount) {
   }
 }
 
-// Load EC subs when user logs in (hook into existing auth state)
-const _origRenderAll = typeof renderAll === 'function' ? renderAll : null;
-document.addEventListener('DOMContentLoaded', () => {
-  // After auth is ready, load EC subscriptions
-  setTimeout(async () => {
-    if(currentUser) {
-      await ec_loadActiveSubscriptions();
-      if(section === 'explore-courses') ec_renderSubjectsGrid();
-    }
-  }, 2000);
-});
-
 // ═══════════════════════════════════════════════════════════════
 // END EXPLORE COURSES MODULE
 // ═══════════════════════════════════════════════════════════════
+
+
+</script>
+
+
 
 </script>
 
