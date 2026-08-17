@@ -4896,11 +4896,11 @@ window.launchMockTest = function(exam, year, subj) {
     subj: exam
   }));
   quizAns = Array(quizQs.length).fill(-1);
-  quizFlagged = Array(quizQs.length).fill(false);
+  quizFlagged = {};
   quizIdx = 0;
-  quizScore = 0;
-  quizSubj = `${exam} - ${year} - ${subj}`;
   quizDone = false;
+  quizStartTime = Date.now();
+  quizSubj = `${exam} - ${year} - ${subj}`;
   quizMode = "exam";
   
   setSection('quiz');
