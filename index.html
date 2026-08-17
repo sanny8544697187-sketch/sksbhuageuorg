@@ -4900,15 +4900,22 @@ window.launchMockTest = function(exam, year, subj) {
   quizIdx = 0;
   quizScore = 0;
   quizSubj = `${exam} - ${year} - ${subj}`;
+  quizDone = false;
+  quizMode = "exam";
   
   setSection('quiz');
-  document.getElementById("quizMain").classList.add("hidden");
-  document.getElementById("quizPlayer").classList.remove("hidden");
-  document.getElementById("quizResult").classList.add("hidden");
+  
+  // Make sure we are on the main practice tab
+  setQuizTab('quiz');
+
+  // Hide the start menu and result screens
+  const startEl = document.getElementById("quizStart");
+  if(startEl) startEl.style.display = "none";
+  const resEl = document.getElementById("quizResult");
+  if(resEl) resEl.style.display = "none";
   
   quizTimerEnabled = true;
   quizTimerMinutes = qs.length; // 1 min per question
-  quizMode = "exam";
   
   startQuizTimer();
   renderQuizQuestion();
