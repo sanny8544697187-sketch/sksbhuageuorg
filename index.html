@@ -295,6 +295,8 @@
       body { padding-bottom: 0; } /* Remove padding for bottom nav */
       .nav-chips { display: none !important; }
       .bottom-nav { display: none !important; }
+      .android-home { display: block !important; }
+      .hamburger-btn { display: flex !important; }
       .main-layout > header { border-radius: 0; }
     }
     
@@ -1078,6 +1080,7 @@ try {
 <!-- HEADER -->
 <header>
   <div class="header-inner">
+    <button class="hamburger-btn" onclick="openMobileDrawer()" style="display:none;margin-right:4px;">☰</button>
     <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;" onclick="setSection('home')">
       <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;">🌾</div>
       <div><div style="font-weight:800;font-size:14px;line-height:1.1;">KrishiGyan</div><div style="font-size:9px;opacity:.6;font-weight:500;">e-Learning Hub</div></div>
@@ -1108,7 +1111,78 @@ try {
 
   <!-- HOME -->
   <section id="home" class="section active fu">
-    <div class="hero">
+  <!-- ANDROID DASHBOARD WIDGETS (mobile only, shown via JS on small screens) -->
+  <div class="android-home" id="androidDashboard">
+    <!-- Weather Widget -->
+    <div class="weather-widget" id="weatherWidget">
+      <div class="weather-title">🌿 KrishiGyan <span style="margin-left:auto;opacity:.7;font-weight:500;font-size:11px;" id="weatherDate"></span></div>
+      <div class="weather-main">
+        <div class="weather-left">
+          <h2 id="weatherTemp">--°C</h2>
+          <div style="opacity:.8;font-size:13px;margin-top:4px;" id="weatherDesc">Loading weather...</div>
+          <div style="opacity:.7;font-size:12px;margin-top:2px;">📍 <span id="weatherCity">Varanasi, UP</span></div>
+        </div>
+        <div style="font-size:56px;" id="weatherIcon">🌤️</div>
+      </div>
+      <div style="display:flex;gap:16px;font-size:12px;opacity:.8;flex-wrap:wrap;">
+        <span>💧 Humidity: <strong id="weatherHum">--</strong>%</span>
+        <span>🌬️ Wind: <strong id="weatherWind">--</strong> km/h</span>
+      </div>
+    </div>
+
+    <!-- Heal Your Crop Now Widget -->
+    <div class="heal-widget" style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-weight:800;font-size:15px;color:#0F3D23;">🌾 Heal Your Crop Now</div>
+          <div style="font-size:12px;color:#777;margin-top:2px;">Diagnose &amp; fix crop problems instantly</div>
+        </div>
+        <div style="font-size:32px;">🔬</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button onclick="setSection('chat')" style="background:#E8F5E9;border:none;border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;">
+          <div style="font-size:22px;margin-bottom:4px;">🤖</div>
+          <div style="font-weight:700;font-size:12px;color:#0F3D23;">AI Diagnosis</div>
+          <div style="font-size:10px;color:#777;">Ask AI Doctor</div>
+        </button>
+        <button onclick="setSection('quiz')" style="background:#FFF8E1;border:none;border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;">
+          <div style="font-size:22px;margin-bottom:4px;">📋</div>
+          <div style="font-weight:700;font-size:12px;color:#E65100;">Quick MCQ Test</div>
+          <div style="font-size:10px;color:#777;">Test knowledge</div>
+        </button>
+        <button onclick="setSection('subjects')" style="background:#E3F2FD;border:none;border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;">
+          <div style="font-size:22px;margin-bottom:4px;">📚</div>
+          <div style="font-weight:700;font-size:12px;color:#1565C0;">Study Notes</div>
+          <div style="font-size:10px;color:#777;">PDFs &amp; notes</div>
+        </button>
+        <button onclick="setSection('pyq')" style="background:#F3E5F5;border:none;border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;">
+          <div style="font-size:22px;margin-bottom:4px;">📖</div>
+          <div style="font-weight:700;font-size:12px;color:#7B1FA2;">PYQ Papers</div>
+          <div style="font-size:10px;color:#777;">Previous exams</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- KrishiGyan AI Widget -->
+    <div style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#00B050,#0F3D23);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🤖</div>
+        <div>
+          <div style="font-weight:800;font-size:14px;color:#0F3D23;">KrishiGyan AI</div>
+          <div style="font-size:11px;color:#777;">Your Agriculture Professor</div>
+        </div>
+        <button onclick="setSection('chat')" style="margin-left:auto;background:#00B050;color:white;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Ask Now →</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;">
+        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🌿 Crop Disease?</button>
+        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🌱 Soil Health</button>
+        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">📅 Exam Tips</button>
+        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🧪 ICAR JRF</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero">
       <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;margin-bottom:14px;letter-spacing:.3px;">
         🌾 KrishiGyan — e-LEARNING PORTAL
       </div>
@@ -2233,7 +2307,7 @@ try {
 
 </main>
 
-<!-- BOTTOM NAV -->
+<!-- BOTTOM NAV (Desktop) -->
 <nav class="bottom-nav">
   <button id="bnHome"        class="active" onclick="setSection('home')"><span>🏠</span><span>Home</span></button>
   <button id="bnSubjects"    onclick="setSection('subjects')"><span>📚</span><span>Subjects</span></button>
@@ -2241,6 +2315,19 @@ try {
   <button id="bnGames"       onclick="setSection('games')"><span>🎮</span><span>Games</span></button>
   <button id="bnChat"        onclick="setSection('chat')"><span>💬</span><span>Doubts</span></button>
   <button id="bnProfile"     onclick="setSection('profile')"><span>👤</span><span>Profile</span></button>
+</nav>
+
+<!-- ANDROID 3-TAB BOTTOM NAV (Mobile) -->
+<nav class="bottom-nav-android" id="androidBottomNav" style="display:flex;">
+  <button id="anHome" class="active" onclick="setSection('home');updateAndroidNav('home')">
+    <span>🏠</span><span>Home</span>
+  </button>
+  <button id="anProducts" onclick="toast('Our Products coming soon!','i');updateAndroidNav('products')">
+    <span>📦</span><span>Our Products</span>
+  </button>
+  <button id="anCommunity" onclick="setSection('chat');updateAndroidNav('community')">
+    <span>💬</span><span>Community</span>
+  </button>
 </nav>
 
 <script>
@@ -2629,6 +2716,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(offer && ob){ ob.textContent=offer; ob.style.display="block"; }
 
   document.getElementById("splash").style.display="none";
+  fetchWeather();
   rebuildSubjectDropdowns();
   rebuildInstitutionList();
 
@@ -2842,6 +2930,43 @@ function openMobileDrawer(){
   document.body.style.overflow = "hidden";
 }
 
+// Update android bottom nav active state
+function updateAndroidNav(active) {
+  ["home","products","community"].forEach(id => {
+    const btn = document.getElementById("an" + id.charAt(0).toUpperCase() + id.slice(1));
+    if(btn) btn.classList.toggle("active", id === active);
+  });
+}
+
+// Fetch weather for Varanasi via Open-Meteo (no API key needed)
+async function fetchWeather() {
+  const d = document.getElementById("androidDashboard");
+  if(!d || d.style.display === "none") return;
+  try {
+    document.getElementById("weatherDate").textContent = new Date().toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"});
+    const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=25.3176&longitude=82.9739&current_weather=true&hourly=relativehumidity_2m,windspeed_10m&timezone=Asia/Kolkata");
+    const data = await r.json();
+    const cw = data.current_weather;
+    const temp = Math.round(cw.temperature);
+    const wind = Math.round(cw.windspeed);
+    const wc = cw.weathercode;
+    const icons = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",61:"🌧️",71:"❄️",80:"🌦️",95:"⛈️"};
+    const descs = {0:"Clear sky",1:"Mostly clear",2:"Partly cloudy",3:"Overcast",45:"Foggy",51:"Drizzle",61:"Rain",71:"Snow",80:"Showers",95:"Thunderstorm"};
+    const icon = icons[wc] || icons[Math.floor(wc/10)*10] || "🌤️";
+    const desc = descs[wc] || descs[Math.floor(wc/10)*10] || "Variable";
+    // humidity from hourly (current hour index)
+    const hi = new Date().getHours();
+    const hum = data.hourly?.relativehumidity_2m?.[hi] ?? "--";
+    document.getElementById("weatherTemp").textContent = temp + "°C";
+    document.getElementById("weatherDesc").textContent = desc;
+    document.getElementById("weatherIcon").textContent = icon;
+    document.getElementById("weatherHum").textContent = hum;
+    document.getElementById("weatherWind").textContent = wind;
+  } catch(e) {
+    const wd = document.getElementById("weatherDesc");
+    if(wd) wd.textContent = "Weather unavailable";
+  }
+}
 function closeMobileDrawer(){
   document.getElementById("mobileDrawer").classList.remove("open");
   document.getElementById("drawerOverlay").classList.remove("open");
