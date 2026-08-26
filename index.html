@@ -292,9 +292,11 @@
 
     @media(min-width: 769px) {
       .sidebar { display: flex; }
+      body { padding-bottom: 0; } /* Remove padding for bottom nav */
       .nav-chips { display: none !important; }
-      .android-home { display: none !important; }
-      .hamburger-btn { display: none !important; }
+      .bottom-nav { display: none !important; }
+      .android-home { display: block !important; }
+      .hamburger-btn { display: flex !important; }
       .main-layout > header { border-radius: 0; }
     }
     
@@ -738,8 +740,6 @@
       .nav-chips { display: none !important; }
       /* Restore the original bottom nav on mobile */
       .bottom-nav { display: flex !important; }
-      .android-home { display: block !important; }
-      .hamburger-btn { display: flex !important; }
       /* Hide desktop header on mobile */
       header { display: none !important; }
       /* Add bottom padding so content doesn't hide behind bottom nav */
@@ -2286,7 +2286,7 @@ try {
 
 </main>
 
-<!-- BOTTOM NAV (Desktop & Mobile) -->
+<!-- BOTTOM NAV (Desktop) -->
 <nav class="bottom-nav">
   <button id="bnHome"        class="active" onclick="setSection('home')"><span>🏠</span><span>Home</span></button>
   <button id="bnSubjects"    onclick="setSection('subjects')"><span>📚</span><span>Subjects</span></button>
@@ -2294,6 +2294,19 @@ try {
   <button id="bnGames"       onclick="setSection('games')"><span>🎮</span><span>Games</span></button>
   <button id="bnChat"        onclick="setSection('chat')"><span>💬</span><span>Doubts</span></button>
   <button id="bnProfile"     onclick="setSection('profile')"><span>👤</span><span>Profile</span></button>
+</nav>
+
+<!-- ANDROID 3-TAB BOTTOM NAV (Mobile) -->
+<nav class="bottom-nav-android" id="androidBottomNav" style="display:flex;">
+  <button id="anHome" class="active" onclick="setSection('home');updateAndroidNav('home')">
+    <span>🏠</span><span>Home</span>
+  </button>
+  <button id="anProducts" onclick="toast('Our Products coming soon!','i');updateAndroidNav('products')">
+    <span>📦</span><span>Our Products</span>
+  </button>
+  <button id="anCommunity" onclick="setSection('chat');updateAndroidNav('community')">
+    <span>💬</span><span>Community</span>
+  </button>
 </nav>
 
 <script>
@@ -4065,51 +4078,55 @@ async function renderAdmin(){
     const pyqByExam = {};
     pyqData.forEach(q => { const e=q.exam||"Other"; pyqByExam[e]=(pyqByExam[e]||0)+1; });
     el.innerHTML=`
-      <!-- MCQ/PYQ file cards row -->
-      <div style="font-weight:700;font-size:15px;color:#0F3D23;margin-bottom:10px;">📝 Question Banks (MCQs &amp; PYQs)</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px;">
-        <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #1565C0;" onclick="setAdminTab('quiz')">
-          <div style="font-size:28px;margin-bottom:6px;">📝</div>
-          <div style="font-weight:800;font-size:14px;">MCQ Quiz Bank</div>
-          <div style="font-size:12px;color:#777;margin:4px 0;">${quizTotal} Questions</div>
-          <div style="font-size:10px;background:#E3F2FD;color:#1565C0;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
+      <!-- MCQ/PYQ file cards row (Collapsible) -->
+      <details style="margin-bottom:18px;">
+        <summary style="font-weight:700;font-size:15px;color:#0F3D23;cursor:pointer;background:#F8FBF8;padding:12px 16px;border-radius:12px;border:1px solid #E0EAE0;">📝 Question Banks (MCQs &amp; PYQs)</summary>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:12px;">
+          <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #1565C0;" onclick="setAdminTab('quiz')">
+            <div style="font-size:28px;margin-bottom:6px;">📝</div>
+            <div style="font-weight:800;font-size:14px;">MCQ Quiz Bank</div>
+            <div style="font-size:12px;color:#777;margin:4px 0;">${quizTotal} Questions</div>
+            <div style="font-size:10px;background:#E3F2FD;color:#1565C0;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
+          </div>
+          <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #00B050;" onclick="setAdminTab('pyq')">
+            <div style="font-size:28px;margin-bottom:6px;">📖</div>
+            <div style="font-weight:800;font-size:14px;">PYQ Bank</div>
+            <div style="font-size:12px;color:#777;margin:4px 0;">${pyqData.length} Questions</div>
+            <div style="font-size:10px;background:#E8F5E9;color:#00B050;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
+          </div>
+          ${Object.entries(pyqByExam).map(([exam,cnt])=>`
+          <div class="card" style="padding:14px;border-left:4px solid #7B1FA2;">
+            <div style="font-size:22px;margin-bottom:4px;">🏫</div>
+            <div style="font-weight:700;font-size:12px;">${escapeHTML(exam)}</div>
+            <div style="font-size:11px;color:#777;">${cnt} PYQs</div>
+          </div>`).join("")}
         </div>
-        <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #00B050;" onclick="setAdminTab('pyq')">
-          <div style="font-size:28px;margin-bottom:6px;">📖</div>
-          <div style="font-weight:800;font-size:14px;">PYQ Bank</div>
-          <div style="font-size:12px;color:#777;margin:4px 0;">${pyqData.length} Questions</div>
-          <div style="font-size:10px;background:#E8F5E9;color:#00B050;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
-        </div>
-        ${Object.entries(pyqByExam).map(([exam,cnt])=>`
-        <div class="card" style="padding:14px;border-left:4px solid #7B1FA2;">
-          <div style="font-size:22px;margin-bottom:4px;">🏫</div>
-          <div style="font-weight:700;font-size:12px;">${escapeHTML(exam)}</div>
-          <div style="font-size:11px;color:#777;">${cnt} PYQs</div>
-        </div>`).join("")}
-      </div>
+      </details>
 
-      <div style="font-weight:700;font-size:15px;color:#0F3D23;margin-bottom:10px;">📁 Uploaded Files &amp; Resources (${pending.length+notes.length})</div>
-      <div class="card" style="padding:16px;margin-bottom:16px;">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <input id="adminUploadSearch" class="inp" placeholder="🔍 Search title/uploader…" style="flex:1;min-width:160px;font-size:12px;padding:7px 10px;" oninput="renderAdminUploadsList()">
-          <select id="adminUploadStatusFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
-            <option value="All">All Status</option>
-            <option value="pending">⏳ Pending</option>
-            <option value="approved">✅ Approved</option>
-            <option value="rejected">❌ Rejected</option>
-          </select>
-          <select id="adminUploadSubjFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
-            <option value="All">All Subjects</option>
-            ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
-          </select>
-          <select id="adminUploadTypeFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
-            <option value="All">All Types</option>
-            ${RES_TYPES.filter(t=>t!=="All").map(t=>`<option value="${t}">${t}</option>`).join("")}
-          </select>
+      <details>
+        <summary style="font-weight:700;font-size:15px;color:#0F3D23;cursor:pointer;background:#F8FBF8;padding:12px 16px;border-radius:12px;border:1px solid #E0EAE0;">📁 Uploaded Files &amp; Resources (${pending.length+notes.length})</summary>
+        <div class="card" style="padding:16px;margin-top:12px;margin-bottom:16px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input id="adminUploadSearch" class="inp" placeholder="🔍 Search title/uploader…" style="flex:1;min-width:160px;font-size:12px;padding:7px 10px;" oninput="renderAdminUploadsList()">
+            <select id="adminUploadStatusFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
+              <option value="All">All Status</option>
+              <option value="pending">⏳ Pending</option>
+              <option value="approved">✅ Approved</option>
+              <option value="rejected">❌ Rejected</option>
+            </select>
+            <select id="adminUploadSubjFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
+              <option value="All">All Subjects</option>
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+            </select>
+            <select id="adminUploadTypeFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
+              <option value="All">All Types</option>
+              ${RES_TYPES.filter(t=>t!=="All").map(t=>`<option value="${t}">${t}</option>`).join("")}
+            </select>
+          </div>
         </div>
-      </div>
-      <div id="adminUploadEditForm"></div>
-      <div id="adminUploadsListItems"></div>`;
+        <div id="adminUploadEditForm"></div>
+        <div id="adminUploadsListItems"></div>
+      </details>`;
     renderAdminUploadsList();
   } else if(adminTab==="pending"){
     el.innerHTML=pending.length===0?
