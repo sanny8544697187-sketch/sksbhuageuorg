@@ -1113,53 +1113,32 @@ try {
   <section id="home" class="section active fu">
   <!-- ANDROID DASHBOARD WIDGETS (mobile only, shown via JS on small screens) -->
   <div class="android-home" id="androidDashboard">
-    <!-- Weather Widget -->
-    <div class="weather-widget" id="weatherWidget">
-      <div class="weather-title">🌿 KrishiGyan <span style="margin-left:auto;opacity:.7;font-weight:500;font-size:11px;" id="weatherDate"></span></div>
-      <div class="weather-main">
-        <div class="weather-left">
-          <h2 id="weatherTemp">--°C</h2>
-          <div style="opacity:.8;font-size:13px;margin-top:4px;" id="weatherDesc">Loading weather...</div>
-          <div style="opacity:.7;font-size:12px;margin-top:2px;">📍 <span id="weatherCity">Varanasi, UP</span></div>
+    <!-- Gamification Dashboard Header -->
+    <div class="weather-widget" id="weatherWidget" style="background: linear-gradient(135deg, #1B6B3A 0%, #0F3D23 100%);">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2 style="font-size:20px; font-weight:800; margin-bottom:4px;" id="gamificationName">Hello, Student!</h2>
+          <div style="opacity:0.9; font-size:12px;" id="gamificationSub">Keep your daily learning streak alive!</div>
         </div>
-        <div style="font-size:56px;" id="weatherIcon">🌤️</div>
-      </div>
-      <div style="display:flex;gap:16px;font-size:12px;opacity:.8;flex-wrap:wrap;">
-        <span>💧 Humidity: <strong id="weatherHum">--</strong>%</span>
-        <span>🌬️ Wind: <strong id="weatherWind">--</strong> km/h</span>
+        <div style="text-align:center; background:rgba(255,255,255,0.15); padding:8px 16px; border-radius:12px;">
+          <div style="font-size:24px; line-height:1;">🔥</div>
+          <div style="font-weight:800; font-size:20px; color:#f59e0b;" id="gamificationStreak">0</div>
+          <div style="font-size:10px; font-weight:700;">Day Streak</div>
+        </div>
       </div>
     </div>
 
-    <!-- Heal Your Crop Now Widget -->
+    <!-- Question of the Day Widget -->
     <div class="heal-widget" style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div>
-          <div style="font-weight:800;font-size:15px;color:#0F3D23;">🌾 Heal Your Crop Now</div>
-          <div style="font-size:12px;color:#777;margin-top:2px;">Diagnose &amp; fix crop problems instantly</div>
+          <div style="font-weight:800;font-size:15px;color:#0F3D23;">❓ Question of the Day</div>
+          <div style="font-size:12px;color:#777;margin-top:2px;">Test your knowledge instantly</div>
         </div>
-        <div style="font-size:32px;">🔬</div>
+        <div style="font-size:28px;">🎯</div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <button onclick="setSection('chat')" style="background:#E8F5E9;border:none;border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;">
-          <div style="font-size:22px;margin-bottom:4px;">🤖</div>
-          <div style="font-weight:700;font-size:12px;color:#0F3D23;">AI Diagnosis</div>
-          <div style="font-size:10px;color:#777;">Ask AI Doctor</div>
-        </button>
-        <button onclick="setSection('quiz')" style="background:#FFF8E1;border:none;border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;">
-          <div style="font-size:22px;margin-bottom:4px;">📋</div>
-          <div style="font-weight:700;font-size:12px;color:#E65100;">Quick MCQ Test</div>
-          <div style="font-size:10px;color:#777;">Test knowledge</div>
-        </button>
-        <button onclick="setSection('subjects')" style="background:#E3F2FD;border:none;border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;">
-          <div style="font-size:22px;margin-bottom:4px;">📚</div>
-          <div style="font-weight:700;font-size:12px;color:#1565C0;">Study Notes</div>
-          <div style="font-size:10px;color:#777;">PDFs &amp; notes</div>
-        </button>
-        <button onclick="setSection('pyq')" style="background:#F3E5F5;border:none;border-radius:14px;padding:12px 10px;text-align:center;cursor:pointer;font-family:inherit;">
-          <div style="font-size:22px;margin-bottom:4px;">📖</div>
-          <div style="font-weight:700;font-size:12px;color:#7B1FA2;">PYQ Papers</div>
-          <div style="font-size:10px;color:#777;">Previous exams</div>
-        </button>
+      <div id="qotdContainer" style="background:#F8FBF8; border:1px solid #E0EAE0; border-radius:14px; padding:16px;">
+        <!-- Filled by JS -->
       </div>
     </div>
 
@@ -2716,7 +2695,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(offer && ob){ ob.textContent=offer; ob.style.display="block"; }
 
   document.getElementById("splash").style.display="none";
-  fetchWeather();
+  initAndroidDashboard();
   rebuildSubjectDropdowns();
   rebuildInstitutionList();
 
@@ -2938,35 +2917,67 @@ function updateAndroidNav(active) {
   });
 }
 
-// Fetch weather for Varanasi via Open-Meteo (no API key needed)
-async function fetchWeather() {
+// Initialize android dashboard widgets
+function initAndroidDashboard() {
   const d = document.getElementById("androidDashboard");
   if(!d || d.style.display === "none") return;
-  try {
-    document.getElementById("weatherDate").textContent = new Date().toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"});
-    const r = await fetch("https://api.open-meteo.com/v1/forecast?latitude=25.3176&longitude=82.9739&current_weather=true&hourly=relativehumidity_2m,windspeed_10m&timezone=Asia/Kolkata");
-    const data = await r.json();
-    const cw = data.current_weather;
-    const temp = Math.round(cw.temperature);
-    const wind = Math.round(cw.windspeed);
-    const wc = cw.weathercode;
-    const icons = {0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",61:"🌧️",71:"❄️",80:"🌦️",95:"⛈️"};
-    const descs = {0:"Clear sky",1:"Mostly clear",2:"Partly cloudy",3:"Overcast",45:"Foggy",51:"Drizzle",61:"Rain",71:"Snow",80:"Showers",95:"Thunderstorm"};
-    const icon = icons[wc] || icons[Math.floor(wc/10)*10] || "🌤️";
-    const desc = descs[wc] || descs[Math.floor(wc/10)*10] || "Variable";
-    // humidity from hourly (current hour index)
-    const hi = new Date().getHours();
-    const hum = data.hourly?.relativehumidity_2m?.[hi] ?? "--";
-    document.getElementById("weatherTemp").textContent = temp + "°C";
-    document.getElementById("weatherDesc").textContent = desc;
-    document.getElementById("weatherIcon").textContent = icon;
-    document.getElementById("weatherHum").textContent = hum;
-    document.getElementById("weatherWind").textContent = wind;
-  } catch(e) {
-    const wd = document.getElementById("weatherDesc");
-    if(wd) wd.textContent = "Weather unavailable";
+  
+  // Gamification Header
+  if(currentUser) {
+    document.getElementById("gamificationName").textContent = "Hello, " + (currentUser.name.split(" ")[0] || "Student") + "!";
+    document.getElementById("gamificationStreak").textContent = getDailyStreak();
+  } else {
+    document.getElementById("gamificationName").textContent = "Hello, Student!";
+    document.getElementById("gamificationStreak").textContent = "0";
   }
+
+  // Question of the Day (random from quiz bank)
+  const qotdContainer = document.getElementById("qotdContainer");
+  if(!qotdContainer) return;
+  const allQs = getAllQuizQuestions();
+  if(!allQs.length) {
+    qotdContainer.innerHTML = '<div style="font-size:12px;color:#777;">No questions available.</div>';
+    return;
+  }
+  // Use today's date to seed random so it's same all day
+  const today = new Date().toISOString().split("T")[0];
+  let hash = 0; for(let i=0;i<today.length;i++) hash = ((hash<<5)-hash)+today.charCodeAt(i);
+  const qotd = allQs[Math.abs(hash) % allQs.length];
+  
+  qotdContainer.innerHTML = `
+    <div style="font-size:13px; font-weight:700; line-height:1.5; margin-bottom:10px;">${escapeHTML(qotd.q)}</div>
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      ${qotd.options.map((opt, i) => `
+        <button onclick="checkQotd(this, ${i}, ${qotd.answerIndex}, '${escapeHTML(qotd.explanation).replace(/'/g, "\\'")}')" style="text-align:left; background:white; border:1px solid #E0EAE0; border-radius:8px; padding:8px 10px; font-size:12px; cursor:pointer;">
+          <span style="font-weight:700; margin-right:6px; color:#999;">${["A","B","C","D"][i]}.</span> ${escapeHTML(opt)}
+        </button>
+      `).join("")}
+    </div>
+    <div id="qotdExp" style="display:none; margin-top:10px; background:#E8F5E9; padding:8px; border-radius:8px; font-size:11px; color:#0F3D23;"></div>
+  `;
 }
+
+window.checkQotd = function(btn, selected, correct, exp) {
+  const container = btn.parentElement;
+  const btns = container.querySelectorAll("button");
+  btns.forEach((b, i) => {
+    b.disabled = true;
+    if (i === correct) {
+      b.style.background = "#E8F5E9"; b.style.borderColor = "#00B050"; b.style.color = "#0F3D23";
+      b.innerHTML = b.innerHTML + " ✅";
+    } else if (i === selected && selected !== correct) {
+      b.style.background = "#FFEBEE"; b.style.borderColor = "#E53935"; b.style.color = "#B71C1C";
+      b.innerHTML = b.innerHTML + " ❌";
+    }
+  });
+  if (exp) {
+    const expEl = document.getElementById("qotdExp");
+    if(expEl) {
+      expEl.innerHTML = "💡 " + exp;
+      expEl.style.display = "block";
+    }
+  }
+};
 function closeMobileDrawer(){
   document.getElementById("mobileDrawer").classList.remove("open");
   document.getElementById("drawerOverlay").classList.remove("open");
@@ -4066,51 +4077,56 @@ async function renderAdmin(){
     // Build PYQ counts per exam
     const pyqByExam = {};
     pyqData.forEach(q => { const e=q.exam||"Other"; pyqByExam[e]=(pyqByExam[e]||0)+1; });
-    const quizTotal = Object.values(QUIZ_BANK).reduce((s,a)=>s+a.length,0);
     el.innerHTML=`
-      <!-- MCQ/PYQ file cards row -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px;">
-        <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #1565C0;" onclick="setAdminTab('quiz')">
-          <div style="font-size:28px;margin-bottom:6px;">📝</div>
-          <div style="font-weight:800;font-size:14px;">MCQ Quiz Bank</div>
-          <div style="font-size:12px;color:#777;margin:4px 0;">${quizTotal} Questions</div>
-          <div style="font-size:10px;background:#E3F2FD;color:#1565C0;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
+      <!-- MCQ/PYQ file cards row (Collapsible) -->
+      <details style="margin-bottom:18px;">
+        <summary style="font-weight:700;font-size:15px;color:#0F3D23;cursor:pointer;background:#F8FBF8;padding:12px 16px;border-radius:12px;border:1px solid #E0EAE0;">📝 Question Banks (MCQs &amp; PYQs)</summary>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:12px;">
+          <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #1565C0;" onclick="setAdminTab('quiz')">
+            <div style="font-size:28px;margin-bottom:6px;">📝</div>
+            <div style="font-weight:800;font-size:14px;">MCQ Quiz Bank</div>
+            <div style="font-size:12px;color:#777;margin:4px 0;">${quizTotal} Questions</div>
+            <div style="font-size:10px;background:#E3F2FD;color:#1565C0;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
+          </div>
+          <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #00B050;" onclick="setAdminTab('pyq')">
+            <div style="font-size:28px;margin-bottom:6px;">📖</div>
+            <div style="font-weight:800;font-size:14px;">PYQ Bank</div>
+            <div style="font-size:12px;color:#777;margin:4px 0;">${pyqData.length} Questions</div>
+            <div style="font-size:10px;background:#E8F5E9;color:#00B050;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
+          </div>
+          ${Object.entries(pyqByExam).map(([exam,cnt])=>`
+          <div class="card" style="padding:14px;border-left:4px solid #7B1FA2;">
+            <div style="font-size:22px;margin-bottom:4px;">🏫</div>
+            <div style="font-weight:700;font-size:12px;">${escapeHTML(exam)}</div>
+            <div style="font-size:11px;color:#777;">${cnt} PYQs</div>
+          </div>`).join("")}
         </div>
-        <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #00B050;" onclick="setAdminTab('pyq')">
-          <div style="font-size:28px;margin-bottom:6px;">📖</div>
-          <div style="font-weight:800;font-size:14px;">PYQ Bank</div>
-          <div style="font-size:12px;color:#777;margin:4px 0;">${pyqData.length} Questions</div>
-          <div style="font-size:10px;background:#E8F5E9;color:#00B050;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
+      </details>
+
+      <details>
+        <summary style="font-weight:700;font-size:15px;color:#0F3D23;cursor:pointer;background:#F8FBF8;padding:12px 16px;border-radius:12px;border:1px solid #E0EAE0;">📁 Uploaded Files &amp; Resources (${pending.length+notes.length})</summary>
+        <div class="card" style="padding:16px;margin-top:12px;margin-bottom:16px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input id="adminUploadSearch" class="inp" placeholder="🔍 Search title/uploader…" style="flex:1;min-width:160px;font-size:12px;padding:7px 10px;" oninput="renderAdminUploadsList()">
+            <select id="adminUploadStatusFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
+              <option value="All">All Status</option>
+              <option value="pending">⏳ Pending</option>
+              <option value="approved">✅ Approved</option>
+              <option value="rejected">❌ Rejected</option>
+            </select>
+            <select id="adminUploadSubjFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
+              <option value="All">All Subjects</option>
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
+            </select>
+            <select id="adminUploadTypeFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
+              <option value="All">All Types</option>
+              ${RES_TYPES.filter(t=>t!=="All").map(t=>`<option value="${t}">${t}</option>`).join("")}
+            </select>
+          </div>
         </div>
-        ${Object.entries(pyqByExam).map(([exam,cnt])=>`
-        <div class="card" style="padding:14px;border-left:4px solid #7B1FA2;">
-          <div style="font-size:22px;margin-bottom:4px;">🏫</div>
-          <div style="font-weight:700;font-size:12px;">${escapeHTML(exam)}</div>
-          <div style="font-size:11px;color:#777;">${cnt} PYQs</div>
-        </div>`).join("")}
-      </div>
-      <div class="card" style="padding:16px;margin-bottom:16px;">
-        <div style="font-weight:700;font-size:15px;margin-bottom:10px;">📁 Uploaded Files (${pending.length+notes.length})</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <input id="adminUploadSearch" class="inp" placeholder="🔍 Search title/uploader…" style="flex:1;min-width:160px;font-size:12px;padding:7px 10px;" oninput="renderAdminUploadsList()">
-          <select id="adminUploadStatusFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
-            <option value="All">All Status</option>
-            <option value="pending">⏳ Pending</option>
-            <option value="approved">✅ Approved</option>
-            <option value="rejected">❌ Rejected</option>
-          </select>
-          <select id="adminUploadSubjFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
-            <option value="All">All Subjects</option>
-            ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
-          </select>
-          <select id="adminUploadTypeFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
-            <option value="All">All Types</option>
-            ${RES_TYPES.filter(t=>t!=="All").map(t=>`<option value="${t}">${t}</option>`).join("")}
-          </select>
-        </div>
-      </div>
-      <div id="adminUploadEditForm"></div>
-      <div id="adminUploadsListItems"></div>`;
+        <div id="adminUploadEditForm"></div>
+        <div id="adminUploadsListItems"></div>
+      </details>`;
     renderAdminUploadsList();
   } else if(adminTab==="pending"){
     el.innerHTML=pending.length===0?
