@@ -2481,6 +2481,16 @@ async function sSet(key, val) {
     await db.collection("bhu_store").doc(key.replace(/:/g,"_")).set({value:JSON.stringify(val),updatedAt:new Date().toISOString()});
   } catch(e) { console.warn("sSet:",e); }
 }
+// Save a single user as its own Firestore document (so Firebase console shows each user separately)
+async function saveUserToFirebase(u) {
+  if (!fbOK || !u || !u.id) return;
+  try {
+    const safeUser = {...u};
+    delete safeUser.password; // never store plain-text password in individual doc
+    await db.collection("bhu_users").doc(u.id).set({...safeUser, updatedAt: new Date().toISOString()});
+  } catch(e) { console.warn("saveUserToFirebase:", e); }
+}
+
 async function sDel(key) {
   try {
     if (LOCAL_KEYS.includes(key)) { localStorage.removeItem(key); return; }
@@ -3928,9 +3938,34 @@ async function renderAdmin(){
   const pb=document.getElementById("pendingBadge");
   if(pb){ pb.textContent=pending.length; pb.classList.toggle("hidden",pending.length===0); }
   if(adminTab==="uploads"){
+    // Build PYQ counts per exam
+    const pyqByExam = {};
+    pyqData.forEach(q => { const e=q.exam||"Other"; pyqByExam[e]=(pyqByExam[e]||0)+1; });
+    const quizTotal = Object.values(QUIZ_BANK).reduce((s,a)=>s+a.length,0);
     el.innerHTML=`
+      <!-- MCQ/PYQ file cards row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px;">
+        <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #1565C0;" onclick="setAdminTab('quiz')">
+          <div style="font-size:28px;margin-bottom:6px;">📝</div>
+          <div style="font-weight:800;font-size:14px;">MCQ Quiz Bank</div>
+          <div style="font-size:12px;color:#777;margin:4px 0;">${quizTotal} Questions</div>
+          <div style="font-size:10px;background:#E3F2FD;color:#1565C0;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
+        </div>
+        <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #00B050;" onclick="setAdminTab('pyq')">
+          <div style="font-size:28px;margin-bottom:6px;">📖</div>
+          <div style="font-weight:800;font-size:14px;">PYQ Bank</div>
+          <div style="font-size:12px;color:#777;margin:4px 0;">${pyqData.length} Questions</div>
+          <div style="font-size:10px;background:#E8F5E9;color:#00B050;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
+        </div>
+        ${Object.entries(pyqByExam).map(([exam,cnt])=>`
+        <div class="card" style="padding:14px;border-left:4px solid #7B1FA2;">
+          <div style="font-size:22px;margin-bottom:4px;">🏫</div>
+          <div style="font-weight:700;font-size:12px;">${escapeHTML(exam)}</div>
+          <div style="font-size:11px;color:#777;">${cnt} PYQs</div>
+        </div>`).join("")}
+      </div>
       <div class="card" style="padding:16px;margin-bottom:16px;">
-        <div style="font-weight:700;font-size:15px;margin-bottom:10px;">📁 All Uploads (${pending.length+notes.length}) — search, filter, edit or manage everything in one place</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:10px;">📁 Uploaded Files (${pending.length+notes.length})</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <input id="adminUploadSearch" class="inp" placeholder="🔍 Search title/uploader…" style="flex:1;min-width:160px;font-size:12px;padding:7px 10px;" oninput="renderAdminUploadsList()">
           <select id="adminUploadStatusFilter" class="inp" style="width:auto;font-size:12px;padding:7px 10px;" onchange="renderAdminUploadsList()">
@@ -3990,23 +4025,37 @@ async function renderAdmin(){
     `;
     renderAdminNotices();
   } else if(adminTab==="users"){
-    el.innerHTML=usersDB.length===0?
-      `<div class="card" style="padding:40px;text-align:center;"><div style="font-size:44px;margin-bottom:10px;">👥</div><div style="font-weight:700;font-size:15px;">No registered students</div></div>`:
-      `<div class="card" style="overflow:hidden;"><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">
+    // Also sync all existing users to individual Firebase docs
+    if(fbOK) usersDB.forEach(u => saveUserToFirebase(u));
+    el.innerHTML=`
+      <div class="card" style="padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-weight:700;font-size:15px;">👥 Registered Users (${usersDB.length})</div>
+          <div style="font-size:12px;color:#777;margin-top:3px;">
+            ${fbOK ? '✅ Synced to Firebase → <strong>bhu_users</strong> collection' : '⚠️ Firebase offline – stored in localStorage only'}
+          </div>
+        </div>
+        <button class="btn btn-light" style="font-size:12px;" onclick="if(fbOK){usersDB.forEach(u=>saveUserToFirebase(u));toast('All users synced to Firebase!');}else{toast('Firebase not connected','e');}">
+          🔄 Force Sync to Firebase
+        </button>
+      </div>
+      ${usersDB.length===0
+        ? `<div class="card" style="padding:40px;text-align:center;"><div style="font-size:44px;margin-bottom:10px;">👥</div><div style="font-weight:700;font-size:15px;">No registered students</div></div>`
+        : `<div class="card" style="overflow:hidden;"><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:13px;">
         <thead><tr style="background:#F8FBF8;">
-          ${["Name","Roll","Year","Email","Joined",""].map(h=>`<th style="padding:9px 13px;text-align:left;font-weight:600;color:#555;border-bottom:1px solid #E0EAE0;white-space:nowrap;font-size:11px;">${h}</th>`).join("")}
+          ${["Name","Email","Joined","ID",""].map(h=>`<th style="padding:9px 13px;text-align:left;font-weight:600;color:#555;border-bottom:1px solid #E0EAE0;white-space:nowrap;font-size:11px;">${h}</th>`).join("")}
         </tr></thead>
         <tbody>
           ${usersDB.map(u=>`<tr style="border-bottom:1px solid #E0EAE0;">
             <td style="padding:9px 13px;font-weight:500;">${escapeHTML(u.name)}</td>
-            <td style="padding:9px 13px;color:#777;">${escapeHTML(u.roll||"—")}</td>
-            <td style="padding:9px 13px;color:#777;white-space:nowrap;">${escapeHTML(u.year)}</td>
             <td style="padding:9px 13px;color:#777;">${escapeHTML(u.email)}</td>
-            <td style="padding:9px 13px;color:#777;white-space:nowrap;">${new Date(u.joinedAt).toLocaleDateString("en-IN")}</td>
+            <td style="padding:9px 13px;color:#777;white-space:nowrap;">${u.joinedAt?new Date(u.joinedAt).toLocaleDateString("en-IN"):"—"}</td>
+            <td style="padding:9px 13px;color:#aaa;font-size:10px;">${escapeHTML(u.id||"—")}</td>
             <td style="padding:9px 13px;"><button class="btn" style="background:#FFEBEE;color:#E53935;padding:3px 9px;font-size:10px;" onclick="deleteUser('${u.id}')">Remove</button></td>
           </tr>`).join("")}
         </tbody>
-      </table></div></div>`;
+      </table></div></div>`}
+    `;
   } else if(adminTab==="subs"){
     el.innerHTML=usersDB.length===0?
       `<div class="card" style="padding:40px;text-align:center;"><div style="font-size:44px;margin-bottom:10px;">⭐</div><div style="font-weight:700;font-size:15px;">No students yet</div></div>`:
@@ -6095,7 +6144,7 @@ async function doRegister(){
   if(em===ADMIN_EMAIL.toLowerCase()){errEl.textContent="Email reserved.";return;}
   if(usersDB.find(u=>u.email.toLowerCase()===em)){errEl.textContent="Email already registered. Login instead.";return;}
   const newU={id:Date.now()+"",name,roll,year,email:em,password:pass,joinedAt:new Date().toISOString(),subPlan:null,subExpiry:null};
-  usersDB=[...usersDB,newU]; await sSet("bhu:users",usersDB);
+  usersDB=[...usersDB,newU]; await sSet("bhu:users",usersDB); await saveUserToFirebase(newU);
   const sess={...newU,isAdmin:false}; currentUser=sess; await sSet("bhu:session",sess);
   closeLogin(); toast(`Registered! Welcome, ${name}! 🎉`); renderAll();
 }
@@ -6118,7 +6167,7 @@ async function doGoogleLogin(){
         email:user.email.toLowerCase(), password:"", joinedAt:new Date().toISOString(), 
         subPlan:null, subExpiry:null
       };
-      usersDB=[...usersDB,found]; await sSet("bhu:users",usersDB);
+      usersDB=[...usersDB,found]; await sSet("bhu:users",usersDB); await saveUserToFirebase(found);
     }
     const sess={...found,isAdmin:false}; currentUser=sess; await sSet("bhu:session",sess);
     closeLogin(); toast(`Welcome, ${found.name}! 🚀`); renderAll();
