@@ -1,4 +1,4 @@
-package online.sannykumar.krishigyan_v1;
+package krishigyan.online;
 
 
 

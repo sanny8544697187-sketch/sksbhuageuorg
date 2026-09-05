@@ -1175,7 +1175,7 @@ try {
       <div class="hero-stats">
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
         <div><strong id="statResources">0</strong><span>Resources</span></div>
-        <div><strong id="statStudents">0</strong><span>Students</span></div>
+        <div><strong id="statBooks">0</strong><span>Books</span></div>
         <div><strong id="statQuizCount">0+</strong><span>Quiz Qs</span></div>
       </div>
     </div>
@@ -2018,6 +2018,7 @@ try {
       <button id="atOffers"   class="btn btn-light"   onclick="setAdminTab('offers')">📢 Offers</button>
       <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
       <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
+      <button id="atEbooks"   class="btn btn-light"   onclick="setAdminTab('ebooks')">📚 Ebooks</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
     </div>
     <div id="adminContent"></div>
@@ -2749,7 +2750,7 @@ window.addEventListener("DOMContentLoaded", async () => {
           if(!editingCustomQ) renderAdmin(); // don't wipe an open Quiz Bank edit form
         } else if(adminTab==="pyq"){
           if(!_editingPYQId) renderAdmin(); // don't wipe an open PYQ Bank edit form
-        } else if(adminTab==="pending"||adminTab==="rejected"||adminTab==="users"||adminTab==="subs"||adminTab==="settings"||adminTab==="offers") {
+        } else if(adminTab==="pending"||adminTab==="rejected"||adminTab==="users"||adminTab==="subs"||adminTab==="settings"||adminTab==="offers"||adminTab==="ebooks") {
           renderAdmin();
         }
       } else {
@@ -2987,7 +2988,7 @@ function closeMobileDrawer(){
 function renderHome(){
   const approved=getApproved();
   document.getElementById("statResources").textContent=approved.length;
-  document.getElementById("statStudents").textContent=usersDB.length;
+  document.getElementById("statBooks").textContent = (EBOOKS_LIBRARY.length + (adminEbooks||[]).length);
   document.getElementById("statSubjects").textContent=getSubjects().length;
   document.getElementById("statQuizCount").textContent=Object.values(QUIZ_BANK).reduce((s, arr) => s + arr.length, 0) + "+";
   const qrcEl=document.getElementById("quickResCount"); if(qrcEl) qrcEl.textContent=approved.length+" file"+(approved.length===1?"":"s");
@@ -4061,7 +4062,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","settings"].forEach(k=>{
+  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","ebooks","settings"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -4485,7 +4486,49 @@ async function renderAdmin(){
       <div class="card" style="padding:20px;margin-top:16px;" id="adminPYQPdfSection"></div>`;
     renderAdminPYQList();
     renderAdminPYQPdfSection();
+  } else if(adminTab==="ebooks"){
+    el.innerHTML=`
+      <div class="card" style="padding:20px;margin-bottom:16px;">
+        <h3 style="font-size:15px;font-weight:800;margin-bottom:14px;">📚 Upload New Ebook</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+          <div>
+            <label class="lbl">Book Title *</label>
+            <input id="ebAdmin_title" class="inp" placeholder="e.g. Principles of Agronomy">
+          </div>
+          <div>
+            <label class="lbl">Author(s) *</label>
+            <input id="ebAdmin_author" class="inp" placeholder="e.g. T.Yellamanda Reddy">
+          </div>
+          <div>
+            <label class="lbl">Subject *</label>
+            <select id="ebAdmin_subject" class="inp">
+              <option value="">-- Select Subject --</option>
+              <option>Agronomy</option><option>Horticulture</option><option>Soil Sciences &amp; Agricultural Chemistry</option>
+              <option>Plant Pathology</option><option>Entomology</option><option>Genetics &amp; Plant Breeding</option>
+              <option>Agricultural Economics</option><option>Extension Education</option>
+              <option>Animal Husbandry &amp; Dairy Tech</option><option>Plant Physiology</option>
+              <option>Agricultural Engineering</option><option>General Agriculture</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">Cover Image URL</label>
+            <input id="ebAdmin_image" class="inp" placeholder="https://...cover.jpg (optional)">
+          </div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label class="lbl">PDF / Google Drive Link *</label>
+          <input id="ebAdmin_link" class="inp" placeholder="https://drive.google.com/file/d/...">
+          <div style="font-size:12px;color:#777;margin-top:4px;">Paste a Google Drive file link or any direct PDF URL. Make sure sharing is set to "Anyone with the link".</div>
+        </div>
+        <button class="btn btn-primary" style="padding:10px 24px;" onclick="adminAddEbook()">📚 Add Ebook</button>
+      </div>
+      <div class="card" style="padding:20px;">
+        <h3 style="font-size:15px;font-weight:800;margin-bottom:14px;">📖 Uploaded Ebooks (<span id="adminEbooksCount">0</span>)</h3>
+        <div id="adminEbooksList"></div>
+      </div>`;
+    renderAdminEbooksList();
   } else if(adminTab==="settings"){
+
     el.innerHTML=`
       <div class="card" style="padding:22px;margin-bottom:14px;max-width:460px;">
         <h3 style="font-size:14px;font-weight:700;margin-bottom:12px;">🔐 Change Admin Password</h3>
@@ -8196,7 +8239,7 @@ function renderEbooksLibrary(){
   root.innerHTML = bannerHtml + `
     <div style="margin-bottom:14px;">
       <div style="font-weight:800;font-size:17px;margin-bottom:4px;">📖 Agriculture E-Books Library</div>
-      <div style="color:#777;font-size:13px;">${EBOOKS_LIBRARY.length} free reference books — search, preview & download</div>
+      <div style="color:#777;font-size:13px;">${EBOOKS_LIBRARY.length + (adminEbooks||[]).length} free reference books — search, preview & download</div>
     </div>
     <div class="search-box" style="margin-bottom:16px;">
       <span style="font-size:14px;color:#777;">🔍</span>
@@ -8216,7 +8259,8 @@ function renderEbooksGrid(){
   const emptyEl = document.getElementById("ebooksEmpty");
   if(!grid) return;
   const term = (_ebooksSearchTerm||"").toLowerCase();
-  const filtered = EBOOKS_LIBRARY.filter(b =>
+  const allBooks = [...EBOOKS_LIBRARY, ...(adminEbooks||[])];
+  const filtered = allBooks.filter(b =>
     !term ||
     b.title.toLowerCase().includes(term) ||
     b.author.toLowerCase().includes(term) ||
@@ -8241,6 +8285,68 @@ function renderEbooksGrid(){
         ${isPro ? "📥 View / Download" : "🔒 Pro Only"}
       </button>
     </div>`).join("");
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADMIN EBOOKS MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+let adminEbooks = [];
+
+(async function loadAdminEbooks(){
+  const stored = await sGet("bhu:adminebooks");
+  if(stored && stored.length) adminEbooks = stored;
+})();
+
+async function adminAddEbook(){
+  const title  = (document.getElementById("ebAdmin_title")?.value||"").trim();
+  const author = (document.getElementById("ebAdmin_author")?.value||"").trim();
+  const subject= (document.getElementById("ebAdmin_subject")?.value||"").trim();
+  const image  = (document.getElementById("ebAdmin_image")?.value||"").trim();
+  const link   = (document.getElementById("ebAdmin_link")?.value||"").trim();
+  if(!title||!author||!subject||!link){ toast("Title, Author, Subject and Link are required.","e"); return; }
+  const entry = { id: Date.now()+"", title, author, subject, image, link, addedAt: new Date().toISOString() };
+  adminEbooks = [entry, ...adminEbooks];
+  await sSet("bhu:adminebooks", adminEbooks);
+  toast("📚 Ebook added!");
+  ["ebAdmin_title","ebAdmin_author","ebAdmin_image","ebAdmin_link"].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value="";
+  });
+  const sel=document.getElementById("ebAdmin_subject"); if(sel) sel.value="";
+  renderAdminEbooksList();
+  renderHome(); // update Books count in hero
+}
+
+function renderAdminEbooksList(){
+  const list = document.getElementById("adminEbooksList");
+  const countEl = document.getElementById("adminEbooksCount");
+  if(!list) return;
+  if(countEl) countEl.textContent = adminEbooks.length;
+  if(!adminEbooks.length){
+    list.innerHTML = `<div style="text-align:center;color:#777;font-size:13px;padding:24px;">No ebooks uploaded yet. Use the form above to add your first book.</div>`;
+    return;
+  }
+  list.innerHTML = adminEbooks.map(b => `
+    <div style="display:flex;align-items:center;gap:14px;padding:12px;border-radius:12px;background:#F8FBF8;margin-bottom:8px;border:1px solid #E0EAE0;">
+      ${b.image ? `<img src="${escapeHTML(b.image)}" alt="" style="width:44px;height:60px;object-fit:cover;border-radius:6px;background:#eee;">` : `<div style="width:44px;height:60px;background:#E8F5E9;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;">📚</div>`}
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHTML(b.title)}</div>
+        <div style="font-size:11px;color:#777;margin-bottom:3px;">${escapeHTML(b.author)}</div>
+        <span style="background:#E8F5E9;color:#0F3D23;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:600;">${escapeHTML(b.subject)}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+        <button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 10px;font-size:11px;" onclick="openDrivePreview('${escapeHTML(b.link)}','${escapeHTML(b.title)}')">👁 Preview</button>
+        <button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;" onclick="adminDeleteEbook('${b.id}')">🗑 Delete</button>
+      </div>
+    </div>`).join("");
+}
+
+async function adminDeleteEbook(id){
+  if(!confirm("Delete this ebook?")) return;
+  adminEbooks = adminEbooks.filter(b => b.id !== id);
+  await sSet("bhu:adminebooks", adminEbooks);
+  toast("Ebook deleted.");
+  renderAdminEbooksList();
+  renderHome();
 }
 
 // ═══════════════════════════════════════════════════════════════

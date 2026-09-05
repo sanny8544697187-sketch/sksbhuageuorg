@@ -28,7 +28,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 def twaManifest = [
-    applicationId: 'online.sannykumar.krishigyan_v1',
+    applicationId: 'krishigyan.online',
     hostName: 'krishigyan.online', // The domain being opened in the TWA.
     launchUrl: '/', // The start path for the TWA. Must be relative to the domain.
     name: 'KrishiGyan', // The application name.
@@ -59,13 +59,13 @@ def twaManifest = [
 
 android {
     compileSdkVersion 36
-    namespace "online.sannykumar.krishigyan_v1"
+    namespace "krishigyan.online"
     defaultConfig {
-        applicationId "online.sannykumar.krishigyan_v1"
+        applicationId "krishigyan.online"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 3
-        versionName "1.0.0"
+        versionCode 5
+        versionName "1.1.1"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
