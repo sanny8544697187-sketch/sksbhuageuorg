@@ -1175,7 +1175,7 @@ try {
       <div class="hero-stats">
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
         <div><strong id="statResources">0</strong><span>Resources</span></div>
-        <div><strong id="statBooks">0</strong><span>Books</span></div>
+        <div><strong id="statBooks">0</strong><span>Ebooks available</span></div>
         <div><strong id="statQuizCount">0+</strong><span>Quiz Qs</span></div>
       </div>
     </div>
@@ -2946,13 +2946,13 @@ function initAndroidDashboard() {
   const qotd = allQs[Math.abs(hash) % allQs.length];
   
   qotdContainer.innerHTML = `
-    <div style="font-size:13px; font-weight:700; line-height:1.5; margin-bottom:10px;">${escapeHTML(qotd.q)}</div>
+    <div style="font-size:13px; font-weight:700; line-height:1.5; margin-bottom:10px;">${escapeHTML(qotd?.q || '')}</div>
     <div style="display:flex; flex-direction:column; gap:6px;">
-      ${(qotd.opts||qotd.options||[]).map((opt, i) => `
+      ${Array.isArray(qotd?.opts || qotd?.options) ? (qotd.opts || qotd.options).map((opt, i) => `
         <button onclick="checkQotd(this, ${i}, ${qotd.ans??qotd.answerIndex}, '${escapeHTML(qotd.exp||qotd.explanation||'').replace(/'/g, "\\'")}')" style="text-align:left; background:white; border:1px solid #E0EAE0; border-radius:8px; padding:8px 10px; font-size:12px; cursor:pointer;">
-          <span style="font-weight:700; margin-right:6px; color:#999;">${["A","B","C","D"][i]}.</span> ${escapeHTML(opt)}
+          <span style="font-weight:700; margin-right:6px; color:#999;">${["A","B","C","D"][i]||''}.</span> ${escapeHTML(opt)}
         </button>
-      `).join("")}
+      `).join("") : ""}
     </div>
     <div id="qotdExp" style="display:none; margin-top:10px; background:#E8F5E9; padding:8px; border-radius:8px; font-size:11px; color:#0F3D23;"></div>
   `;
@@ -4516,9 +4516,15 @@ async function renderAdmin(){
           </div>
         </div>
         <div style="margin-bottom:10px;">
-          <label class="lbl">PDF / Google Drive Link *</label>
-          <input id="ebAdmin_link" class="inp" placeholder="https://drive.google.com/file/d/...">
-          <div style="font-size:12px;color:#777;margin-top:4px;">Paste a Google Drive file link or any direct PDF URL. Make sure sharing is set to "Anyone with the link".</div>
+          <label class="lbl">PDF / Google Drive Link OR Upload File *</label>
+          <div style="display:flex;gap:10px;align-items:center;margin-bottom:4px;">
+            <input id="ebAdmin_link" class="inp" style="flex:1;margin-bottom:0;" placeholder="https://drive.google.com/file/d/...">
+            <span style="font-weight:700;font-size:12px;color:#999;">OR</span>
+            <button class="btn btn-light" onclick="document.getElementById('ebAdmin_file').click()" style="padding:10px 16px;">📁 Upload PDF</button>
+            <input id="ebAdmin_file" type="file" accept=".pdf" style="display:none;" onchange="handleAdminEbookFile(this)">
+          </div>
+          <div id="ebAdmin_fileName" style="font-size:12px;color:#00B050;font-weight:600;"></div>
+          <div style="font-size:12px;color:#777;margin-top:4px;">Paste a Google Drive file link, or upload a PDF (max 4.5 MB).</div>
         </div>
         <button class="btn btn-primary" style="padding:10px 24px;" onclick="adminAddEbook()">📚 Add Ebook</button>
       </div>
@@ -8297,21 +8303,42 @@ let adminEbooks = [];
   if(stored && stored.length) adminEbooks = stored;
 })();
 
+let adminEbookFileData = "";
+
+function handleAdminEbookFile(input){
+  const f = input.files[0]; if(!f) return;
+  if(f.size > 4.5*1024*1024){ toast("File > 4.5 MB. Use a Google Drive link instead.","e"); input.value=""; return; }
+  const r = new FileReader(); 
+  r.onload = ev => { 
+    adminEbookFileData = ev.target.result; 
+    document.getElementById("ebAdmin_fileName").textContent = f.name + " (" + ((f.size/1024).toFixed(0)) + " KB)";
+    const linkEl = document.getElementById("ebAdmin_link");
+    if(linkEl) { linkEl.value = "Local File Uploaded"; linkEl.disabled = true; }
+  };
+  r.readAsDataURL(f);
+}
+
 async function adminAddEbook(){
   const title  = (document.getElementById("ebAdmin_title")?.value||"").trim();
   const author = (document.getElementById("ebAdmin_author")?.value||"").trim();
   const subject= (document.getElementById("ebAdmin_subject")?.value||"").trim();
   const image  = (document.getElementById("ebAdmin_image")?.value||"").trim();
-  const link   = (document.getElementById("ebAdmin_link")?.value||"").trim();
-  if(!title||!author||!subject||!link){ toast("Title, Author, Subject and Link are required.","e"); return; }
+  const linkValue = (document.getElementById("ebAdmin_link")?.value||"").trim();
+  
+  const link = adminEbookFileData || linkValue;
+  
+  if(!title||!author||!subject||!link){ toast("Title, Author, Subject and Link/File are required.","e"); return; }
   const entry = { id: Date.now()+"", title, author, subject, image, link, addedAt: new Date().toISOString() };
   adminEbooks = [entry, ...adminEbooks];
   await sSet("bhu:adminebooks", adminEbooks);
   toast("📚 Ebook added!");
   ["ebAdmin_title","ebAdmin_author","ebAdmin_image","ebAdmin_link"].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value="";
+    const el=document.getElementById(id); if(el) { el.value=""; el.disabled=false; }
   });
   const sel=document.getElementById("ebAdmin_subject"); if(sel) sel.value="";
+  adminEbookFileData = "";
+  const fn = document.getElementById("ebAdmin_fileName"); if(fn) fn.textContent = "";
+  const fi = document.getElementById("ebAdmin_file"); if(fi) fi.value = "";
   renderAdminEbooksList();
   renderHome(); // update Books count in hero
 }
