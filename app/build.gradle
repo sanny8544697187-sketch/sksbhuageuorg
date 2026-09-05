@@ -20,13 +20,6 @@ plugins {
     id 'com.android.application'
 }
 
-// Load signing credentials from keystore.properties (not committed to git)
-def keystorePropertiesFile = rootProject.file("keystore.properties")
-def keystoreProperties = new Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-}
-
 def twaManifest = [
     applicationId: 'krishigyan.online',
     hostName: 'krishigyan.online', // The domain being opened in the TWA.
@@ -64,8 +57,8 @@ android {
         applicationId "krishigyan.online"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 5
-        versionName "1.1.1"
+        versionCode 3
+        versionName "2.0.0"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
@@ -157,18 +150,9 @@ android {
 
         
     }
-    signingConfigs {
-        release {
-            storeFile file(keystoreProperties['storeFile'] ?: 'signing.keystore')
-            storePassword keystoreProperties['storePassword'] ?: ''
-            keyAlias keystoreProperties['keyAlias'] ?: ''
-            keyPassword keystoreProperties['keyPassword'] ?: ''
-        }
-    }
     buildTypes {
         release {
             minifyEnabled true
-            signingConfig signingConfigs.release
         }
     }
     compileOptions {
