@@ -22,7 +22,7 @@
     "alias": "my-key-alias"
   },
   "appVersionName": "2.0.0",
-  "appVersionCode": 4,
+  "appVersionCode": 6,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://krishigyan.online/manifest.json",
