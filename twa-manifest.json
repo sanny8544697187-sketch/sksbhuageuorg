@@ -21,8 +21,8 @@
     "path": "c:\\Users\\HP\\Downloads\\files (1)\\signing.keystore",
     "alias": "my-key-alias"
   },
-  "appVersionName": "1.0.0",
-  "appVersionCode": 2,
+  "appVersionName": "2.0.0",
+  "appVersionCode": 3,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://krishigyan.online/manifest.json",
@@ -42,5 +42,5 @@
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.0"
+  "appVersion": "2.0.0"
 }

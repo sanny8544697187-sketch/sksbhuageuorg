@@ -1,13 +1,14 @@
 // ═══════════════════════════════════════════════════════════
-// AGRI EDU RISE — Service Worker  v2.0
+// KrishiGyan — Service Worker  v3.0
 // Strategy:
-//   • App shell (HTML + fonts)    → Cache-first  (offline capable)
-//   • Firebase / API calls        → Network-first (skip SW)
-//   • Images / CDN scripts        → Stale-while-revalidate
+//   • HTML (index.html / navigation) → Network-first (always fresh)
+//   • Firebase / API calls           → Bypass (never intercept)
+//   • Fonts                          → Cache-first (long-lived)
+//   • Images / CDN scripts           → Stale-while-revalidate
 // ═══════════════════════════════════════════════════════════
 
-const CACHE_NAME    = 'KRISHI-GYAN-v2';
-const DYNAMIC_CACHE = 'KRISHI-GYAN-dynamic';
+const CACHE_NAME    = 'KRISHI-GYAN-v3';
+const DYNAMIC_CACHE = 'KRISHI-GYAN-v3-dynamic';
 
 // Resources pre-cached on install (app shell)
 const PRECACHE_URLS = [
@@ -24,22 +25,23 @@ const BYPASS_DOMAINS = [
   'razorpay.com',
   'generativelanguage.googleapis.com',
   'checkout.razorpay.com',
-  'cdnjs.cloudflare.com',   // PDF.js / Tesseract loaded on demand
+  'cdnjs.cloudflare.com',
 ];
 
 function shouldBypass(url) {
-  // Never intercept Netlify function calls or Anthropic API
   if (url.pathname.startsWith('/.netlify/')) return true;
+  if (url.pathname.startsWith('/api/')) return true;
   return BYPASS_DOMAINS.some(d => url.hostname.includes(d));
 }
 
 // ── INSTALL ──────────────────────────────────────────────────
 self.addEventListener('install', event => {
+  // Take over immediately without waiting
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
-      .catch(err => console.warn('[SW] Pre-cache failed (some resources may be unavailable offline):', err))
+      .catch(err => console.warn('[SW] Pre-cache failed:', err))
   );
 });
 
@@ -70,16 +72,18 @@ self.addEventListener('fetch', event => {
   // 2. Bypass Firebase, Razorpay, and other live-only services
   if (shouldBypass(url)) return;
 
-  // 3. Navigation requests → Cache-first (serve shell, app handles routing)
-  if (request.mode === 'navigate') {
+  // 3. Navigation / HTML → Network-first (always get fresh index.html)
+  if (request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
     event.respondWith(
-      caches.match('./')
-        .then(cached => cached || fetch(request).then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put('./', clone));
+      fetch(request)
+        .then(res => {
+          if (res && res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(request, clone));
+          }
           return res;
-        }))
-        .catch(() => caches.match('./'))
+        })
+        .catch(() => caches.match(request).then(cached => cached || caches.match('./')))
     );
     return;
   }
