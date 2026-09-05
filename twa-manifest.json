@@ -1,5 +1,5 @@
 {
-  "packageId": "krishigyan.online",
+  "packageId": "online.sannykumar.krishigyan_v1",
   "host": "krishigyan.online",
   "name": "KrishiGyan",
   "launcherName": "KrishiGyan",
@@ -22,7 +22,7 @@
     "alias": "my-key-alias"
   },
   "appVersionName": "2.0.0",
-  "appVersionCode": 3,
+  "appVersionCode": 4,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://krishigyan.online/manifest.json",

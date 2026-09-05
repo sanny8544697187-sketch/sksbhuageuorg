@@ -52,12 +52,12 @@ def twaManifest = [
 
 android {
     compileSdkVersion 36
-    namespace "krishigyan.online"
+    namespace "online.sannykumar.krishigyan_v1"
     defaultConfig {
-        applicationId "krishigyan.online"
+        applicationId "online.sannykumar.krishigyan_v1"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 3
+        versionCode 4
         versionName "2.0.0"
 
         // The name for the application
