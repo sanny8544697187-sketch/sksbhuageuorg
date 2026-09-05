@@ -2948,8 +2948,8 @@ function initAndroidDashboard() {
   qotdContainer.innerHTML = `
     <div style="font-size:13px; font-weight:700; line-height:1.5; margin-bottom:10px;">${escapeHTML(qotd.q)}</div>
     <div style="display:flex; flex-direction:column; gap:6px;">
-      ${qotd.options.map((opt, i) => `
-        <button onclick="checkQotd(this, ${i}, ${qotd.answerIndex}, '${escapeHTML(qotd.explanation).replace(/'/g, "\\'")}')" style="text-align:left; background:white; border:1px solid #E0EAE0; border-radius:8px; padding:8px 10px; font-size:12px; cursor:pointer;">
+      ${(qotd.opts||qotd.options||[]).map((opt, i) => `
+        <button onclick="checkQotd(this, ${i}, ${qotd.ans??qotd.answerIndex}, '${escapeHTML(qotd.exp||qotd.explanation||'').replace(/'/g, "\\'")}')" style="text-align:left; background:white; border:1px solid #E0EAE0; border-radius:8px; padding:8px 10px; font-size:12px; cursor:pointer;">
           <span style="font-weight:700; margin-right:6px; color:#999;">${["A","B","C","D"][i]}.</span> ${escapeHTML(opt)}
         </button>
       `).join("")}
