@@ -2,7 +2,7 @@
       "relation": ["delegate_permission/common.handle_all_urls"],
       "target": {
         "namespace": "android_app",
-        "package_name": " KrishiGyan ",
+        "package_name": "KrishiGyan",
         "sha256_cert_fingerprints": ["4A:15:A9:30:55:80:6B:09:37:03:E2:C4:FD:77:AB:7F:E5:DD:BF:49:36:E8:B5:21:7D:C7:36:A8:1C:44:3B:F2"]
       }
     }]
