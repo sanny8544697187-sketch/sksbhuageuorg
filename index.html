@@ -2654,7 +2654,35 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(saved_ap) adminPass=saved_ap;
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
   if(sess){ currentUser=sess; }
-  else { setTimeout(openLogin, 1500); }
+  else {
+    // Handle Google redirect result (for mobile/PWA where popup is blocked)
+    if(window.firebase && firebase.auth) {
+      try {
+        const redirectResult = await firebase.auth().getRedirectResult();
+        if(redirectResult && redirectResult.user) {
+          const user = redirectResult.user;
+          let found = usersDB.find(u=>u.email.toLowerCase()===user.email.toLowerCase());
+          if(!found){
+            found = {
+              id:Date.now()+"", name:user.displayName||"Google User", roll:"", year:"Other",
+              email:user.email.toLowerCase(), password:"", joinedAt:new Date().toISOString(),
+              subPlan:null, subExpiry:null
+            };
+            usersDB=[...usersDB,found]; await sSet("bhu:users",usersDB); await saveUserToFirebase(found);
+          }
+          const sess2={...found,isAdmin:false}; currentUser=sess2; await sSet("bhu:session",sess2);
+          toast(`Welcome, ${found.name}! 🚀`);
+        } else {
+          setTimeout(openLogin, 1500);
+        }
+      } catch(e) {
+        console.warn("Redirect result error:", e.message);
+        setTimeout(openLogin, 1500);
+      }
+    } else {
+      setTimeout(openLogin, 1500);
+    }
+  }
 
   await loadPYQPdfs();
 
@@ -2718,6 +2746,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   renderAll();
   renderChat();
   renderDoubts();
+  // Re-render home after short delay to pick up async-loaded data (adminEbooks, Firebase)
+  setTimeout(() => { renderHome(); initAndroidDashboard(); }, 800);
   document.querySelectorAll(".section[data-redirect]").forEach(sec=>{
     const [targetSection, targetTab]=sec.dataset.redirect.split(":");
     const observer=new MutationObserver(()=>{
@@ -6359,7 +6389,23 @@ async function doGoogleLogin(){
   if(!window.firebase) { toast("Firebase not initialized.","e"); return; }
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
-    const result = await firebase.auth().signInWithPopup(provider);
+    provider.addScope('email');
+    provider.addScope('profile');
+    
+    let result;
+    try {
+      // Try popup first (works on desktop)
+      result = await firebase.auth().signInWithPopup(provider);
+    } catch(popupErr) {
+      // If popup is blocked (mobile/PWA), fall back to redirect
+      if(popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
+        toast("Opening Google login...");
+        await firebase.auth().signInWithRedirect(provider);
+        return; // Page will redirect and come back
+      }
+      throw popupErr; // Re-throw other errors
+    }
+    
     const user = result.user;
     let found = usersDB.find(u=>u.email.toLowerCase()===user.email.toLowerCase());
     if(!found){
@@ -6374,7 +6420,13 @@ async function doGoogleLogin(){
     closeLogin(); toast(`Welcome, ${found.name}! 🚀`); renderAll();
   } catch(e) {
     console.error(e);
-    toast("Google Login Failed","e");
+    if(e.code === 'auth/network-request-failed') {
+      toast("Network error. Check your internet connection.","e");
+    } else if(e.code === 'auth/user-disabled') {
+      toast("This Google account has been disabled.","e");
+    } else {
+      toast("Google Login Failed: " + (e.message || "Unknown error"),"e");
+    }
   }
 }
 
@@ -8311,7 +8363,12 @@ let adminEbooks = [];
 
 (async function loadAdminEbooks(){
   const stored = await sGet("bhu:adminebooks");
-  if(stored && stored.length) adminEbooks = stored;
+  if(stored && stored.length) {
+    adminEbooks = stored;
+    // Update home stats immediately after ebooks are loaded
+    const statEl = document.getElementById("statBooks");
+    if(statEl) statEl.textContent = (EBOOKS_LIBRARY.length + adminEbooks.length);
+  }
 })();
 
 let adminEbookFileData = "";
