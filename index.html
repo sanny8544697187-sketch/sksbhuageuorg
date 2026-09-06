@@ -2654,35 +2654,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   if(saved_ap) adminPass=saved_ap;
   if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
   if(sess){ currentUser=sess; }
-  else {
-    // Handle Google redirect result (for mobile/PWA where popup is blocked)
-    if(window.firebase && firebase.auth) {
-      try {
-        const redirectResult = await firebase.auth().getRedirectResult();
-        if(redirectResult && redirectResult.user) {
-          const user = redirectResult.user;
-          let found = usersDB.find(u=>u.email.toLowerCase()===user.email.toLowerCase());
-          if(!found){
-            found = {
-              id:Date.now()+"", name:user.displayName||"Google User", roll:"", year:"Other",
-              email:user.email.toLowerCase(), password:"", joinedAt:new Date().toISOString(),
-              subPlan:null, subExpiry:null
-            };
-            usersDB=[...usersDB,found]; await sSet("bhu:users",usersDB); await saveUserToFirebase(found);
-          }
-          const sess2={...found,isAdmin:false}; currentUser=sess2; await sSet("bhu:session",sess2);
-          toast(`Welcome, ${found.name}! 🚀`);
-        } else {
-          setTimeout(openLogin, 1500);
-        }
-      } catch(e) {
-        console.warn("Redirect result error:", e.message);
-        setTimeout(openLogin, 1500);
-      }
-    } else {
-      setTimeout(openLogin, 1500);
-    }
-  }
+  else { setTimeout(openLogin, 1500); }
 
   await loadPYQPdfs();
 
@@ -2746,8 +2718,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   renderAll();
   renderChat();
   renderDoubts();
-  // Re-render home after short delay to pick up async-loaded data (adminEbooks, Firebase)
-  setTimeout(() => { renderHome(); initAndroidDashboard(); }, 800);
   document.querySelectorAll(".section[data-redirect]").forEach(sec=>{
     const [targetSection, targetTab]=sec.dataset.redirect.split(":");
     const observer=new MutationObserver(()=>{
@@ -6389,29 +6359,31 @@ async function doGoogleLogin(){
   if(!window.firebase) { toast("Firebase not initialized.","e"); return; }
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('email');
-    provider.addScope('profile');
-    
+    provider.addScope("email");
+    provider.addScope("profile");
+    provider.setCustomParameters({ prompt: "select_account" });
+
     let result;
     try {
-      // Try popup first (works on desktop)
+      // Try popup first (works on web browsers)
       result = await firebase.auth().signInWithPopup(provider);
     } catch(popupErr) {
-      // If popup is blocked (mobile/PWA), fall back to redirect
-      if(popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request') {
-        toast("Opening Google login...");
+      // Popup blocked or not supported (Android TWA/WebView) — fallback to redirect
+      if(popupErr.code === "auth/popup-blocked" || popupErr.code === "auth/popup-closed-by-user" || popupErr.code === "auth/cancelled-popup-request" || popupErr.code === "auth/operation-not-supported-in-this-environment") {
+        toast("Redirecting to Google login…");
         await firebase.auth().signInWithRedirect(provider);
-        return; // Page will redirect and come back
+        return; // Page will reload after redirect
       }
-      throw popupErr; // Re-throw other errors
+      throw popupErr;
     }
-    
+
+    if(!result || !result.user) { toast("Google Login Failed — no user returned","e"); return; }
     const user = result.user;
     let found = usersDB.find(u=>u.email.toLowerCase()===user.email.toLowerCase());
     if(!found){
       found = {
-        id:Date.now()+"", name:user.displayName||"Google User", roll:"", year:"Other", 
-        email:user.email.toLowerCase(), password:"", joinedAt:new Date().toISOString(), 
+        id:Date.now()+"", name:user.displayName||"Google User", roll:"", year:"Other",
+        email:user.email.toLowerCase(), password:"", joinedAt:new Date().toISOString(),
         subPlan:null, subExpiry:null
       };
       usersDB=[...usersDB,found]; await sSet("bhu:users",usersDB); await saveUserToFirebase(found);
@@ -6419,16 +6391,39 @@ async function doGoogleLogin(){
     const sess={...found,isAdmin:false}; currentUser=sess; await sSet("bhu:session",sess);
     closeLogin(); toast(`Welcome, ${found.name}! 🚀`); renderAll();
   } catch(e) {
-    console.error(e);
-    if(e.code === 'auth/network-request-failed') {
-      toast("Network error. Check your internet connection.","e");
-    } else if(e.code === 'auth/user-disabled') {
-      toast("This Google account has been disabled.","e");
-    } else {
-      toast("Google Login Failed: " + (e.message || "Unknown error"),"e");
-    }
+    console.error("Google Login Error:", e);
+    let msg = "Google Login Failed";
+    if(e.code === "auth/network-request-failed") msg = "No internet connection. Please check your network.";
+    else if(e.code === "auth/user-disabled") msg = "This account has been disabled.";
+    else if(e.code === "auth/account-exists-with-different-credential") msg = "An account with this email already exists. Try email/password login.";
+    else if(e.code === "auth/popup-closed-by-user") msg = "Login cancelled. Please try again.";
+    else if(e.code === "auth/internal-error") msg = "Google login error. Please try again or use Email login.";
+    toast(msg,"e");
   }
 }
+
+// Handle redirect result on page load (for Android TWA / redirect flow)
+(async function handleGoogleRedirectResult(){
+  if(!window.firebase) return;
+  try {
+    const result = await firebase.auth().getRedirectResult();
+    if(!result || !result.user) return;
+    const user = result.user;
+    let found = usersDB.find(u=>u.email.toLowerCase()===user.email.toLowerCase());
+    if(!found){
+      found = {
+        id:Date.now()+"", name:user.displayName||"Google User", roll:"", year:"Other",
+        email:user.email.toLowerCase(), password:"", joinedAt:new Date().toISOString(),
+        subPlan:null, subExpiry:null
+      };
+      usersDB=[...usersDB,found]; await sSet("bhu:users",usersDB); await saveUserToFirebase(found);
+    }
+    const sess={...found,isAdmin:false}; currentUser=sess; await sSet("bhu:session",sess);
+    toast(`Welcome back, ${found.name}! 🚀`); renderAll();
+  } catch(e) {
+    if(e.code !== "auth/no-current-user") console.warn("Redirect result error:", e);
+  }
+})();
 
 // ═══════════════════════════════════════════════════════════════
 // PREMIUM / PAYMENT
@@ -8363,12 +8358,7 @@ let adminEbooks = [];
 
 (async function loadAdminEbooks(){
   const stored = await sGet("bhu:adminebooks");
-  if(stored && stored.length) {
-    adminEbooks = stored;
-    // Update home stats immediately after ebooks are loaded
-    const statEl = document.getElementById("statBooks");
-    if(statEl) statEl.textContent = (EBOOKS_LIBRARY.length + adminEbooks.length);
-  }
+  if(stored && stored.length) adminEbooks = stored;
 })();
 
 let adminEbookFileData = "";
