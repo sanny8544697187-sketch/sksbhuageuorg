@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// KrishiGyan — Service Worker  v3.0
+// KrishiGyan — Service Worker  v3.1
 // Strategy:
 //   • HTML (index.html / navigation) → Network-first (always fresh)
 //   • Firebase / API calls           → Bypass (never intercept)
@@ -7,8 +7,8 @@
 //   • Images / CDN scripts           → Stale-while-revalidate
 // ═══════════════════════════════════════════════════════════
 
-const CACHE_NAME    = 'KRISHI-GYAN-v3';
-const DYNAMIC_CACHE = 'KRISHI-GYAN-v3-dynamic';
+const CACHE_NAME    = 'KRISHI-GYAN-v3.1';
+const DYNAMIC_CACHE = 'KRISHI-GYAN-v3.1-dynamic';
 
 // Resources pre-cached on install (app shell)
 const PRECACHE_URLS = [

@@ -2940,9 +2940,10 @@ function initAndroidDashboard() {
     // Question of the Day (random from quiz bank)
     const qotdContainer = document.getElementById("qotdContainer");
     if(!qotdContainer) return;
-
-    const allQs = getAllQuizQuestions().filter(q => q && (q.opts || q.options));
-    if(!allQs || !allQs.length) {
+    
+    // Only use questions that have a valid opts/options array
+    const allQs = (getAllQuizQuestions() || []).filter(q => q && q.q && Array.isArray(q.opts || q.options) && (q.opts || q.options).length > 0);
+    if(!allQs.length) {
       qotdContainer.innerHTML = '<div style="font-size:12px;color:#777;">No questions available.</div>';
       return;
     }
@@ -2950,31 +2951,21 @@ function initAndroidDashboard() {
     const today = new Date().toISOString().split("T")[0];
     let hash = 0; for(let i=0;i<today.length;i++) hash = ((hash<<5)-hash)+today.charCodeAt(i);
     const qotd = allQs[Math.abs(hash) % allQs.length];
+    const opts = qotd.opts || qotd.options || [];
     
-    if(!qotd) {
-      qotdContainer.innerHTML = '<div style="font-size:12px;color:#777;">No question available today.</div>';
-      return;
-    }
-
-    const opts = Array.isArray(qotd.opts) ? qotd.opts : (Array.isArray(qotd.options) ? qotd.options : []);
-    const ansIdx = qotd.ans ?? qotd.answerIndex ?? 0;
-    const expText = escapeHTML(qotd.exp || qotd.explanation || '').replace(/'/g, "\\'");
-
     qotdContainer.innerHTML = `
       <div style="font-size:13px; font-weight:700; line-height:1.5; margin-bottom:10px;">${escapeHTML(qotd.q || '')}</div>
       <div style="display:flex; flex-direction:column; gap:6px;">
         ${opts.map((opt, i) => `
-          <button onclick="checkQotd(this, ${i}, ${ansIdx}, '${expText}')" style="text-align:left; background:white; border:1px solid #E0EAE0; border-radius:8px; padding:8px 10px; font-size:12px; cursor:pointer;">
-            <span style="font-weight:700; margin-right:6px; color:#999;">${["A","B","C","D"][i] || String.fromCharCode(65+i)}.</span> ${escapeHTML(opt)}
+          <button onclick="checkQotd(this, ${i}, ${qotd.ans ?? qotd.answerIndex ?? 0}, '${escapeHTML(qotd.exp||qotd.explanation||'').replace(/'/g, "\\'")}')\" style="text-align:left; background:white; border:1px solid #E0EAE0; border-radius:8px; padding:8px 10px; font-size:12px; cursor:pointer;">
+            <span style="font-weight:700; margin-right:6px; color:#999;">${["A","B","C","D"][i] || ''}.</span> ${escapeHTML(opt)}
           </button>
         `).join("")}
       </div>
       <div id="qotdExp" style="display:none; margin-top:10px; background:#E8F5E9; padding:8px; border-radius:8px; font-size:11px; color:#0F3D23;"></div>
     `;
-  } catch(err) {
-    console.warn("[initAndroidDashboard] Caught error:", err);
-    const qotdContainer = document.getElementById("qotdContainer");
-    if(qotdContainer) qotdContainer.innerHTML = '<div style="font-size:12px;color:#777;">Unable to load today\'s question.</div>';
+  } catch(e) {
+    console.warn('[KrishiGyan] initAndroidDashboard error (non-critical):', e.message);
   }
 }
 
