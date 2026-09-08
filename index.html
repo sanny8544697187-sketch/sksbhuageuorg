@@ -6213,11 +6213,27 @@ async function addBulkQuestions(){
   await sSet("bhu:customquizbank",customQuizBank);
   rebuildQuizBank();
   const summary=Object.entries(counts).map(([s,n])=>`${s}: ${n}`).join(" · ");
-  toast(`✅ ${_bulkParsedQuestions.length} question(s) added → ${summary}`);
-  document.getElementById("bulkPasteText").value="";
+  const total=_bulkParsedQuestions.length;
   _bulkParsedQuestions=[];
-  const st=document.getElementById("bulkParseStatus"); if(st) st.style.display="none";
-  renderAdmin(); renderQuizStart();
+  // Show success in-place WITHOUT wiping the textarea so admin can review what was pasted
+  const st=document.getElementById("bulkParseStatus");
+  if(st){
+    st.style.display="block";
+    st.innerHTML=`<div style="color:#00B050;font-size:13px;font-weight:700;padding:10px;background:#E8F5E9;border-radius:10px;">
+      ✅ ${total} question(s) successfully added!<br>
+      <span style="font-weight:400;font-size:12px;">Subjects: ${summary}</span><br>
+      <button class="btn btn-light" style="margin-top:8px;font-size:12px;padding:6px 14px;border:1.5px solid #ccc;" onclick="
+        document.getElementById('bulkPasteText').value='';
+        document.getElementById('bulkParseStatus').style.display='none';
+        document.getElementById('bulkAddBtn').disabled=true;
+        renderAdmin();
+      ">🗑️ Clear &amp; Reset</button>
+    </div>`;
+  }
+  const addBtn=document.getElementById("bulkAddBtn");
+  if(addBtn) addBtn.disabled=true;
+  toast(`✅ ${total} question(s) added → ${summary}`);
+  renderQuizStart();
 }
 
 // ── Manual entry — add or edit a single question ─────────────────
@@ -7235,10 +7251,26 @@ async function addPastedPYQs(){
   }));
   pyqData=[...entries,...pyqData];
   await sSet("bhu:pyqdata",pyqData);
-  toast(`✅ ${entries.length} PYQs added!`);
-  document.getElementById("pyqPasteText").value="";
+  const total=entries.length;
   _parsedPYQPaste=[];
-  document.getElementById("pyqPasteStatus").style.display="none";
+  // Show success in-place WITHOUT wiping textarea so admin can review what was pasted
+  const st=document.getElementById("pyqPasteStatus");
+  const addBtn=document.getElementById("pyqPasteAddBtn");
+  if(st){
+    st.style.display="block";
+    st.innerHTML=`<div style="color:#00B050;font-size:13px;font-weight:700;padding:10px;background:#E8F5E9;border-radius:10px;">
+      ✅ ${total} PYQ(s) added for ${exam} ${year}!<br>
+      <span style="font-weight:400;font-size:12px;">Your pasted text is kept below so you can review it.</span><br>
+      <button class="btn btn-light" style="margin-top:8px;font-size:12px;padding:6px 14px;border:1.5px solid #ccc;" onclick="
+        document.getElementById('pyqPasteText').value='';
+        document.getElementById('pyqPasteStatus').style.display='none';
+        document.getElementById('pyqPasteAddBtn').disabled=true;
+        renderAdmin();
+      ">🗑️ Clear &amp; Reset</button>
+    </div>`;
+  }
+  if(addBtn) addBtn.disabled=true;
+  toast(`✅ ${total} PYQs added!`);
   renderAdmin();
 }
 
