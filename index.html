@@ -4098,7 +4098,7 @@ async function renderAdmin(){
           <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #1565C0;" onclick="setAdminTab('quiz')">
             <div style="font-size:28px;margin-bottom:6px;">📝</div>
             <div style="font-weight:800;font-size:14px;">MCQ Quiz Bank</div>
-            <div style="font-size:12px;color:#777;margin:4px 0;">${quizTotal} Questions</div>
+            <div style="font-size:12px;color:#777;margin:4px 0;">${getAllQuizQuestions().length} Questions</div>
             <div style="font-size:10px;background:#E3F2FD;color:#1565C0;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
           </div>
           <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #00B050;" onclick="setAdminTab('pyq')">
@@ -6077,62 +6077,68 @@ function autoDetectSubject(qText, opts){
 // "(A)"/"a)"/"A:" option markers, and "Answer:"/"Ans:" variants.
 function parsePdfQuizText(text){
   const questions=[];
-  // Normalise line breaks + collapse repeated whitespace that OCR often introduces
-  const lines=text.replace(/\r/g,"").split("\n")
-    .map(l=>l.replace(/\s+/g," ").trim()).filter(Boolean);
+  const lines=text.replace(/\r/g,"").split("\n").map(l=>l.replace(/\s+/g," ").trim()).filter(Boolean);
   let i=0;
   let headingSubject=null;
 
   while(i<lines.length){
-    const line=lines[i];
+    let line=lines[i];
 
-    // Detect subject heading: "Subject: Agronomy" or "-- Agronomy --"
+    // Detect subject heading
     const subjHeadMatch=line.match(/^(?:Subject|Section|Topic)\s*[:\-–]\s*(.+)/i);
     if(subjHeadMatch){
       headingSubject=normalizeSubjectName(subjHeadMatch[1])||subjHeadMatch[1].trim();
       i++; continue;
     }
 
-    // Detect question line — handles Q1, Q.1, 1., Q:, Question 1 etc.
-    const qMatch=line.match(/^(?:Q(?:uestion)?\.?\s*\d*[.):\s]?\s*|\d+[.)]\s+)(.+)/i);
-    if(!qMatch){ i++; continue; }
-    let qText=qMatch[1].trim();
-    // Sometimes the question continues on the next line (no option prefix yet)
+    // Skip if it looks like an option or answer/exp (meaning we are not at a valid question start)
+    if(line.match(/^\(?([A-Da-d])\)?[.).:\s\-]\s*(.+)/) || line.match(/^(?:ANS|ANSWER|EXP|REASON|HINT)/i)){
+      i++; continue;
+    }
+
+    // Treat this line as the start of a question. Strip Q1, Q., 1., etc if present.
+    let qText=line.replace(/^(?:Q(?:uestion)?\.?\s*\d*[.):\s]*|\d+[.)]\s+)/i, "").trim();
     i++;
-    while(i<lines.length && !lines[i].match(/^\(?[A-Da-d]\)?[.):]\s/i) && !lines[i].match(/^(?:Q(?:uestion)?\.?\s*\d*[.):\s]|\d+[.)]\s+)/i) && !lines[i].match(/^(?:ANS|ANSWER|EXP)/i)){
-      const cont=lines[i].trim();
-      if(!cont){ i++; break; } // blank line = end of question text
-      qText+=" "+cont; i++;
+    
+    // Read multi-line question text until we hit an option or answer
+    while(i<lines.length){
+      if(lines[i].match(/^\(?([A-Da-d])\)?[.).:\s\-]\s*(.+)/) || lines[i].match(/^(?:ANS|ANSWER|EXP|REASON|HINT)/i) || lines[i].match(/^(?:Subject|Section|Topic)/i)){
+        break;
+      }
+      qText+=" "+lines[i]; i++;
     }
     if(qText.length<4){ continue; }
 
     const opts=[]; let ansIdx=-1; let exp="";
     const optLetters=["A","B","C","D"];
 
-    // Read options — tolerant of (A), A., A), A: markers; also handles "a)" lowercase
+    // Read options
     while(i<lines.length && opts.length<4){
       const ol=lines[i];
-      // Match option start: (A), A., A), A:  — case insensitive
-      const optM=ol.match(/^\(?([A-Da-d])\)?[.).:\s]\s*(.+)/);
+      const optM=ol.match(/^\(?([A-Da-d])\)?[.).:\s\-]\s*(.+)/);
       if(optM){
         opts.push(optM[2].trim()); i++;
+      } else if(opts.length>0 && !ol.match(/^(?:ANS|ANSWER|EXP|REASON|HINT|Subject|Section|Topic)/i)){
+        opts[opts.length-1]+=" "+ol; i++;
       } else {
-        // Option text may continue on next line if no prefix — append if we're mid-options
-        if(opts.length>0 && !ol.match(/^(?:ANS|ANSWER|EXP|Q\.)/i)){
-          opts[opts.length-1]+=" "+ol; i++;
-        } else break;
+        break;
       }
     }
     if(opts.length<2){ continue; }
 
-    // Read ANS / ANSWER line — handles "ANS: A", "Answer: (B)", "Ans. C"
+    // Read ANS / EXP
     while(i<lines.length){
       const al=lines[i];
-      const ansM=al.match(/^(?:ANS(?:WER)?)[.:)\s]+\(?([A-Da-d])\)?/i);
-      const expM=al.match(/^(?:EXP(?:LANATION)?|REASON|HINT)[.:)\s]+(.+)/i);
+      const ansM=al.match(/^(?:ANS(?:WER)?)[.:)\s\-]+\(?([A-Da-d])\)?/i);
+      const expM=al.match(/^(?:EXP(?:LANATION)?|REASON|HINT)[.:)\s\-]+(.+)/i);
       if(ansM){ ansIdx=optLetters.indexOf(ansM[1].toUpperCase()); i++; }
       else if(expM){ exp=expM[1].trim(); i++; }
-      else break;
+      else if(al.match(/^(?:Subject|Section|Topic)/i) || !al.match(/^(?:ANS|ANSWER|EXP|REASON|HINT)/i)){
+        break; // Next question begins
+      } else {
+        if(exp) exp+=" "+al; // Unrecognized lines within answer section belong to explanation
+        i++;
+      }
     }
     if(ansIdx===-1) ansIdx=0;
 
