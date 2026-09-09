@@ -2752,9 +2752,12 @@ window.addEventListener("DOMContentLoaded", async () => {
         if(adminTab==="uploads"){
           if(!editingUploadId) renderAdmin(); // don't wipe an open "All Uploads" edit form
         } else if(adminTab==="quiz"){
-          if(!editingCustomQ) renderAdmin(); // don't wipe an open Quiz Bank edit form
+          const isTypingQuizBulk = document.getElementById("bulkPasteText")?.value.trim().length > 0;
+          const isTypingQuizManual = document.getElementById("mQuizQ")?.value.trim().length > 0;
+          if(!editingCustomQ && !isTypingQuizBulk && !isTypingQuizManual) renderAdmin();
         } else if(adminTab==="pyq"){
-          if(!_editingPYQId) renderAdmin(); // don't wipe an open PYQ Bank edit form
+          const isTypingPyqBulk = document.getElementById("pyqPasteText")?.value.trim().length > 0;
+          if(!_editingPYQId && !isTypingPyqBulk) renderAdmin();
         } else if(adminTab==="pending"||adminTab==="rejected"||adminTab==="users"||adminTab==="subs"||adminTab==="settings"||adminTab==="offers"||adminTab==="ebooks") {
           renderAdmin();
         }
@@ -7282,7 +7285,7 @@ async function addPastedPYQs(){
   }
   if(addBtn) addBtn.disabled=true;
   toast(`✅ ${total} PYQs added!`);
-  renderAdmin();
+  renderAdminPYQList();
 }
 
 // ═══════════════════════════════════════════════════════════════
