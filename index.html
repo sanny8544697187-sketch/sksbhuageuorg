@@ -2522,7 +2522,7 @@ async function idbDel(key){
 const fbOK = window._fbConfigured === true;
 const db   = fbOK ? window._db : null;
 const st   = fbOK ? window._st : null;
-const LOCAL_KEYS = ["bhu:session","bhu:theme","bhu:adminpass"];
+const LOCAL_KEYS = ["bhu:session","bhu:theme","bhu:adminpass","bhu:customquizbank"];
 
 async function sGet(key) {
   try {
@@ -2530,10 +2530,8 @@ async function sGet(key) {
     if (key.startsWith("bhu:file:")) {
       if(fbOK) {
         try {
-          // Try SDK getDownloadURL — may fail with CORS if bucket rules block preflight
           return await st.ref("files/"+key.slice(9)).getDownloadURL();
         } catch(corsErr) {
-          // CORS fallback: build the public REST URL directly so browser navigation works
           const filePath = encodeURIComponent("files/"+key.slice(9));
           return `https://firebasestorage.googleapis.com/v0/b/bhuagorg.firebasestorage.app/o/${filePath}?alt=media`;
         }
@@ -2542,7 +2540,10 @@ async function sGet(key) {
     }
     if (!fbOK) { const v=localStorage.getItem(key); return v?JSON.parse(v):null; }
     const snap = await db.collection("bhu_store").doc(key.replace(/:/g,"_")).get();
-    return snap.exists ? JSON.parse(snap.data().value) : null;
+    if (snap.exists) return JSON.parse(snap.data().value);
+    // Fallback: try localStorage backup written by sSet
+    const backup = localStorage.getItem(key+"__backup");
+    return backup ? JSON.parse(backup) : null;
   } catch { return null; }
 }
 async function sSet(key, val) {
@@ -2552,6 +2553,8 @@ async function sSet(key, val) {
       if(fbOK){ await st.ref("files/"+key.slice(9)).putString(val,"data_url"); return; }
       await idbSet(key,val); return;
     }
+    // Always write a localStorage backup first so data survives Firebase failures/refresh
+    try { localStorage.setItem(key+"__backup", JSON.stringify(val)); } catch(_){}
     if (!fbOK) { localStorage.setItem(key,JSON.stringify(val)); return; }
     await db.collection("bhu_store").doc(key.replace(/:/g,"_")).set({value:JSON.stringify(val),updatedAt:new Date().toISOString()});
   } catch(e) { console.warn("sSet:",e); }
