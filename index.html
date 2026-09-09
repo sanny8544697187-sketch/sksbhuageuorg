@@ -2429,6 +2429,10 @@ let QUIZ_BANK = {
     {q:"IR-8 is a semi-dwarf variety of:",opts:["Wheat","Maize","Rice","Sorghum"],ans:2,exp:"IR-8 was the first semi-dwarf high-yielding rice released during the Green Revolution.",premium:true},
     {q:"DNA double helix structure was proposed by:",opts:["Mendel and Morgan","Watson and Crick","Avery and MacLeod","Beadle and Tatum"],ans:1,exp:"James Watson and Francis Crick published the double helix model in 1953.",premium:true},
   ],
+  "Horticulture":[
+    {q:"Sample Horticulture question?",opts:["Option A","Option B","Option C","Option D"],ans:0,exp:"Explanation.",premium:false},
+  ],
+
   "Entomology":[
     {q:"Malaria is transmitted by which mosquito?",opts:["Culex mosquito","Aedes mosquito","Anopheles mosquito","Housefly"],ans:2,exp:"Female Anopheles mosquitoes transmit Plasmodium, the malaria parasite.",premium:false},
     {q:"IPM stands for:",opts:["Integrated Pest Management","International Pest Method","Insect Pest Mode","Integrated Plant Management"],ans:0,exp:"IPM combines biological, cultural, physical, and chemical tools for sustainable pest control.",premium:false},
@@ -4320,6 +4324,13 @@ async function renderAdmin(){
             </select>
           </div>
           <div><label class="lbl">Question *</label><input id="mQuizQ" class="inp" placeholder="Enter the question text"></div>
+            <div>
+              <label class="lbl">Type *</label>
+              <select id="mQuizType" class="inp">
+                <option value="mcq">MCQ</option>
+                <option value="assertion-reason">Assertion‑Reason</option>
+              </select>
+            </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div><label class="lbl">Option A *</label><input id="mOptA" class="inp" placeholder="Option A"></div>
             <div><label class="lbl">Option B *</label><input id="mOptB" class="inp" placeholder="Option B"></div>
@@ -6275,8 +6286,8 @@ async function addManualQuestion(){
   const prem=document.getElementById("mQuizPrem").checked;
   const diffEl=document.getElementById("mQuizDiff");
   const diff=diffEl?diffEl.value:"medium";
-  if(!q||!a||!b||!c||!d){toast("Fill all question fields.","e");return;}
-  const entry={q,opts:[a,b,c,d],ans,exp:exp||"",premium:prem,difficulty:diff};
+    const type=document.getElementById("mQuizType").value;
+    const entry={type,q,opts:[a,b,c,d],ans,exp:exp||"",premium:prem,difficulty:diff};
 
   if(editingCustomQ){
     const {subject:oldSubj, idx}=editingCustomQ;
