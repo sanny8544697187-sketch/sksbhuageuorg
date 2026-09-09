@@ -2430,7 +2430,14 @@ let QUIZ_BANK = {
     {q:"DNA double helix structure was proposed by:",opts:["Mendel and Morgan","Watson and Crick","Avery and MacLeod","Beadle and Tatum"],ans:1,exp:"James Watson and Francis Crick published the double helix model in 1953.",premium:true},
   ],
   "Horticulture":[
-    {q:"Sample Horticulture question?",opts:["Option A","Option B","Option C","Option D"],ans:0,exp:"Explanation.",premium:false},
+    {q:"Which plant hormone is used to break dormancy and promote seed germination?",opts:["Auxin","Gibberellin","Cytokinin","Abscisic acid"],ans:1,exp:"Gibberellins promote seed germination by breaking seed dormancy and stimulating enzyme production.",premium:false},
+    {q:"The process of removing unwanted branches to improve crop yield is called:",opts:["Grafting","Pruning","Budding","Thinning"],ans:1,exp:"Pruning removes dead or overgrown branches/stems to improve tree shape and fruit quality.",premium:false},
+    {q:"Which fruit is known as the 'King of Fruits' in India?",opts:["Banana","Guava","Mango","Papaya"],ans:2,exp:"Mango (Mangifera indica) is known as the 'King of Fruits' and is India's national fruit.",premium:false},
+    {q:"Apiculture is the scientific management of:",opts:["Fish","Honeybees","Silkworms","Mushrooms"],ans:1,exp:"Apiculture is the keeping of honeybees for the production of honey, wax and other bee products.",premium:false},
+    {q:"The edible part of cauliflower is:",opts:["Leaf","Root","Flower (curd)","Stem"],ans:2,exp:"The edible part of cauliflower is the immature flower head (curd), which is a modified stem and flower.",premium:false},
+    {q:"Which rootstock is used for mango grafting?",opts:["Bouea oppositifolia","Mangifera sylvatica","Olour","None of these"],ans:2,exp:"'Olour' is the most widely used rootstock for mango grafting in India due to its adaptability.",premium:true},
+    {q:"Vernalization refers to:",opts:["Vegetative propagation","Inducing flowering by cold treatment","Seed treatment with hormones","Removing axillary buds"],ans:1,exp:"Vernalization is the process by which flowering is induced or accelerated by exposure to cold temperatures.",premium:true},
+    {q:"Layering is a method of vegetative propagation that involves:",opts:["Cutting a stem and rooting it in water","Inducing roots on a stem before separation from the parent","Grafting two plants","Seed sowing in layers"],ans:1,exp:"Layering involves bending a shoot to the ground (or wrapping with moist medium) so it forms roots before being severed from the parent plant.",premium:true},
   ],
 
   "Entomology":[
@@ -2618,10 +2625,11 @@ function fmtDate(){ return new Date().toLocaleDateString("en-IN",{day:"2-digit",
 
 function rebuildQuizBank(){
   const merged={};
-  Object.entries(BUILTIN_QUIZ_BANK).forEach(([subj,qs])=>{ merged[subj]=qs.map(q=>({...q})); });
+  Object.entries(BUILTIN_QUIZ_BANK).forEach(([subj,qs])=>{ merged[subj.trim()]=qs.map(q=>({...q})); });
   Object.entries(customQuizBank).forEach(([subj,qs])=>{
-    if(!merged[subj]) merged[subj]=[];
-    qs.forEach(q=>merged[subj].push({...q}));
+    const key=subj.trim();
+    if(!merged[key]) merged[key]=[];
+    qs.forEach(q=>merged[key].push({...q}));
   });
   QUIZ_BANK=merged;
 }
@@ -6219,7 +6227,7 @@ async function addBulkQuestions(){
   const fallbackSubj=document.getElementById("bulkFallbackSubject").value;
   const counts={};
   _bulkParsedQuestions.forEach(q=>{
-    const subj=q.subject||fallbackSubj;
+    const subj=(q.subject||fallbackSubj).trim();
     if(!customQuizBank[subj]) customQuizBank[subj]=[];
     customQuizBank[subj].push({q:q.q,opts:q.opts,ans:q.ans,exp:q.exp,premium:false,difficulty:"medium"});
     counts[subj]=(counts[subj]||0)+1;
