@@ -2628,6 +2628,50 @@ function rebuildQuizBank(){
   QUIZ_BANK=merged;
 }
 
+async function loadCustomQuizBank() {
+  const result = {};
+  // 1. Try reading the combined doc from Firestore (old format, small banks)
+  const combined = await sGet("bhu:customquizbank");
+  if(combined && typeof combined === "object") {
+    Object.assign(result, combined);
+  }
+  // 2. Try reading the split-by-subject format (new format, survives size limits)
+  const splitSubjs = await sGet("bhu:customquizbank_split");
+  if(splitSubjs && Array.isArray(splitSubjs)) {
+    for(const s of splitSubjs) {
+      const data = await sGet("bhu:customquizbank_subj_"+s);
+      if(data && Array.isArray(data)) result[s] = data;
+    }
+  }
+  // 3. Fallback: read per-subject localStorage backups if Firestore returned nothing
+  if(Object.keys(result).length === 0) {
+    const lsSubjs = localStorage.getItem("bhu:cqb_subjects");
+    if(lsSubjs) {
+      try {
+        const subjs = JSON.parse(lsSubjs);
+        for(const s of subjs) {
+          const raw = localStorage.getItem("bhu:cqb_subj_"+s);
+          if(raw) result[s] = JSON.parse(raw);
+        }
+      } catch(_) {}
+    }
+  }
+  return Object.keys(result).length > 0 ? result : null;
+}
+async function saveCustomQuizBank(cqb) {
+  const subjects = Object.keys(cqb);
+  // Always write localStorage backup per-subject first (survives hard refresh + Firebase failures)
+  try {
+    localStorage.setItem("bhu:cqb_subjects", JSON.stringify(subjects));
+    for(const s of subjects) {
+      localStorage.setItem("bhu:cqb_subj_"+s, JSON.stringify(cqb[s]));
+    }
+  } catch(_) {}
+  // Write split-by-subject to Firestore (avoids 1MB doc limit)
+  await sSet("bhu:customquizbank_split", subjects);
+  await Promise.all(subjects.map(s => sSet("bhu:customquizbank_subj_"+s, cqb[s])));
+}
+
 function toast(msg,type="s"){
   const el=document.getElementById("toast");
   el.textContent=msg; el.className="toast"+(type==="e"?" error":""); el.classList.remove("hidden");
@@ -2665,7 +2709,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   await loadPYQPdfs();
 
-  const cqb = await sGet("bhu:customquizbank");
+  const cqb = await loadCustomQuizBank();
   if(cqb){ customQuizBank=cqb; }
 
   // Check for app updates via SW
@@ -6179,7 +6223,7 @@ async function uploadQuizPdf(){
     customQuizBank[subj].push({q:q.q,opts:q.opts,ans:q.ans,exp:q.exp,premium:q.premium,difficulty:"medium"});
     counts[subj]=(counts[subj]||0)+1;
   });
-  await sSet("bhu:customquizbank",customQuizBank);
+  await saveCustomQuizBank(customQuizBank);
   rebuildQuizBank();
   const summary=Object.entries(counts).map(([s,n])=>`${s}: ${n}`).join(" · ");
   toast(`✅ ${_parsedPdfQuestions.length} question(s) added → ${summary}`);
@@ -6226,7 +6270,7 @@ async function addBulkQuestions(){
     customQuizBank[subj].push({q:q.q,opts:q.opts,ans:q.ans,exp:q.exp,premium:false,difficulty:"medium"});
     counts[subj]=(counts[subj]||0)+1;
   });
-  await sSet("bhu:customquizbank",customQuizBank);
+  await saveCustomQuizBank(customQuizBank);
   rebuildQuizBank();
   const summary=Object.entries(counts).map(([s,n])=>`${s}: ${n}`).join(" · ");
   const total=_bulkParsedQuestions.length;
@@ -6315,7 +6359,7 @@ async function addManualQuestion(){
     ["mQuizQ","mOptA","mOptB","mOptC","mOptD","mQuizExp"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   }
 
-  await sSet("bhu:customquizbank",customQuizBank);
+  await saveCustomQuizBank(customQuizBank);
   rebuildQuizBank();
   // ✅ FIXED: Only update list & count — renderAdmin() would wipe the form inputs
   renderCustomQList();
@@ -6333,7 +6377,7 @@ async function deleteCustomQuestion(subj,idx){
   if(!window.confirm("Delete this question?")) return;
   customQuizBank[subj].splice(idx,1);
   if(customQuizBank[subj].length===0) delete customQuizBank[subj];
-  await sSet("bhu:customquizbank",customQuizBank);
+  await saveCustomQuizBank(customQuizBank);
   if(editingCustomQ&&editingCustomQ.subject===subj) cancelEditQuestion();
   rebuildQuizBank();
   toast("Question deleted."); renderAdmin(); renderQuizStart();
