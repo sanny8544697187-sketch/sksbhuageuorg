@@ -526,7 +526,7 @@
     .bottom-nav-android button span:first-child { font-size: 22px; }
 
     /* Android Dashboard Widgets */
-    .android-home { display: none; padding: 16px 14px 0; }
+    .android-home { display: block; padding: 16px 14px 0; }
     .weather-widget {
       background: linear-gradient(135deg, #1B6B3A 0%, #0F3D23 100%);
       border-radius: 20px; padding: 22px 20px;
@@ -2767,6 +2767,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   });
 
   renderAll();
+  renderQuizStart(); // re-render after customQuizBank is fully loaded
+  initAndroidDashboard(); // re-init QOTD widget with complete quiz bank
   renderChat();
   renderDoubts();
   document.querySelectorAll(".section[data-redirect]").forEach(sec=>{
@@ -3565,7 +3567,7 @@ function renderQuizStart(){
     <div id="quizPremHint"></div>`;
 
   const qsEl=document.getElementById("quizSubjects");
-  qsEl.innerHTML=Object.entries(QUIZ_BANK).map(([subj,qs])=>{
+  qsEl.innerHTML=Object.entries(QUIZ_BANK).filter(([,qs])=>qs.length>0).map(([subj,qs])=>{
     const freeQs=qs.filter(q=>!q.premium).length;
     const totalQs=qs.length;
     const premQs=totalQs-freeQs;
