@@ -57,7 +57,7 @@ android {
         applicationId "online.sannykumar.krishigyan_v1"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 7
+        versionCode 8
         versionName "2.0.0"
 
         // The name for the application
@@ -150,9 +150,18 @@ android {
 
         
     }
+    signingConfigs {
+        release {
+            storeFile file('c:\\Users\\HP\\Downloads\\files (1)\\signing.keystore')
+            storePassword 'nUFgEhr7N8Jn'
+            keyAlias 'my-key-alias'
+            keyPassword 'nUFgEhr7N8Jn'
+        }
+    }
     buildTypes {
         release {
             minifyEnabled true
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {
