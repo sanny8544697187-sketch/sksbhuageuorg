@@ -91,12 +91,10 @@ async function updateUIByRole() {
     if (adminTab) adminTab.style.display = 'none';
   }
   
-  if (role === 'student') {
+  if (role === 'student' || role === 'pending') {
     if (repApplyCard) repApplyCard.style.display = 'block';
   }
-} else if (repTab) {
-    repTab.style.display = 'none';
-  }
+}
   
   if (role === 'admin') {
     if (adminTab) adminTab.style.display = 'flex';
@@ -633,6 +631,7 @@ window.doLogout = async function() {
 window.addEventListener('load', async () => {
   await checkApplicationStatus();
 });
+
 
 
 
