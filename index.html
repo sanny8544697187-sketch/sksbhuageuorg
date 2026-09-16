@@ -886,11 +886,11 @@ try {
 <div id="loginModal" class="modal hidden">
   <div class="modal-card">
     <button class="close-modal" onclick="closeLogin()">&times;</button>
-    <h2 style="font-size:24px;margin-bottom:8px;">Welcome Back 🌾</h2>
-    <p style="color:#777;font-size:13px;margin-bottom:20px;">Login to access your agriculture learning portal</p>
+    <h2 style="font-size:24px;margin-bottom:8px;" id="loginModalTitle">Welcome Back 🌾</h2>
+    <p style="color:#777;font-size:13px;margin-bottom:20px;" id="loginModalSubtitle">Login to access your agriculture learning portal</p>
     <div class="modal-tabs">
       <button id="loginTab" class="active" onclick="switchAuthTab('login')">Login</button>
-      <button id="registerTab" onclick="switchAuthTab('register')">Register</button>
+      <button id="registerTab" onclick="switchAuthTab('register')">Sign Up</button>
     </div>
     <div id="loginForm" class="login-form">
       <div><label class="lbl">Email</label><input id="authEmail" class="inp" type="email" placeholder="Enter your email"></div>
@@ -6584,6 +6584,15 @@ function switchAuthTab(t){
   document.getElementById("registerForm").classList.toggle("hidden",t!=="register");
   document.getElementById("loginTab").classList.toggle("active",t==="login");
   document.getElementById("registerTab").classList.toggle("active",t==="register");
+  const title = document.getElementById("loginModalTitle");
+  const subtitle = document.getElementById("loginModalSubtitle");
+  if(t==="register"){
+    if(title) title.textContent = "Create Account 🌱";
+    if(subtitle) subtitle.textContent = "Join KrishiGyan — free for all agriculture students!";
+  } else {
+    if(title) title.textContent = "Welcome Back 🌾";
+    if(subtitle) subtitle.textContent = "Login to access your agriculture learning portal";
+  }
 }
 
 async function doLogin(){

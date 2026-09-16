@@ -1,22 +1,29 @@
-/**
- * ═══════════════════════════════════════════════════════════════════
- * KRISHIGYAN — REPRESENTATIVE SYSTEM v1.0
+﻿/**
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ * KRISHIGYAN â€” REPRESENTATIVE SYSTEM v1.0
  * Role-based access control for Students, Representatives, and Admins
- * ═══════════════════════════════════════════════════════════════════
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  */
 
-// ── GLOBAL STATE ──────────────────────────────────────────────────
-let currentUser = null;
-let userRole = 'student'; // Default role
-let representativeData = null;
+// â”€â”€ GLOBAL STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// NOTE: window.currentUser is declared in index.html â€” we use it directly here.
+// We declare only what index.html doesn't already have:
+if (typeof window.userRole === 'undefined') window.userRole = 'student';
+if (typeof window.representativeData === 'undefined') window.representativeData = null;
 
-// ── INITIALIZATION ────────────────────────────────────────────────
+// â”€â”€ INITIALIZATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.addEventListener('DOMContentLoaded', async () => {
   if (window._fbConfigured) {
     firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
-        currentUser = user;
-        await loadUserRole(user.uid);
+        // sync with global window.currentUser set in index.html
+        window.currentUser = user;
+        await loadwindow.userRole(user.uid);
+        await updateUIByRole();
+        await checkApplicationStatus();
+      } else {
+        window.userRole = 'student';
+        window.representativeData = null;
         await updateUIByRole();
       }
     });
@@ -26,25 +33,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 /**
  * Load user role from Firestore
  */
-async function loadUserRole(uid) {
+async function loadwindow.userRole(uid) {
   try {
+    if (!window._db) return;
     const userDoc = await window._db.collection('users').doc(uid).get();
     if (userDoc.exists) {
-      userRole = userDoc.data().role || 'student';
-      if (userRole === 'representative') {
-        representativeData = userDoc.data();
+      window.userRole = userDoc.data().role || 'student';
+      if (window.userRole === 'representative') {
+        window.representativeData = userDoc.data();
       }
     } else {
       // Create default user document with student role
       await window._db.collection('users').doc(uid).set({
         uid: uid,
-        email: currentUser.email,
-        name: currentUser.displayName || 'User',
+        email: window.currentUser.email,
+        name: window.currentUser.displayName || 'User',
         role: 'student',
         createdAt: new Date(),
         isPremium: false,
       });
-      userRole = 'student';
+      window.userRole = 'student';
     }
   } catch (error) {
     console.error('Error loading user role:', error);
@@ -55,13 +63,13 @@ async function loadUserRole(uid) {
  * Update UI based on user role
  */
 async function updateUIByRole() {
-  // Show/hide representative tab in drawer
   const repTab = document.getElementById('representativeDrawerTab');
   const adminTab = document.getElementById('adminDrawerTab');
   const repSection = document.getElementById('representative-section');
   const adminSection = document.getElementById('admin-section');
+  const role = window.userRole || 'student';
   
-  if (userRole === 'representative') {
+  if (role === 'representative') {
     if (repTab) repTab.style.display = 'flex';
     if (repSection) repSection.style.display = 'block';
     await loadRepresentativeProfile();
@@ -69,24 +77,23 @@ async function updateUIByRole() {
     repTab.style.display = 'none';
   }
   
-  if (userRole === 'admin') {
+  if (role === 'admin') {
     if (adminTab) adminTab.style.display = 'flex';
     if (adminSection) adminSection.style.display = 'block';
-    await loadAdminDashboard();
   } else if (adminTab) {
     adminTab.style.display = 'none';
   }
   
-  // Show "Become Representative" option only for students
+  // Show "Become Representative" only for students
   const repApplyCard = document.getElementById('representativeApplyCard');
-  if (userRole === 'student' && repApplyCard) {
+  if (role === 'student' && repApplyCard) {
     repApplyCard.style.display = 'block';
   } else if (repApplyCard) {
     repApplyCard.style.display = 'none';
   }
 }
 
-// ── REPRESENTATIVE APPLICATION ────────────────────────────────────
+// â”€â”€ REPRESENTATIVE APPLICATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Open representative application modal
@@ -116,14 +123,14 @@ function closeRepresentativeModal() {
 async function submitRepresentativeApplication(e) {
   e.preventDefault();
   
-  if (!currentUser) {
+  if (!window.currentUser) {
     showToast('Please login first', 'error');
     return;
   }
   
   const formData = {
-    uid: currentUser.uid,
-    email: currentUser.email,
+    uid: window.currentUser.uid,
+    email: window.currentUser.email,
     name: document.getElementById('repName').value,
     college: document.getElementById('repCollege').value,
     course: document.getElementById('repCourse').value,
@@ -141,7 +148,7 @@ async function submitRepresentativeApplication(e) {
     // Check if already applied
     const existingApp = await window._db
       .collection('representativeApplications')
-      .where('uid', '==', currentUser.uid)
+      .where('uid', '==', window.currentUser.uid)
       .where('status', '==', 'pending')
       .get();
     
@@ -156,7 +163,7 @@ async function submitRepresentativeApplication(e) {
       .doc(formData.applicationId)
       .set(formData);
     
-    showToast('Application submitted successfully! ✨', 'success');
+    showToast('Application submitted successfully! âœ¨', 'success');
     closeRepresentativeModal();
     await checkApplicationStatus();
   } catch (error) {
@@ -169,12 +176,12 @@ async function submitRepresentativeApplication(e) {
  * Check application status
  */
 async function checkApplicationStatus() {
-  if (!currentUser) return;
+  if (!window.currentUser) return;
   
   try {
     const appQuery = await window._db
       .collection('representativeApplications')
-      .where('uid', '==', currentUser.uid)
+      .where('uid', '==', window.currentUser.uid)
       .orderBy('submittedAt', 'desc')
       .limit(1)
       .get();
@@ -188,14 +195,14 @@ async function checkApplicationStatus() {
     }
     
     const app = appQuery.docs[0].data();
-    let statusIcon = '🟡';
+    let statusIcon = 'ðŸŸ¡';
     let statusColor = '#FF9800';
     
     if (app.status === 'approved') {
-      statusIcon = '🟢';
+      statusIcon = 'ðŸŸ¢';
       statusColor = '#00B050';
     } else if (app.status === 'rejected') {
-      statusIcon = '🔴';
+      statusIcon = 'ðŸ”´';
       statusColor = '#E53935';
     }
     
@@ -213,16 +220,16 @@ async function checkApplicationStatus() {
   }
 }
 
-// ── REPRESENTATIVE PROFILE ────────────────────────────────────────
+// â”€â”€ REPRESENTATIVE PROFILE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Load representative profile
  */
 async function loadRepresentativeProfile() {
-  if (userRole !== 'representative' || !currentUser) return;
+  if (window.userRole !== 'representative' || !window.currentUser) return;
   
   try {
-    const userDoc = await window._db.collection('users').doc(currentUser.uid).get();
+    const userDoc = await window._db.collection('users').doc(window.currentUser.uid).get();
     const data = userDoc.data();
     
     const profileDiv = document.getElementById('repProfileInfo');
@@ -234,7 +241,7 @@ async function loadRepresentativeProfile() {
     profileDiv.innerHTML = `
       <div style="background:#E8F5E9;border-radius:16px;padding:18px;margin-bottom:16px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-          <div style="font-size:32px;">🌱</div>
+          <div style="font-size:32px;">ðŸŒ±</div>
           <div>
             <div style="font-weight:800;font-size:16px;">KrishiGyan Representative</div>
             <div style="font-size:12px;color:#0F3D23;opacity:.8;margin-top:2px;">Active Member</div>
@@ -255,7 +262,7 @@ async function loadRepresentativeProfile() {
           </div>
           <div style="display:flex;justify-content:space-between;font-size:13px;">
             <span style="color:#666;">Recognition:</span>
-            <strong style="color:#f59e0b;">⭐ ${recLevel}</strong>
+            <strong style="color:#f59e0b;">â­ ${recLevel}</strong>
           </div>
         </div>
       </div>
@@ -265,13 +272,13 @@ async function loadRepresentativeProfile() {
   }
 }
 
-// ── REPRESENTATIVE CONTRIBUTIONS ──────────────────────────────────
+// â”€â”€ REPRESENTATIVE CONTRIBUTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Submit contribution (feedback, suggestion, report, etc.)
  */
 async function submitRepresentativeContribution(type) {
-  if (userRole !== 'representative' || !currentUser) {
+  if (window.userRole !== 'representative' || !window.currentUser) {
     showToast('Only representatives can submit contributions', 'error');
     return;
   }
@@ -286,8 +293,8 @@ async function submitRepresentativeContribution(type) {
   
   try {
     const contribData = {
-      uid: currentUser.uid,
-      representativeId: representativeData?.representativeId || 'N/A',
+      uid: window.currentUser.uid,
+      representativeId: window.representativeData?.representativeId || 'N/A',
       type: type, // 'feedback', 'resource_suggestion', 'error_report', 'community_idea'
       title: titleInput.value,
       description: descInput.value,
@@ -315,12 +322,12 @@ async function submitRepresentativeContribution(type) {
  * Load representative contributions
  */
 async function loadRepresentativeContributions() {
-  if (userRole !== 'representative' || !currentUser) return;
+  if (window.userRole !== 'representative' || !window.currentUser) return;
   
   try {
     const contribQuery = await window._db
       .collection('representativeContributions')
-      .where('uid', '==', currentUser.uid)
+      .where('uid', '==', window.currentUser.uid)
       .orderBy('createdAt', 'desc')
       .limit(20)
       .get();
@@ -337,10 +344,10 @@ async function loadRepresentativeContributions() {
     contribQuery.forEach((doc) => {
       const c = doc.data();
       const typeEmoji = {
-        'feedback': '💬',
-        'resource_suggestion': '📚',
-        'error_report': '🐛',
-        'community_idea': '💡',
+        'feedback': 'ðŸ’¬',
+        'resource_suggestion': 'ðŸ“š',
+        'error_report': 'ðŸ›',
+        'community_idea': 'ðŸ’¡',
       };
       
       html += `
@@ -348,7 +355,7 @@ async function loadRepresentativeContributions() {
           <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
             <div style="flex:1;">
               <div style="font-weight:700;font-size:14px;margin-bottom:2px;">
-                ${typeEmoji[c.type] || '📝'} ${c.title}
+                ${typeEmoji[c.type] || 'ðŸ“'} ${c.title}
               </div>
               <div style="font-size:12px;color:#777;">${c.description}</div>
             </div>
@@ -369,13 +376,13 @@ async function loadRepresentativeContributions() {
   }
 }
 
-// ── ADMIN FUNCTIONS ───────────────────────────────────────────────
+// â”€â”€ ADMIN FUNCTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Load admin dashboard
  */
 async function loadAdminDashboard() {
-  if (userRole !== 'admin') return;
+  if (window.userRole !== 'admin') return;
   
   try {
     // Load pending applications
@@ -393,7 +400,7 @@ async function loadAdminDashboard() {
       return;
     }
     
-    let html = '<h3 style="font-weight:800;margin-bottom:12px;">⏳ Pending Applications</h3>';
+    let html = '<h3 style="font-weight:800;margin-bottom:12px;">â³ Pending Applications</h3>';
     pendingApps.forEach((doc) => {
       const app = doc.data();
       html += `
@@ -402,7 +409,7 @@ async function loadAdminDashboard() {
             <div style="font-weight:800;font-size:15px;">${app.name}</div>
             <div style="font-size:12px;color:#777;">
               <div>${app.email}</div>
-              <div>${app.college} • ${app.course} - Year ${app.year}</div>
+              <div>${app.college} â€¢ ${app.course} - Year ${app.year}</div>
               <div style="margin-top:6px;font-size:11px;color:#999;">${app.cityState}</div>
             </div>
           </div>
@@ -411,8 +418,8 @@ async function loadAdminDashboard() {
             <div><strong>How:</strong> ${app.contribution}</div>
           </div>
           <div style="display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="approveRepresentativeApplication('${doc.id}', '${app.uid}', '${app.email}')">✓ Approve</button>
-            <button class="btn btn-light" onclick="rejectRepresentativeApplication('${doc.id}')">✗ Reject</button>
+            <button class="btn btn-primary" onclick="approveRepresentativeApplication('${doc.id}', '${app.uid}', '${app.email}')">âœ“ Approve</button>
+            <button class="btn btn-light" onclick="rejectRepresentativeApplication('${doc.id}')">âœ— Reject</button>
           </div>
         </div>
       `;
@@ -446,7 +453,7 @@ async function approveRepresentativeApplication(appId, uid, email) {
       representativeApprovedAt: new Date(),
     });
     
-    showToast(`✓ Representative ${email} approved!`, 'success');
+    showToast(`âœ“ Representative ${email} approved!`, 'success');
     await loadAdminDashboard();
   } catch (error) {
     console.error('Error approving application:', error);
@@ -491,7 +498,7 @@ async function loadApprovedRepresentatives() {
       return;
     }
     
-    let html = '<h3 style="font-weight:800;margin-bottom:12px;">🟢 Approved Representatives</h3>';
+    let html = '<h3 style="font-weight:800;margin-bottom:12px;">ðŸŸ¢ Approved Representatives</h3>';
     repsQuery.forEach((doc) => {
       const rep = doc.data();
       html += `
@@ -506,7 +513,7 @@ async function loadApprovedRepresentatives() {
               </div>
             </div>
             <div style="text-align:right;font-size:12px;color:#0F3D23;background:#E8F5E9;padding:6px 10px;border-radius:6px;">
-              ⭐ ${rep.recognitionLevel || 'member'}
+              â­ ${rep.recognitionLevel || 'member'}
             </div>
           </div>
         </div>
@@ -538,14 +545,14 @@ async function loadAdminContributions() {
       return;
     }
     
-    let html = '<h3 style="font-weight:800;margin-bottom:12px;">📝 All Contributions</h3>';
+    let html = '<h3 style="font-weight:800;margin-bottom:12px;">ðŸ“ All Contributions</h3>';
     contribQuery.forEach((doc) => {
       const c = doc.data();
       const typeEmoji = {
-        'feedback': '💬',
-        'resource_suggestion': '📚',
-        'error_report': '🐛',
-        'community_idea': '💡',
+        'feedback': 'ðŸ’¬',
+        'resource_suggestion': 'ðŸ“š',
+        'error_report': 'ðŸ›',
+        'community_idea': 'ðŸ’¡',
       };
       
       html += `
@@ -553,7 +560,7 @@ async function loadAdminContributions() {
           <div style="display:flex;justify-content:space-between;align-items:start;">
             <div style="flex:1;">
               <div style="font-weight:700;font-size:13px;">
-                ${typeEmoji[c.type] || '📝'} ${c.title}
+                ${typeEmoji[c.type] || 'ðŸ“'} ${c.title}
               </div>
               <div style="font-size:12px;color:#777;margin-top:2px;">${c.description}</div>
               <div style="font-size:11px;color:#999;margin-top:4px;">By: ${c.representativeId}</div>
@@ -572,7 +579,7 @@ async function loadAdminContributions() {
   }
 }
 
-// ── TOAST NOTIFICATION ────────────────────────────────────────────
+// â”€â”€ TOAST NOTIFICATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function showToast(message, type = 'success') {
   const toast = document.getElementById('toast');
@@ -590,14 +597,14 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
-// ── ON LOGIN/LOGOUT ───────────────────────────────────────────────
+// â”€â”€ ON LOGIN/LOGOUT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 // Hook into existing logout if it exists
 const originalLogout = window.doLogout || (() => {});
 window.doLogout = async function() {
-  currentUser = null;
-  userRole = 'student';
-  representativeData = null;
+  window.currentUser = null;
+  window.userRole = 'student';
+  window.representativeData = null;
   await originalLogout();
 };
 
@@ -605,3 +612,5 @@ window.doLogout = async function() {
 window.addEventListener('load', async () => {
   await checkApplicationStatus();
 });
+
+
