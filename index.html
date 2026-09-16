@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
   ║           KrishiGyan — e-Learning Portal  v10.0              ║
@@ -802,7 +802,33 @@
     .ec-message.show { display: block; }
     .ec-success { background: #e8f5e9; color: #1e5a1e; }
     .ec-error { background: #ffebee; color: #c62828; }
-  </style>
+      /* â”€â”€ REPRESENTATIVE SYSTEM CSS â”€â”€ */
+    .drawer-nav { padding: 12px 10px; flex: 1; }
+    .drawer-item { display: flex; align-items: center; gap: 14px; padding: 13px 16px; border-radius: 12px; border: none; background: transparent; color: #a1bca1; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; text-align: left; transition: background 0.15s, color 0.15s; }
+    .drawer-item:hover { background: rgba(255,255,255,.06); color: white; }
+    .drawer-item.active { background: #00B050; color: white; box-shadow: 0 4px 12px rgba(0,176,80,.3); }
+    .drawer-item-icon { font-size: 20px; width: 26px; text-align: center; }
+
+    .rep-hero{background:linear-gradient(135deg,#0F3D23,#1B6B3A);border-radius:22px;padding:28px;color:white;margin-bottom:16px;}
+    .rep-hero h2{font-size:24px;font-weight:800;margin-bottom:8px;}
+    .rep-hero p{font-size:14px;opacity:.82;line-height:1.6;}
+    .rep-form-group{margin-bottom:14px;}
+    .rep-form-group textarea{width:100%;padding:10px 14px;border:1.5px solid #E0EAE0;border-radius:12px;font-family:inherit;font-size:14px;background:#F8FBF8;color:#111111;resize:vertical;min-height:80px;}
+    .rep-form-group textarea:focus{outline:2px solid #00B050;outline-offset:1px;}
+    .rep-contrib-type{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+    .rep-type-btn{padding:8px 14px;border:1.5px solid #E0EAE0;border-radius:12px;background:#F8FBF8;color:#0F3D23;font-weight:600;cursor:pointer;transition:.15s;}
+    .rep-type-btn.active{background:#00B050;color:white;border-color:#00B050;}
+    .rep-card{background:#FFFFFF;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.08);padding:16px;margin-bottom:10px;}
+    .rep-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.12);}
+    .admin-section{max-width:900px;margin:0 auto;}
+    .admin-apps-list{margin-top:16px;}
+    .admin-status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;}
+    .admin-status-badge.pending{background:#FFF3E0;color:#E65100;}
+    .admin-status-badge.approved{background:#E8F5E9;color:#0F3D23;}
+    .admin-status-badge.rejected{background:#FFEBEE;color:#C62828;}
+    body.dark .rep-form-group textarea{background:#0d1510;color:#E8F0E8;border-color:#1e2e1e;}
+    body.dark .rep-card{background:#111814;}
+</style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591814606015176" crossorigin="anonymous"></script>
   <script type="application/ld+json">
   {
@@ -986,7 +1012,65 @@ try {
 </div>
 
 
-<!-- MOBILE DRAWER OVERLAY -->
+
+<!-- REPRESENTATIVE APPLICATION MODAL -->
+<div id="representativeModal" class="modal hidden">
+  <div class="modal-card" style="max-width:600px;">
+    <button class="close-modal" onclick="document.getElementById('representativeModal').classList.add('hidden')">&times;</button>
+    <h2 style="font-size:24px;margin-bottom:8px;">ðŸŒ± Become a Representative</h2>
+    <p style="color:#777;font-size:13px;margin-bottom:20px;">Join our community of educators and contribute to KrishiGyan</p>
+    
+    <form id="repForm" onsubmit="submitRepresentativeApplication(event)" style="display:flex;flex-direction:column;gap:14px;">
+      <div>
+        <label class="lbl">Full Name *</label>
+        <input id="repName" class="inp" type="text" placeholder="Your full name" required>
+      </div>
+      <div>
+        <label class="lbl">College / Institute *</label>
+        <input id="repCollege" class="inp" type="text" placeholder="Your college name" required>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label class="lbl">Course *</label>
+          <input id="repCourse" class="inp" type="text" placeholder="e.g., B.Sc Agriculture" required>
+        </div>
+        <div>
+          <label class="lbl">Year *</label>
+          <select id="repYear" class="inp" required>
+            <option value="">Select Year</option>
+            <option value="1">1st Year</option>
+            <option value="2">2nd Year</option>
+            <option value="3">3rd Year</option>
+            <option value="4">4th Year</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">City / State *</label>
+        <input id="repCity" class="inp" type="text" placeholder="Your location" required>
+      </div>
+      <div>
+        <label class="lbl">Phone (optional)</label>
+        <input id="repPhone" class="inp" type="tel" placeholder="Your contact number">
+      </div>
+      <div>
+        <label class="lbl">Why do you want to be a representative? *</label>
+        <textarea id="repReason" class="rep-form-group" placeholder="Share your motivation..." required></textarea>
+      </div>
+      <div>
+        <label class="lbl">How will you contribute? *</label>
+        <textarea id="repContribution" class="rep-form-group" placeholder="Your ideas for contribution..." required></textarea>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">ðŸ“ Submit Application</button>
+        <button type="button" class="btn btn-light" onclick="document.getElementById('representativeModal').classList.add('hidden')" style="flex:1;">Cancel</button>
+      </div>
+    </form>
+    
+    <div id="repApplicationStatus" style="margin-top:20px;"></div>
+  </div>
+</div>
+
 <div id="drawerOverlay" onclick="closeMobileDrawer()"></div>
 
 <!-- MOBILE SLIDE-OUT DRAWER -->
@@ -1139,6 +1223,7 @@ try {
     <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
     <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
     <button id="navUpload"     class="btn btn-ghost hidden admin-only" onclick="setSection('upload')">⬆️ Upload</button>
+    <button id="navRepresentative" class="btn btn-ghost hidden" onclick="setSection('representative')">ðŸŒ± Representative</button>
     <button id="navAdmin"      class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
   </div>
 </header>
@@ -1217,6 +1302,17 @@ try {
     </div>
 
     <div id="userBar"></div>
+<!-- Student Home Card (Become Representative) -->
+<div id="representativeApplyCard" class="card" style="padding:18px;margin-bottom:20px;background:linear-gradient(135deg,#E8F5E9,#F8FBF8);display:none;">
+  <div style="display:flex;align-items:start;gap:14px;">
+    <div style="font-size:32px;">ðŸŒ±</div>
+    <div style="flex:1;">
+      <div style="font-weight:800;font-size:15px;margin-bottom:4px;">Become a KrishiGyan Representative</div>
+      <div style="font-size:12px;color:#777;margin-bottom:10px;">Help shape the future of agriculture education. Share resources, gather feedback, and earn recognition.</div>
+      <button class="btn btn-primary" onclick="document.getElementById('representativeModal').classList.remove('hidden')">Apply Now</button>
+    </div>
+  </div>
+</div>
     <div id="premBannerHome"></div>
 
     <div class="quick-grid" id="quickFeatureGrid">
@@ -2041,7 +2137,45 @@ try {
 
 
 
-  <!-- ADMIN -->
+  
+  <!-- REPRESENTATIVE DASHBOARD SECTION -->
+<section id="representative" class="section fu" style="padding:16px 14px;">
+  <div class="rep-hero">
+    <h2>ðŸŒ± Representative Dashboard</h2>
+    <p>Manage your contributions and track your impact on the KrishiGyan community</p>
+  </div>
+  
+  <div id="repProfileInfo" style="margin-bottom:20px;"></div>
+  
+  <div class="card" style="padding:20px;margin-bottom:20px;">
+    <h3 style="font-weight:800;margin-bottom:14px;">ðŸ“¤ Submit Your Contribution</h3>
+    
+    <div class="rep-form-group">
+      <label class="lbl">Title *</label>
+      <input id="contribTitle" class="inp" type="text" placeholder="Brief title of your contribution">
+    </div>
+    
+    <div class="rep-form-group">
+      <label class="lbl">Description *</label>
+      <textarea id="contribDesc" class="rep-form-group" placeholder="Describe your contribution in detail..."></textarea>
+    </div>
+    
+    <div class="rep-contrib-type">
+      <button type="button" class="rep-type-btn active" onclick="this.classList.add('active');document.querySelectorAll('.rep-type-btn').forEach(b=>b!==this&&b.classList.remove('active'))" data-type="feedback">ðŸ’¬ Feedback</button>
+      <button type="button" class="rep-type-btn" onclick="this.classList.add('active');document.querySelectorAll('.rep-type-btn').forEach(b=>b!==this&&b.classList.remove('active'))" data-type="resource_suggestion">ðŸ“š Resource Idea</button>
+      <button type="button" class="rep-type-btn" onclick="this.classList.add('active');document.querySelectorAll('.rep-type-btn').forEach(b=>b!==this&&b.classList.remove('active'))" data-type="error_report">ðŸ› Bug Report</button>
+      <button type="button" class="rep-type-btn" onclick="this.classList.add('active');document.querySelectorAll('.rep-type-btn').forEach(b=>b!==this&&b.classList.remove('active'))" data-type="community_idea">ðŸ’¡ Community Idea</button>
+    </div>
+    
+    <button class="btn btn-primary" onclick="submitRepresentativeContribution('feedback')" style="width:100%;">Submit Contribution</button>
+  </div>
+  
+  <div class="card" style="padding:20px;">
+    <h3 style="font-weight:800;margin-bottom:14px;">ðŸ“ Your Contributions</h3>
+    <div id="repContributionsList" style="text-align:center;color:#999;">Loading contributions...</div>
+  </div>
+</section>
+
   <section id="admin" class="section fu admin-panel">
     <div class="section-title">Admin Panel 🛡️</div>
     <div class="section-subtitle">Manage uploads, students & portal settings</div>
@@ -2055,6 +2189,7 @@ try {
       <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
       <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
       <button id="atEbooks"   class="btn btn-light"   onclick="setAdminTab('ebooks')">📚 Ebooks</button>
+      <button id="atReps" class="btn btn-light" onclick="setAdminTab('reps')">ðŸŒ± Reps</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
     </div>
     <div id="adminContent"></div>
@@ -2915,7 +3050,7 @@ function setSection(s){
   document.querySelectorAll(".section").forEach(el=>el.classList.remove("active"));
   const el=document.getElementById(s); if(el) el.classList.add("active");
 
-  ["home","notices","test-series","subjects","quiz","pyq","games","chat","profile","upload","admin"].forEach(k=>{
+  ["home","notices","test-series","subjects","quiz","pyq","games","chat","profile","representative","upload","admin"].forEach(k=>{
     let camel = k.split('-').map((w,i) => i===0 ? w : w.charAt(0).toUpperCase()+w.slice(1)).join('');
     const btn = document.getElementById("nav"+camel.charAt(0).toUpperCase()+camel.slice(1));
     if(btn){ btn.classList.toggle("btn-primary",k===s); btn.classList.toggle("btn-ghost",k!==s); }
@@ -4168,7 +4303,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","ebooks","settings"].forEach(k=>{
+  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","ebooks","settings","reps"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -4646,6 +4781,20 @@ async function renderAdmin(){
         <div id="adminEbooksList"></div>
       </div>`;
     renderAdminEbooksList();
+    } else if(adminTab==="reps"){
+    el.innerHTML=
+      <div class="card" style="padding:20px;margin-bottom:20px;">
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="typeof loadAdminDashboard==='function'&&loadAdminDashboard()">â³ Pending Applications</button>
+          <button class="btn btn-light" onclick="typeof loadApprovedRepresentatives==='function'&&loadApprovedRepresentatives()">ðŸŸ¢ Approved Reps</button>
+          <button class="btn btn-light" onclick="typeof loadAdminContributions==='function'&&loadAdminContributions()">ðŸ“ All Contributions</button>
+        </div>
+        <div id="adminApplicationsList"></div>
+        <div id="adminApprovedRepsList"></div>
+        <div id="adminContributionsList"></div>
+      </div>
+    ;
+    if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
   } else if(adminTab==="settings"){
 
     el.innerHTML=`
@@ -8769,8 +8918,10 @@ async function deleteNotice(id) {
 }
 </script>
 
+<script src="./representative-system.js"></script>
 </body>
 </html>
+
 
 
 
