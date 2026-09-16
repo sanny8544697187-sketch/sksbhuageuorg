@@ -846,8 +846,7 @@
 <body>
 
 <!-- SPLASH -->
-<div id="splash">
-  <div style="font-size:52px">🌾</div>
+<div id="splash">`n  <img src="logo.jpg" alt="KrishiGyan Logo" style="width: 80px; height: 80px; border-radius: 50%; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
   <div style="font-size:18px;font-weight:800;color:#0F3D23">KrishiGyan</div>
   <p style="font-size:13px;color:#777">Loading resources…</p>
   <div class="splash-bar"><div></div></div>
@@ -891,6 +890,7 @@ try {
     <div class="modal-tabs">
       <button id="loginTab" class="active" onclick="switchAuthTab('login')">Login</button>
       <button id="registerTab" onclick="switchAuthTab('register')">Sign Up</button>
+        <button id="repRegisterTab" onclick="switchAuthTab('repregister')">Rep Sign Up</button>
     </div>
     <div id="loginForm" class="login-form">
       <div><label class="lbl">Email</label><input id="authEmail" class="inp" type="email" placeholder="Enter your email"></div>
@@ -6577,17 +6577,30 @@ async function deleteCustomQuestion(subj,idx){
 // ═══════════════════════════════════════════════════════════════
 function openLogin(){ document.getElementById("loginModal").classList.remove("hidden"); }
 function closeLogin(){ document.getElementById("loginModal").classList.add("hidden"); document.getElementById("authErr").textContent=""; document.getElementById("regErr").textContent=""; }
-function switchAuthTab(t){
-  loginTab=t;
-  document.getElementById("loginForm").classList.toggle("hidden",t!=="login");
-  document.getElementById("registerForm").classList.toggle("hidden",t!=="register");
-  document.getElementById("loginTab").classList.toggle("active",t==="login");
-  document.getElementById("registerTab").classList.toggle("active",t==="register");
-  const title = document.getElementById("loginModalTitle");
-  const subtitle = document.getElementById("loginModalSubtitle");
-  if(t==="register"){
-    if(title) title.textContent = "Create Account 🌱";
-    if(subtitle) subtitle.textContent = "Join KrishiGyan — free for all agriculture students!";
+  function switchAuthTab(t){
+    loginTab=t;
+    document.getElementById("loginForm").classList.toggle("hidden",t!=="login");
+    document.getElementById("registerForm").classList.toggle("hidden",t!=="register");
+    const repForm = document.getElementById("repRegisterForm");
+    if(repForm) repForm.classList.toggle("hidden",t!=="repregister");
+    
+    document.getElementById("loginTab").classList.toggle("active",t==="login");
+    document.getElementById("registerTab").classList.toggle("active",t==="register");
+    const repTab = document.getElementById("repRegisterTab");
+    if(repTab) repTab.classList.toggle("active",t==="repregister");
+    
+    const title = document.getElementById("loginModalTitle");
+    const subtitle = document.getElementById("loginModalSubtitle");
+    if(t==="register"){
+      if(title) title.textContent = "Create Account 🌱";
+      if(subtitle) subtitle.textContent = "Join KrishiGyan - free for all agriculture students!";
+    } else if(t==="repregister"){
+      if(title) title.textContent = "Representative Application 💼";
+      if(subtitle) subtitle.textContent = "Apply to become a verified KrishiGyan representative.";
+    } else {
+      if(title) title.textContent = "Welcome Back 🌾";
+      if(subtitle) subtitle.textContent = "Login to access your agriculture learning portal";
+    }
   } else {
     if(title) title.textContent = "Welcome Back 🌾";
     if(subtitle) subtitle.textContent = "Login to access your agriculture learning portal";
@@ -8929,6 +8942,9 @@ async function deleteNotice(id) {
 <script src="./representative-system.js"></script>
 </body>
 </html>
+
+
+
 
 
 

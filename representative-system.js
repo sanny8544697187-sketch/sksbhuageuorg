@@ -614,3 +614,66 @@ window.addEventListener('load', async () => {
 });
 
 
+
+// ── DIRECT REPRESENTATIVE SIGNUP ─────────────────────────────────
+async function doRepRegister() {
+  const name = document.getElementById('repRegName').value.trim();
+  const college = document.getElementById('repRegCollege').value.trim();
+  const email = document.getElementById('repRegEmail').value.trim();
+  const pass = document.getElementById('repRegPass').value;
+  const reason = document.getElementById('repRegReason').value.trim();
+  const errEl = document.getElementById('repRegErr');
+  
+  if (!name || !college || !email || !pass || !reason) {
+    errEl.textContent = 'Please fill in all fields.';
+    return;
+  }
+  
+  errEl.textContent = 'Creating account...';
+  try {
+    // Create the Firebase Auth user
+    const userCred = await firebase.auth().createUserWithEmailAndPassword(email, pass);
+    const user = userCred.user;
+    
+    // Update profile
+    await user.updateProfile({ displayName: name });
+    
+    // Create default student document first
+    await window._db.collection('users').doc(user.uid).set({
+      uid: user.uid,
+      email: email,
+      name: name,
+      college: college,
+      role: 'student',
+      createdAt: new Date(),
+      isPremium: false,
+    });
+    
+    // Auto-submit representative application
+    const appId = 'APP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    await window._db.collection('representativeApplications').doc(appId).set({
+      uid: user.uid,
+      email: email,
+      name: name,
+      college: college,
+      course: 'N/A', // Omitted from short form
+      year: 'N/A',
+      cityState: 'N/A',
+      reason: reason,
+      contribution: 'Direct Signup Application',
+      phone: '',
+      status: 'pending',
+      submittedAt: new Date(),
+      applicationId: appId,
+    });
+    
+    // Success
+    errEl.textContent = '';
+    closeLogin();
+    showToast('Account created & Application submitted! Pending admin approval.', 'success');
+    
+  } catch (err) {
+    console.error(err);
+    errEl.textContent = err.message;
+  }
+}
