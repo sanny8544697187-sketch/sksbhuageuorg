@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (user) {
         // sync with global window.currentUser set in index.html
         window.currentUser = user;
-        await loadwindow.userRole(user.uid);
+        await loadUserRole(user.uid);
         await updateUIByRole();
         await checkApplicationStatus();
       } else {
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 /**
  * Load user role from Firestore
  */
-async function loadwindow.userRole(uid) {
+async function loadUserRole(uid) {
   try {
     if (!window._db) return;
     const userDoc = await window._db.collection('users').doc(uid).get();
@@ -677,3 +677,4 @@ async function doRepRegister() {
     errEl.textContent = err.message;
   }
 }
+
