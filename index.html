@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <!--
   ╔══════════════════════════════════════════════════════════════════╗
   ║           KrishiGyan — e-Learning Portal  v10.0              ║
@@ -4782,7 +4782,7 @@ async function renderAdmin(){
       </div>`;
     renderAdminEbooksList();
     } else if(adminTab==="reps"){
-    el.innerHTML=
+    el.innerHTML=`
       <div class="card" style="padding:20px;margin-bottom:20px;">
         <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
           <button class="btn btn-primary" onclick="typeof loadAdminDashboard==='function'&&loadAdminDashboard()">â³ Pending Applications</button>
@@ -4793,7 +4793,7 @@ async function renderAdmin(){
         <div id="adminApprovedRepsList"></div>
         <div id="adminContributionsList"></div>
       </div>
-    ;
+    `;
     if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
   } else if(adminTab==="settings"){
 
