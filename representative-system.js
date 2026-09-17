@@ -74,45 +74,31 @@ async function updateUIByRole() {
 
   if (role === 'representative') {
     if (repTab) repTab.style.display = 'flex';
-    if (repSection) repSection.style.display = 'block';
     if (repAccessCard) repAccessCard.style.display = 'block';
     if (repApplyCard) repApplyCard.style.display = 'none';
     await loadRepresentativeProfile();
   } else {
     if (repTab) repTab.style.display = 'none';
+    if (repSection) repSection.style.display = 'none';
     if (repAccessCard) repAccessCard.style.display = 'none';
   }
   
   if (role === 'admin') {
     if (adminTab) adminTab.style.display = 'flex';
-    if (adminSection) adminSection.style.display = 'block';
     if (repApplyCard) repApplyCard.style.display = 'none';
   } else {
     if (adminTab) adminTab.style.display = 'none';
+    if (adminSection) adminSection.style.display = 'none';
   }
   
   if (role === 'student' || role === 'pending') {
     if (repApplyCard) repApplyCard.style.display = 'block';
-  }
-}
-  
-  if (role === 'admin') {
-    if (adminTab) adminTab.style.display = 'flex';
-    if (adminSection) adminSection.style.display = 'block';
-  } else if (adminTab) {
-    adminTab.style.display = 'none';
-  }
-  
-  // Show "Become Representative" only for students
-  const repApplyCard = document.getElementById('representativeApplyCard');
-  if (role === 'student' && repApplyCard) {
-    repApplyCard.style.display = 'block';
-  } else if (repApplyCard) {
-    repApplyCard.style.display = 'none';
+  } else {
+    if (repApplyCard) repApplyCard.style.display = 'none';
   }
 }
 
-// â”€â”€ REPRESENTATIVE APPLICATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── REPRESENTATIVE APPLICATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Open representative application modal
@@ -631,6 +617,8 @@ window.doLogout = async function() {
 window.addEventListener('load', async () => {
   await checkApplicationStatus();
 });
+
+
 
 
 
