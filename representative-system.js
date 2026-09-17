@@ -56,6 +56,7 @@ async function loadUserRole(uid) {
     }
   } catch (error) {
     console.error('Error loading user role:', error);
+      window.userRole = 'student';
   }
 }
 
@@ -222,6 +223,7 @@ async function checkApplicationStatus() {
     `;
   } catch (error) {
     console.error('Error checking application status:', error);
+      if(document.getElementById('repApplyStatus')) document.getElementById('repApplyStatus').textContent = 'Error checking status (Permissions denied).';
   }
 }
 
@@ -617,6 +619,7 @@ window.doLogout = async function() {
 window.addEventListener('load', async () => {
   await checkApplicationStatus();
 });
+
 
 
 

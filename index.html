@@ -6658,63 +6658,17 @@ async function doRegister(){
 async function doLogout(){
   currentUser=null; await sDel("bhu:session"); toast("Logged out."); renderAll();
   if(section==="admin") setSection("home");
-}
-
 async function doGoogleLogin(){
   if(!window.firebase || !firebase.auth) { toast("Firebase not initialized.","e"); return; }
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    let result;
-    
-    // Check if device is mobile or running in TWA/WebView
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent);
-    
-    if (isMobile) {
-      toast("Redirecting to Google Sign-In...","");
-      await firebase.auth().signInWithRedirect(provider);
-      return; // Page will redirect, result handled on reload by handleGoogleRedirectResult()
-    } else {
-      try {
-        result = await firebase.auth().signInWithPopup(provider);
-      } catch(popupErr) {
-        if(popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user' || popupErr.code === 'auth/cancelled-popup-request' || popupErr.code === 'auth/operation-not-supported-in-this-environment') {
-          toast("Redirecting to Google Sign-In...","");
-          await firebase.auth().signInWithRedirect(provider);
-          return;
-        }
-        throw popupErr;
-      }
-    }
-    await processGoogleUser(result.user);
+    toast("Redirecting to Google Sign-In...","");
+    await firebase.auth().signInWithRedirect(provider);
   } catch(e) {
-    console.error("Google Login Error:", e);
-    if(e.code === 'auth/network-request-failed') {
-      toast("Network error. Check your internet connection.","e");
-    } else if(e.code === 'auth/unauthorized-domain') {
-      toast("This domain is not authorized for Google Sign-In. Add it in Firebase Console → Authentication → Settings → Authorized domains.","e");
-    } else if(e.code === 'auth/internal-error') {
-      toast("Google Sign-In failed. Please try again.","e");
-    } else {
-      toast("Google Login Failed: " + (e.message || e.code || "Unknown error"),"e");
-    }
+    console.error(e);
+    toast("Google login failed.","e");
   }
-}
-
-async function processGoogleUser(user) {
-  if(!user || !user.email) { toast("Google login returned no user info.","e"); return; }
-  let found = usersDB.find(u=>u.email.toLowerCase()===user.email.toLowerCase());
-  if(!found){
-    found = {
-      id:Date.now()+"", name:user.displayName||"Google User", roll:"", year:"Other", 
-      email:user.email.toLowerCase(), password:"", joinedAt:new Date().toISOString(), 
-      subPlan:null, subExpiry:null
-    };
-    usersDB=[...usersDB,found]; await sSet("bhu:users",usersDB); await saveUserToFirebase(found);
-  }
-  const sess={...found,isAdmin:found.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()};
-  currentUser=sess; await sSet("bhu:session",sess);
-  closeLogin(); toast(`Welcome, ${found.name}! 🚀`); renderAll();
 }
 
 // Handle Google redirect result on page load (for mobile/in-app browser fallback)
@@ -8953,6 +8907,10 @@ async function deleteNotice(id) {
 <script src="./representative-system.js"></script>
 </body>
 </html>
+
+
+
+
 
 
 
