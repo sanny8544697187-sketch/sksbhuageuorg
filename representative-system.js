@@ -1,4 +1,4 @@
- ﻿/**
+﻿ ﻿/**
  * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  * KRISHIGYAN â€” REPRESENTATIVE SYSTEM v1.0
  * Role-based access control for Students, Representatives, and Admins
@@ -187,9 +187,7 @@ async function checkApplicationStatus() {
   try {
     const appQuery = await window._db
       .collection('representativeApplications')
-      .where('uid', '==', window.currentUser.uid)
-      .orderBy('submittedAt', 'desc')
-      .limit(1)
+      .where('uid', '==', window.currentUser.uid).limit(10)
       .get();
     
     const statusDiv = document.getElementById('repApplicationStatus');
@@ -619,6 +617,7 @@ window.doLogout = async function() {
 window.addEventListener('load', async () => {
   await checkApplicationStatus();
 });
+
 
 
 
