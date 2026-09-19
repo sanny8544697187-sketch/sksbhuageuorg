@@ -2774,7 +2774,7 @@ function loadRazorpay() {
     s.onload=()=>res(true);s.onerror=()=>res(false);document.body.appendChild(s);
   });
 }
-const isSubActive = u => { if(!u) return false; if(u.isAdmin) return true; if(!u.subExpiry) return false; return new Date(u.subExpiry)>new Date(); };
+const isSubActive = u => { if(!u) return false; if(u.isAdmin) return true; if(u.role === 'representative' || window.userRole === 'representative') return true; if(!u.subExpiry) return false; return new Date(u.subExpiry)>new Date(); };
 const isProActive = u => { if(!isSubActive(u)) return false; return u.isAdmin || u.subPlan === "monthly" || u.subPlan === "yearly"; };
 const expiryDate  = plan => { const d=new Date(); if(plan==="trial") d.setDate(d.getDate()+7); else if(plan==="monthly") d.setMonth(d.getMonth()+1); else d.setFullYear(d.getFullYear()+1); return d.toISOString(); };
 
@@ -4809,6 +4809,8 @@ async function renderAdmin(){
       </div>
     `;
     if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
+    if (typeof loadApprovedRepresentatives === 'function') loadApprovedRepresentatives();
+    if (typeof loadAdminContributions === 'function') loadAdminContributions();
   } else if(adminTab==="settings"){
 
     el.innerHTML=`
@@ -8905,6 +8907,10 @@ async function deleteNotice(id) {
 <script src="./representative-system.js"></script>
 </body>
 </html>
+
+
+
+
 
 
 
