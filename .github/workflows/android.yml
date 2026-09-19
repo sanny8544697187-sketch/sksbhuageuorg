@@ -1,4 +1,4 @@
-name: Android CI
+name: Android CI - Build Signed AAB v9
 
 on:
   push:
@@ -21,12 +21,27 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Release AAB
+    - name: Build Release AAB (Signed via build.gradle)
       run: ./gradlew bundleRelease
+      env:
+        JAVA_TOOL_OPTIONS: "-Xmx4g"
 
-    - name: Upload AAB Artifact
+    - name: Sign AAB with jarsigner
+      run: |
+        INPUT_AAB="${{ github.workspace }}/app/build/outputs/bundle/release/app-release.aab"
+        OUTPUT_AAB="${{ github.workspace }}/KrishiGyan-v9-signed.aab"
+        jarsigner -verbose \
+          -sigalg SHA256withRSA \
+          -digestalg SHA-256 \
+          -keystore "${{ github.workspace }}/signing.keystore" \
+          -storepass "nUFgEhr7N8Jn" \
+          -keypass "nUFgEhr7N8Jn" \
+          "$INPUT_AAB" "my-key-alias"
+        cp "$INPUT_AAB" "$OUTPUT_AAB"
+
+    - name: Upload Signed AAB v9
       uses: actions/upload-artifact@v4
       with:
-        name: KrishiGyan-release-aab
-        path: app/build/outputs/bundle/release/app-release.aab
+        name: KrishiGyan-v9-signed-aab
+        path: KrishiGyan-v9-signed.aab
         retention-days: 30

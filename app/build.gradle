@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright 2019 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,8 +57,8 @@ android {
         applicationId "online.sannykumar.krishigyan_v1"
         minSdkVersion 21
         targetSdkVersion 36
-        versionCode 8
-        versionName "2.0.0"
+        versionCode 9
+        versionName "2.1.0"
 
         // The name for the application
         resValue "string", "appName", twaManifest.name
@@ -152,7 +152,7 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('c:\\Users\\HP\\Downloads\\files (1)\\signing.keystore')
+            storeFile file('../../signing.keystore')
             storePassword 'nUFgEhr7N8Jn'
             keyAlias 'my-key-alias'
             keyPassword 'nUFgEhr7N8Jn'
@@ -220,3 +220,4 @@ dependencies {
         implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
     
 }
+
