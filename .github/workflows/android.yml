@@ -21,23 +21,25 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Release AAB (Signed via build.gradle)
+    - name: Fix keystore path in build.gradle
+      run: |
+        KEYSTORE_ABS="${{ github.workspace }}/signing.keystore"
+        sed -i "s|storeFile file('../../signing.keystore')|storeFile file('${KEYSTORE_ABS}')|g" app/build.gradle
+        echo "Keystore path set to: $KEYSTORE_ABS"
+        grep "storeFile" app/build.gradle
+
+    - name: Build Release AAB
       run: ./gradlew bundleRelease
       env:
         JAVA_TOOL_OPTIONS: "-Xmx4g"
 
-    - name: Sign AAB with jarsigner
+    - name: Verify and copy signed AAB
       run: |
         INPUT_AAB="${{ github.workspace }}/app/build/outputs/bundle/release/app-release.aab"
         OUTPUT_AAB="${{ github.workspace }}/KrishiGyan-v9-signed.aab"
-        jarsigner -verbose \
-          -sigalg SHA256withRSA \
-          -digestalg SHA-256 \
-          -keystore "${{ github.workspace }}/signing.keystore" \
-          -storepass "nUFgEhr7N8Jn" \
-          -keypass "nUFgEhr7N8Jn" \
-          "$INPUT_AAB" "my-key-alias"
+        ls -la "$INPUT_AAB"
         cp "$INPUT_AAB" "$OUTPUT_AAB"
+        echo "AAB ready at $OUTPUT_AAB"
 
     - name: Upload Signed AAB v9
       uses: actions/upload-artifact@v4
