@@ -332,9 +332,7 @@ async function loadRepresentativeContributions() {
   try {
     const contribQuery = await window._db
       .collection('representativeContributions')
-      .where('uid', '==', window.currentUser.uid)
-      .orderBy('createdAt', 'desc')
-      .limit(20)
+      .where('uid', '==', window.currentUser.uid).limit(50)
       .get();
     
     const contribDiv = document.getElementById('repContributionsList');
@@ -394,7 +392,6 @@ async function loadAdminDashboard() {
     const pendingApps = await window._db
       .collection('representativeApplications')
       .where('status', '==', 'pending')
-      .orderBy('submittedAt', 'desc')
       .get();
     
     const adminDiv = document.getElementById('adminApplicationsList');
@@ -492,7 +489,6 @@ async function loadApprovedRepresentatives() {
     const repsQuery = await window._db
       .collection('users')
       .where('role', '==', 'representative')
-      .orderBy('representativeApprovedAt', 'desc')
       .get();
     
     const div = document.getElementById('adminApprovedRepsList');
@@ -617,6 +613,7 @@ window.doLogout = async function() {
 window.addEventListener('load', async () => {
   await checkApplicationStatus();
 });
+
 
 
 
