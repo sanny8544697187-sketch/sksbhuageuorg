@@ -6781,7 +6781,6 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
   // ── 2. If still no email, force fresh sign-in ───────────────────
   if (!rawEmail) {
     console.warn("No email found — forcing fresh Google sign-in");
-    try { await firebase.auth().signOut(); } catch(_) {}
     sessionStorage.setItem('_kgGoogleAuthPending', '1');
     const p2 = new firebase.auth.GoogleAuthProvider();
     p2.addScope('email'); p2.addScope('profile');
@@ -6857,11 +6856,10 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
 async function doGoogleLogin(){
   if(!window.firebase || !firebase.auth) { toast("Firebase not initialized.","e"); return; }
   try {
-    // Sign out of any stale Firebase session first so Google issues fresh credentials with email
-    try { await firebase.auth().signOut(); } catch(_) {}
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
+    // prompt:select_account forces Google to show account picker & return fresh credential with email
     provider.setCustomParameters({ prompt: 'select_account' });
     sessionStorage.setItem('_kgGoogleAuthPending', '1');
     toast("Redirecting to Google Sign-In…","");
