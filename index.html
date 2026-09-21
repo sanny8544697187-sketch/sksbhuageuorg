@@ -6762,7 +6762,8 @@ async function doLogout(){
 }
 
 async function processGoogleUser(fbUser, customName="", customRoll="", customYear="Other") {
-  const em = fbUser.email.toLowerCase();
+  const rawEmail = fbUser.email || (fbUser.providerData && fbUser.providerData[0] && fbUser.providerData[0].email) || (fbUser.uid + "@noemail.com");
+  const em = rawEmail.toLowerCase();
   const name = customName || fbUser.displayName || em.split("@")[0];
   
   if(em === ADMIN_EMAIL.toLowerCase()) {
@@ -6797,14 +6798,19 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
 
 async function doGoogleLogin(){
   if(!window.firebase || !firebase.auth) { toast("Firebase not initialized.","e"); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
   try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
     const res = await firebase.auth().signInWithPopup(provider);
     await processGoogleUser(res.user);
   } catch(e) {
-    console.error(e);
-    toast("Google login failed.","e");
+    console.error("Popup failed:", e);
+    if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
+      toast("Redirecting to Google Sign-In...","");
+      firebase.auth().signInWithRedirect(provider);
+    } else {
+      toast("Google login cancelled.","e");
+    }
   }
 }
 
