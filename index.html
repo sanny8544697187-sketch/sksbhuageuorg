@@ -6813,29 +6813,33 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
 
 async function doGoogleLogin(){
   if(!window.firebase || !firebase.auth) { toast("Firebase not initialized.","e"); return; }
-  const provider = new firebase.auth.GoogleAuthProvider();
-  provider.setCustomParameters({ prompt: 'select_account' });
   try {
-    const res = await firebase.auth().signInWithPopup(provider);
-    await processGoogleUser(res.user);
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
+    provider.setCustomParameters({ prompt: 'select_account' });
+    toast("Redirecting to Google Sign-In…","");
+    await firebase.auth().signInWithRedirect(provider);
   } catch(e) {
-    console.error("Popup failed:", e);
-    if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') {
-      toast("Redirecting to Google Sign-In...","");
-      firebase.auth().signInWithRedirect(provider);
-    } else {
-      toast("Google login cancelled.","e");
-    }
+    console.error("Google redirect failed:", e);
+    toast("Google login failed: " + (e.message||e.code||""), "e");
   }
 }
 
-// Handle Google redirect result on page load (for mobile/in-app browser fallback)
+// Handle Google redirect result on page load
 async function handleGoogleRedirectResult() {
   if(!window.firebase || !firebase.auth) return;
   try {
     const result = await firebase.auth().getRedirectResult();
     if(result && result.user) {
-      await processGoogleUser(result.user);
+      // Ensure email is pulled from credential or providerData if not on user directly
+      const fbUser = result.user;
+      if (!fbUser.email && result.additionalUserInfo && result.additionalUserInfo.profile) {
+        fbUser._emailFromProfile = result.additionalUserInfo.profile.email;
+        // Override the email getter
+        Object.defineProperty(fbUser, 'email', { get: () => fbUser._emailFromProfile, configurable: true });
+      }
+      await processGoogleUser(fbUser);
     }
   } catch(e) {
     console.warn("Google redirect result error:", e);
