@@ -6762,81 +6762,96 @@ async function doLogout(){
 }
 
 async function processGoogleUser(fbUser, customName="", customRoll="", customYear="Other") {
-  // Search ALL possible email sources in order
+  // ── 1. Extract email from all possible sources ──────────────────
   let rawEmail = fbUser.email;
-  
-  // Try every providerData entry (Google puts email here)
-  if (!rawEmail && fbUser.providerData && fbUser.providerData.length > 0) {
-    rawEmail = fbUser.providerData.map(p => p && p.email).find(e => e) || null;
+  const googleProviderData = (fbUser.providerData||[]).find(p => p && p.providerId === 'google.com');
+  if (!rawEmail && googleProviderData) rawEmail = googleProviderData.email;
+  if (!rawEmail && fbUser.providerData) {
+    rawEmail = (fbUser.providerData.map(p => p && p.email).find(e => e)) || null;
   }
-  
-  // Try Firebase ID token claims as last resort
   if (!rawEmail && fbUser.getIdTokenResult) {
     try {
-      const token = await fbUser.getIdTokenResult();
-      rawEmail = (token.claims && token.claims.email) || null;
+      const tok = await fbUser.getIdTokenResult(true);
+      rawEmail = (tok.claims && tok.claims.email) || 
+                 (tok.claims && tok.claims.firebase && tok.claims.firebase.identities && 
+                  tok.claims.firebase.identities.email && tok.claims.firebase.identities.email[0]) || null;
     } catch(_) {}
   }
-  
-  console.log("processGoogleUser — uid:", fbUser.uid, "email:", rawEmail,
-    "providerData:", JSON.stringify((fbUser.providerData||[]).map(p=>({email:p&&p.email,providerId:p&&p.providerId}))));
-  
-  if (!rawEmail) { 
-    console.warn("Email still null — clearing Firebase session and retrying Google Sign-In...");
+
+  // ── 2. If still no email, force fresh sign-in ───────────────────
+  if (!rawEmail) {
+    console.warn("No email found — forcing fresh Google sign-in");
     try { await firebase.auth().signOut(); } catch(_) {}
     sessionStorage.setItem('_kgGoogleAuthPending', '1');
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('email'); provider.addScope('profile');
-    provider.setCustomParameters({ prompt: 'select_account' });
-    toast("Fetching your Google account details…","");
-    await firebase.auth().signInWithRedirect(provider);
-    return; 
+    const p2 = new firebase.auth.GoogleAuthProvider();
+    p2.addScope('email'); p2.addScope('profile');
+    p2.setCustomParameters({ prompt: 'select_account' });
+    toast("Please select your Google account again…","");
+    await firebase.auth().signInWithRedirect(p2);
+    return;
   }
+
   const em = rawEmail.toLowerCase();
-  const name = customName || fbUser.displayName || em.split("@")[0];
-  
+  const name = customName || fbUser.displayName || googleProviderData?.displayName || em.split("@")[0];
+  const firebaseUid = fbUser.uid || "";
+  const googleUid = googleProviderData ? googleProviderData.uid : "";  // Google sub ID e.g. "116239767451219737871"
+
+  console.log("processGoogleUser ✓ email:", em, "firebaseUid:", firebaseUid, "googleUid:", googleUid);
+
+  // ── 3. Admin check ──────────────────────────────────────────────
   if(em === ADMIN_EMAIL.toLowerCase()) {
     const u = { email: em, name: "Admin", isAdmin: true, year: "Administrator", roll: "" };
     currentUser = u; await sSet("bhu:session", u);
     closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll();
     return;
   }
-  
-  // Find by UID first (catches old fake-email accounts), then by real email
-  let found = (fbUser.uid ? usersDB.find(u => u.id === fbUser.uid) : null)
-           || usersDB.find(u => u.email.toLowerCase() === em);
-  if(!found) {
-    // New user — create account
-    found = { 
-      id: fbUser.uid || (Date.now()+""), 
-      name: name, 
-      roll: customRoll, 
-      year: customYear, 
-      email: em, 
-      password: "FB_AUTH_USER", 
-      joinedAt: new Date().toISOString(), 
-      subPlan: null, 
-      subExpiry: null 
+
+  // ── 4. Robust user lookup — 4 ways to find the same person ──────
+  let found = null;
+  // (a) Firebase UID match
+  if (!found && firebaseUid) found = usersDB.find(u => u.id === firebaseUid);
+  // (b) Google sub UID match (stored in googleUid field)
+  if (!found && googleUid) found = usersDB.find(u => u.googleUid === googleUid);
+  // (c) Real email match
+  if (!found) found = usersDB.find(u => u.email && u.email.toLowerCase() === em);
+  // (d) Old @noemail.com pattern — match by Firebase UID prefix in fake email
+  if (!found && firebaseUid) found = usersDB.find(u => u.email && u.email === firebaseUid + "@noemail.com");
+
+  if (!found) {
+    // ── New user — create account ──────────────────────────────────
+    found = {
+      id: firebaseUid || (Date.now()+""),
+      googleUid: googleUid,
+      name: name,
+      roll: customRoll,
+      year: customYear,
+      email: em,
+      password: "FB_AUTH_USER",
+      joinedAt: new Date().toISOString(),
+      subPlan: null,
+      subExpiry: null
     };
     usersDB = [...usersDB, found];
     await sSet("bhu:users", usersDB);
     if(fbOK) await saveUserToFirebase(found);
     toast(`Registered! Welcome, ${name}! 🎉`);
   } else {
-    // Existing user — fix fake email if stored, and ensure UID is saved
+    // ── Existing user — repair any stale data ─────────────────────
     let changed = false;
-    if (found.email && found.email.endsWith("@noemail.com")) { found.email = em; changed = true; }
-    if (fbUser.uid && found.id !== fbUser.uid) { found.id = fbUser.uid; changed = true; }
+    if (found.email && (found.email.endsWith("@noemail.com") || found.email !== em)) { found.email = em; changed = true; }
+    if (firebaseUid && found.id !== firebaseUid) { found.id = firebaseUid; changed = true; }
+    if (googleUid && found.googleUid !== googleUid) { found.googleUid = googleUid; changed = true; }
     if (changed) {
-      usersDB = usersDB.map(u => (u.email === found.email || u.id === found.id) ? found : u);
+      usersDB = usersDB.map(u => (u.id === found.id || u.email === found.email || u.googleUid === found.googleUid) ? found : u);
       await sSet("bhu:users", usersDB);
       if(fbOK) await saveUserToFirebase(found);
     }
+    toast(`Welcome back, ${found.name}! 🎓`);
   }
-  
+
   const sess = { ...found, isAdmin: false };
   currentUser = sess; await sSet("bhu:session", sess);
-  closeLogin(); toast(`Welcome, ${found.name}! 🎓`); renderAll();
+  closeLogin(); renderAll();
 }
 
 async function doGoogleLogin(){
