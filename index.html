@@ -6711,13 +6711,26 @@ async function doLogin(){
     const u={email:em,name:"Admin",isAdmin:true,year:"Administrator",roll:""};
     currentUser=u; await sSet("bhu:session",u);
     closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll();
-  } else {
-    const found=usersDB.find(u=>u.email.toLowerCase()===em);
-    if(!found){errEl.textContent="Account not found. Register first.";return;}
+  // Try legacy usersDB login first
+  const found=usersDB.find(u=>u.email.toLowerCase()===em);
+  if(found && found.password !== "FB_AUTH_USER"){
     if(found.password!==pass){errEl.textContent="Wrong password.";return;}
     const u={...found,isAdmin:false};
     currentUser=u; await sSet("bhu:session",u);
     closeLogin(); toast(`Welcome back, ${found.name}! 🎓`); renderAll();
+    return;
+  }
+  
+  // Try Firebase Auth
+  try {
+    const cred = await firebase.auth().signInWithEmailAndPassword(em, pass);
+    await processGoogleUser(cred.user);
+  } catch(e) {
+    if(found && found.password === "FB_AUTH_USER") {
+       errEl.textContent="Please login with Google for this account.";
+    } else {
+       errEl.textContent="Account not found or wrong password.";
+    }
   }
 }
 
@@ -6732,10 +6745,13 @@ async function doRegister(){
   if(pass.length<6){errEl.textContent="Password min 6 characters.";return;}
   if(em===ADMIN_EMAIL.toLowerCase()){errEl.textContent="Email reserved.";return;}
   if(usersDB.find(u=>u.email.toLowerCase()===em)){errEl.textContent="Email already registered. Login instead.";return;}
-  const newU={id:Date.now()+"",name,roll,year,email:em,password:pass,joinedAt:new Date().toISOString(),subPlan:null,subExpiry:null};
-  usersDB=[...usersDB,newU]; await sSet("bhu:users",usersDB); await saveUserToFirebase(newU);
-  const sess={...newU,isAdmin:false}; currentUser=sess; await sSet("bhu:session",sess);
-  closeLogin(); toast(`Registered! Welcome, ${name}! 🎉`); renderAll();
+  try {
+    const cred = await firebase.auth().createUserWithEmailAndPassword(em, pass);
+    await cred.user.updateProfile({ displayName: name });
+    await processGoogleUser(cred.user, name, roll, year);
+  } catch(e) {
+    errEl.textContent = e.message;
+  }
 }
 
 async function doLogout(){
@@ -6743,13 +6759,47 @@ async function doLogout(){
   if(section==="admin") setSection("home");
 }
 
+async function processGoogleUser(fbUser, customName="", customRoll="", customYear="Other") {
+  const em = fbUser.email.toLowerCase();
+  const name = customName || fbUser.displayName || em.split("@")[0];
+  
+  if(em === ADMIN_EMAIL.toLowerCase()) {
+    const u = { email: em, name: "Admin", isAdmin: true, year: "Administrator", roll: "" };
+    currentUser = u; await sSet("bhu:session", u);
+    closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll();
+    return;
+  }
+  
+  let found = usersDB.find(u => u.email.toLowerCase() === em);
+  if(!found) {
+    found = { 
+      id: fbUser.uid || (Date.now()+""), 
+      name: name, 
+      roll: customRoll, 
+      year: customYear, 
+      email: em, 
+      password: "FB_AUTH_USER", 
+      joinedAt: new Date().toISOString(), 
+      subPlan: null, 
+      subExpiry: null 
+    };
+    usersDB = [...usersDB, found];
+    await sSet("bhu:users", usersDB);
+    if(fbOK) await saveUserToFirebase(found);
+  }
+  
+  const sess = { ...found, isAdmin: false };
+  currentUser = sess; await sSet("bhu:session", sess);
+  closeLogin(); toast(`Welcome back, ${found.name}! 🎓`); renderAll();
+}
+
 async function doGoogleLogin(){
   if(!window.firebase || !firebase.auth) { toast("Firebase not initialized.","e"); return; }
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
-    toast("Redirecting to Google Sign-In...","");
-    await firebase.auth().signInWithRedirect(provider);
+    const res = await firebase.auth().signInWithPopup(provider);
+    await processGoogleUser(res.user);
   } catch(e) {
     console.error(e);
     toast("Google login failed.","e");
@@ -6803,6 +6853,14 @@ async function doForgotPassword() {
     return;
   }
   try {
+    const found = usersDB.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if(found && found.password !== "FB_AUTH_USER") {
+       if(msgEl) {
+         msgEl.textContent = "This is a manual offline account. Please contact the admin (admin@bhu.ac.in) to reset your password, OR sign in with Google using this email.";
+         msgEl.style.color = "#c9690a";
+       }
+       return;
+    }
     await firebase.auth().sendPasswordResetEmail(email);
     if(msgEl) {
       msgEl.textContent = '✅ Reset link sent! Check your email (including spam folder).';
