@@ -6790,12 +6790,12 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
     } catch(e) { console.error("Error deleting broken account:", e); }
     try { await firebase.auth().signOut(); } catch(_) {}
     
-    sessionStorage.setItem('_kgGoogleAuthPending', '1');
     const p2 = new firebase.auth.GoogleAuthProvider();
     p2.addScope('email'); p2.addScope('profile');
     p2.setCustomParameters({ prompt: 'select_account' });
     toast("Please select your Google account again…","");
-    await firebase.auth().signInWithRedirect(p2);
+    const res = await firebase.auth().signInWithPopup(p2);
+    if (res && res.user) await processGoogleUser(res.user);
     return;
   }
 
@@ -6868,48 +6868,26 @@ async function doGoogleLogin(){
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
-    // prompt:select_account forces Google to show account picker & return fresh credential with email
     provider.setCustomParameters({ prompt: 'select_account' });
-    sessionStorage.setItem('_kgGoogleAuthPending', '1');
-    toast("Redirecting to Google Sign-In…","");
-    await firebase.auth().signInWithRedirect(provider);
+    toast("Opening Google Sign-In…","");
+    
+    const res = await firebase.auth().signInWithPopup(provider);
+    if (res && res.user) {
+      await processGoogleUser(res.user);
+    }
   } catch(e) {
-    sessionStorage.removeItem('_kgGoogleAuthPending');
-    console.error("Google redirect failed:", e);
-    toast("Google login failed: " + (e.message||e.code||""), "e");
+    if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
+      console.log("Popup closed by user");
+    } else {
+      console.error("Google popup failed:", e);
+      toast("Google login failed: " + (e.message||e.code||""), "e");
+    }
   }
 }
 
-// Called on page load — handles Google redirect sign-in result
+// Keeping this empty so we don't break page load, but we rely entirely on Popup now
 function handleGoogleRedirectResult() {
-  if(!window.firebase || !firebase.auth) return;
-
-  // PRIMARY: getRedirectResult fires only after a Google redirect, with full credential
-  firebase.auth().getRedirectResult().then(async result => {
-    console.log("getRedirectResult:", result && result.user ? "has user" : "no user",
-      result && result.user ? "email=" + result.user.email : "");
-    if (result && result.user) {
-      sessionStorage.removeItem('_kgGoogleAuthPending');
-      await processGoogleUser(result.user);
-    }
-  }).catch(e => {
-    if (e.code && e.code !== 'auth/no-auth-event') {
-      console.warn("getRedirectResult error:", e);
-      toast("Google Sign-In failed: " + (e.message || ""), "e");
-    }
-  });
-
-  // BACKUP: onAuthStateChanged — only acts if pending flag set AND user has google.com provider
-  firebase.auth().onAuthStateChanged(async (fbUser) => {
-    const pending = sessionStorage.getItem('_kgGoogleAuthPending');
-    if (!fbUser || !pending) return;
-    // Only process if the user actually signed in via Google
-    const isGoogle = fbUser.providerData && fbUser.providerData.some(p => p && p.providerId === 'google.com');
-    if (!isGoogle) return;
-    sessionStorage.removeItem('_kgGoogleAuthPending');
-    console.log("onAuthStateChanged backup — uid:", fbUser.uid, "providerData:", JSON.stringify(fbUser.providerData));
-    await processGoogleUser(fbUser);
-  });
+  // No-op since we use popup
 }
 
 // ── Forgot Password ──────────────────────────────────────────────
