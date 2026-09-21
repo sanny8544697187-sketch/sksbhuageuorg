@@ -6818,35 +6818,41 @@ async function doGoogleLogin(){
     provider.addScope('email');
     provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
+    // Mark that we're expecting a Google sign-in so onAuthStateChanged handles it
+    sessionStorage.setItem('_kgGoogleAuthPending', '1');
     toast("Redirecting to Google Sign-In…","");
     await firebase.auth().signInWithRedirect(provider);
   } catch(e) {
+    sessionStorage.removeItem('_kgGoogleAuthPending');
     console.error("Google redirect failed:", e);
     toast("Google login failed: " + (e.message||e.code||""), "e");
   }
 }
 
-// Handle Google redirect result on page load
-async function handleGoogleRedirectResult() {
+// Called on page load — sets up onAuthStateChanged to catch Google redirect result
+// onAuthStateChanged gives the COMPLETE user object with real email, unlike getRedirectResult
+function handleGoogleRedirectResult() {
   if(!window.firebase || !firebase.auth) return;
-  try {
-    const result = await firebase.auth().getRedirectResult();
-    if(result && result.user) {
-      // Ensure email is pulled from credential or providerData if not on user directly
-      const fbUser = result.user;
-      if (!fbUser.email && result.additionalUserInfo && result.additionalUserInfo.profile) {
-        fbUser._emailFromProfile = result.additionalUserInfo.profile.email;
-        // Override the email getter
-        Object.defineProperty(fbUser, 'email', { get: () => fbUser._emailFromProfile, configurable: true });
-      }
+  firebase.auth().onAuthStateChanged(async (fbUser) => {
+    const pending = sessionStorage.getItem('_kgGoogleAuthPending');
+    if (fbUser && pending) {
+      sessionStorage.removeItem('_kgGoogleAuthPending');
+      // fbUser from onAuthStateChanged ALWAYS has real email
+      console.log("Google auth state changed, email:", fbUser.email);
       await processGoogleUser(fbUser);
     }
-  } catch(e) {
-    console.warn("Google redirect result error:", e);
-    if(e.code && e.code !== 'auth/no-auth-event') {
-      toast("Google Sign-In failed: " + (e.message || ""), "e");
+  });
+  // Also try getRedirectResult as a belt-and-suspenders check
+  firebase.auth().getRedirectResult().then(async result => {
+    if (result && result.user && sessionStorage.getItem('_kgGoogleAuthPending')) {
+      sessionStorage.removeItem('_kgGoogleAuthPending');
+      await processGoogleUser(result.user);
     }
-  }
+  }).catch(e => {
+    if (e.code && e.code !== 'auth/no-auth-event') {
+      console.warn("getRedirectResult error:", e);
+    }
+  });
 }
 
 // ── Forgot Password ──────────────────────────────────────────────
