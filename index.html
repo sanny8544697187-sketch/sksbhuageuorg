@@ -6782,7 +6782,14 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
     "providerData:", JSON.stringify((fbUser.providerData||[]).map(p=>({email:p&&p.email,providerId:p&&p.providerId}))));
   
   if (!rawEmail) { 
-    toast("❌ Could not get your email from Google. Please try again.","e"); 
+    console.warn("Email still null — clearing Firebase session and retrying Google Sign-In...");
+    try { await firebase.auth().signOut(); } catch(_) {}
+    sessionStorage.setItem('_kgGoogleAuthPending', '1');
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email'); provider.addScope('profile');
+    provider.setCustomParameters({ prompt: 'select_account' });
+    toast("Fetching your Google account details…","");
+    await firebase.auth().signInWithRedirect(provider);
     return; 
   }
   const em = rawEmail.toLowerCase();
@@ -6835,11 +6842,12 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
 async function doGoogleLogin(){
   if(!window.firebase || !firebase.auth) { toast("Firebase not initialized.","e"); return; }
   try {
+    // Sign out of any stale Firebase session first so Google issues fresh credentials with email
+    try { await firebase.auth().signOut(); } catch(_) {}
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
-    // Mark that we're expecting a Google sign-in so onAuthStateChanged handles it
     sessionStorage.setItem('_kgGoogleAuthPending', '1');
     toast("Redirecting to Google Sign-In…","");
     await firebase.auth().signInWithRedirect(provider);
