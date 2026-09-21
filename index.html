@@ -2711,6 +2711,11 @@ async function sGet(key) {
         try {
           return await st.ref("files/"+key.slice(9)).getDownloadURL();
         } catch(corsErr) {
+          const localFile = await idbGet(key);
+          if (localFile) {
+            setTimeout(() => sSet(key, localFile).catch(console.warn), 1000);
+            return localFile;
+          }
           const filePath = encodeURIComponent("files/"+key.slice(9));
           return `https://firebasestorage.googleapis.com/v0/b/bhuagorg.firebasestorage.app/o/${filePath}?alt=media`;
         }
@@ -2720,9 +2725,17 @@ async function sGet(key) {
     if (!fbOK) { const v=localStorage.getItem(key); return v?JSON.parse(v):null; }
     const snap = await db.collection("bhu_store").doc(key.replace(/:/g,"_")).get();
     if (snap.exists) return JSON.parse(snap.data().value);
-    // Fallback: try localStorage backup written by sSet
+    
+    // Fallback: try localStorage backup written by sSet, or legacy localStorage key before Firebase
     const backup = localStorage.getItem(key+"__backup");
-    return backup ? JSON.parse(backup) : null;
+    if (backup) return JSON.parse(backup);
+    const legacy = localStorage.getItem(key);
+    if (legacy) {
+      // Auto-migrate legacy data up to Firebase
+      setTimeout(() => sSet(key, JSON.parse(legacy)).catch(console.warn), 1000);
+      return JSON.parse(legacy);
+    }
+    return null;
   } catch { return null; }
 }
 async function sSet(key, val) {
