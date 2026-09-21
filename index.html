@@ -2900,6 +2900,10 @@ window.addEventListener("DOMContentLoaded", async () => {
   const cqb = await loadCustomQuizBank();
   if(cqb){ customQuizBank=cqb; }
 
+  // Load admin-uploaded ebooks from Firebase (must run AFTER Firebase init)
+  const _startupEbooks = await sGet(`bhu:adminebooks`);
+  if(_startupEbooks && _startupEbooks.length) adminEbooks = _startupEbooks;
+
   // Check for app updates via SW
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(reg => {
@@ -2978,8 +2982,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if(fbOK){
     syncInterval=setInterval(async()=>{
-      const [nn,np,nu,nq]=await Promise.all([sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),sGet("bhu:questions")]);
+      const [nn,np,nu,nq,nae]=await Promise.all([sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),sGet("bhu:questions"),sGet("bhu:adminebooks")]);
       if(nn) notes=nn; if(np) pending=np; if(nu) usersDB=nu; if(nq) questions=nq;
+      if(nae) adminEbooks=nae;
+      // Refresh custom quiz bank so users see admin-added quizzes without reloading
+      const _cqbSync = await loadCustomQuizBank();
+      if(_cqbSync && Object.keys(_cqbSync).length > 0){ customQuizBank=_cqbSync; rebuildQuizBank(); }
       renderHeader(); renderHome();
       if(section==="admin"){
         const pb=document.getElementById("pendingBadge");
@@ -8676,10 +8684,7 @@ function renderEbooksGrid(){
 // ═══════════════════════════════════════════════════════════════
 let adminEbooks = [];
 
-(async function loadAdminEbooks(){
-  const stored = await sGet("bhu:adminebooks");
-  if(stored && stored.length) adminEbooks = stored;
-})();
+// adminEbooks is now loaded inside DOMContentLoaded after Firebase is ready (see startup sequence above)
 
 let adminEbookFileData = "";
 
