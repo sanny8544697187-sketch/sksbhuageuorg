@@ -6711,6 +6711,8 @@ async function doLogin(){
     const u={email:em,name:"Admin",isAdmin:true,year:"Administrator",roll:""};
     currentUser=u; await sSet("bhu:session",u);
     closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll();
+    return;
+  }
   // Try legacy usersDB login first
   const found=usersDB.find(u=>u.email.toLowerCase()===em);
   if(found && found.password !== "FB_AUTH_USER"){
