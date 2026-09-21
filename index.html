@@ -6762,7 +6762,8 @@ async function doLogout(){
 }
 
 async function processGoogleUser(fbUser, customName="", customRoll="", customYear="Other") {
-  const rawEmail = fbUser.email || (fbUser.providerData && fbUser.providerData[0] && fbUser.providerData[0].email) || (fbUser.uid + "@noemail.com");
+  const rawEmail = fbUser.email || (fbUser.providerData && fbUser.providerData[0] && fbUser.providerData[0].email) || null;
+  if (!rawEmail) { toast("❌ Could not get your email from Google. Please try again.","e"); console.error("No email from Google:",fbUser); return; }
   const em = rawEmail.toLowerCase();
   const name = customName || fbUser.displayName || em.split("@")[0];
   
@@ -6773,8 +6774,11 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
     return;
   }
   
-  let found = usersDB.find(u => u.email.toLowerCase() === em);
+  // Find by UID first (catches old fake-email accounts), then by real email
+  let found = (fbUser.uid ? usersDB.find(u => u.id === fbUser.uid) : null)
+           || usersDB.find(u => u.email.toLowerCase() === em);
   if(!found) {
+    // New user — create account
     found = { 
       id: fbUser.uid || (Date.now()+""), 
       name: name, 
@@ -6789,11 +6793,22 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
     usersDB = [...usersDB, found];
     await sSet("bhu:users", usersDB);
     if(fbOK) await saveUserToFirebase(found);
+    toast(`Registered! Welcome, ${name}! 🎉`);
+  } else {
+    // Existing user — fix fake email if stored, and ensure UID is saved
+    let changed = false;
+    if (found.email && found.email.endsWith("@noemail.com")) { found.email = em; changed = true; }
+    if (fbUser.uid && found.id !== fbUser.uid) { found.id = fbUser.uid; changed = true; }
+    if (changed) {
+      usersDB = usersDB.map(u => (u.email === found.email || u.id === found.id) ? found : u);
+      await sSet("bhu:users", usersDB);
+      if(fbOK) await saveUserToFirebase(found);
+    }
   }
   
   const sess = { ...found, isAdmin: false };
   currentUser = sess; await sSet("bhu:session", sess);
-  closeLogin(); toast(`Welcome back, ${found.name}! 🎓`); renderAll();
+  closeLogin(); toast(`Welcome, ${found.name}! 🎓`); renderAll();
 }
 
 async function doGoogleLogin(){
