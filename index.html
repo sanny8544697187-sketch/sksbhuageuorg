@@ -6762,8 +6762,29 @@ async function doLogout(){
 }
 
 async function processGoogleUser(fbUser, customName="", customRoll="", customYear="Other") {
-  const rawEmail = fbUser.email || (fbUser.providerData && fbUser.providerData[0] && fbUser.providerData[0].email) || null;
-  if (!rawEmail) { toast("❌ Could not get your email from Google. Please try again.","e"); console.error("No email from Google:",fbUser); return; }
+  // Search ALL possible email sources in order
+  let rawEmail = fbUser.email;
+  
+  // Try every providerData entry (Google puts email here)
+  if (!rawEmail && fbUser.providerData && fbUser.providerData.length > 0) {
+    rawEmail = fbUser.providerData.map(p => p && p.email).find(e => e) || null;
+  }
+  
+  // Try Firebase ID token claims as last resort
+  if (!rawEmail && fbUser.getIdTokenResult) {
+    try {
+      const token = await fbUser.getIdTokenResult();
+      rawEmail = (token.claims && token.claims.email) || null;
+    } catch(_) {}
+  }
+  
+  console.log("processGoogleUser — uid:", fbUser.uid, "email:", rawEmail,
+    "providerData:", JSON.stringify((fbUser.providerData||[]).map(p=>({email:p&&p.email,providerId:p&&p.providerId}))));
+  
+  if (!rawEmail) { 
+    toast("❌ Could not get your email from Google. Please try again.","e"); 
+    return; 
+  }
   const em = rawEmail.toLowerCase();
   const name = customName || fbUser.displayName || em.split("@")[0];
   
@@ -6829,29 +6850,35 @@ async function doGoogleLogin(){
   }
 }
 
-// Called on page load — sets up onAuthStateChanged to catch Google redirect result
-// onAuthStateChanged gives the COMPLETE user object with real email, unlike getRedirectResult
+// Called on page load — handles Google redirect sign-in result
 function handleGoogleRedirectResult() {
   if(!window.firebase || !firebase.auth) return;
-  firebase.auth().onAuthStateChanged(async (fbUser) => {
-    const pending = sessionStorage.getItem('_kgGoogleAuthPending');
-    if (fbUser && pending) {
-      sessionStorage.removeItem('_kgGoogleAuthPending');
-      // fbUser from onAuthStateChanged ALWAYS has real email
-      console.log("Google auth state changed, email:", fbUser.email);
-      await processGoogleUser(fbUser);
-    }
-  });
-  // Also try getRedirectResult as a belt-and-suspenders check
+
+  // PRIMARY: getRedirectResult fires only after a Google redirect, with full credential
   firebase.auth().getRedirectResult().then(async result => {
-    if (result && result.user && sessionStorage.getItem('_kgGoogleAuthPending')) {
+    console.log("getRedirectResult:", result && result.user ? "has user" : "no user",
+      result && result.user ? "email=" + result.user.email : "");
+    if (result && result.user) {
       sessionStorage.removeItem('_kgGoogleAuthPending');
       await processGoogleUser(result.user);
     }
   }).catch(e => {
     if (e.code && e.code !== 'auth/no-auth-event') {
       console.warn("getRedirectResult error:", e);
+      toast("Google Sign-In failed: " + (e.message || ""), "e");
     }
+  });
+
+  // BACKUP: onAuthStateChanged — only acts if pending flag set AND user has google.com provider
+  firebase.auth().onAuthStateChanged(async (fbUser) => {
+    const pending = sessionStorage.getItem('_kgGoogleAuthPending');
+    if (!fbUser || !pending) return;
+    // Only process if the user actually signed in via Google
+    const isGoogle = fbUser.providerData && fbUser.providerData.some(p => p && p.providerId === 'google.com');
+    if (!isGoogle) return;
+    sessionStorage.removeItem('_kgGoogleAuthPending');
+    console.log("onAuthStateChanged backup — uid:", fbUser.uid, "providerData:", JSON.stringify(fbUser.providerData));
+    await processGoogleUser(fbUser);
   });
 }
 
