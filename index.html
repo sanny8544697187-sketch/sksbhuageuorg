@@ -2722,9 +2722,21 @@ async function sGet(key) {
       }
       return await idbGet(key);
     }
-    if (!fbOK) { const v=localStorage.getItem(key); return v?JSON.parse(v):null; }
-    const snap = await db.collection("bhu_store").doc(key.replace(/:/g,"_")).get();
-    if (snap.exists) return JSON.parse(snap.data().value);
+    
+    let fbData = null;
+    let fbSuccess = false;
+    if (fbOK) {
+      try {
+        const snap = await db.collection("bhu_store").doc(key.replace(/:/g,"_")).get();
+        if (snap.exists) fbData = JSON.parse(snap.data().value);
+        fbSuccess = true;
+      } catch (err) {
+        console.warn("Firestore get failed (possibly expired Test Mode rules):", err);
+      }
+    }
+    
+    if (fbSuccess && fbData !== null) return fbData;
+    if (!fbOK) { const v=localStorage.getItem(key); if (v) return JSON.parse(v); }
     
     // Fallback: try localStorage backup written by sSet, or legacy localStorage key before Firebase
     const backup = localStorage.getItem(key+"__backup");
