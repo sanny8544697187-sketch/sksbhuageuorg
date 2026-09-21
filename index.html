@@ -6781,6 +6781,15 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
   // ── 2. If still no email, force fresh sign-in ───────────────────
   if (!rawEmail) {
     console.warn("No email found — forcing fresh Google sign-in");
+    try {
+      const curUser = firebase.auth().currentUser;
+      if(curUser) {
+        console.log("Deleting broken Firebase Auth account...");
+        await curUser.delete();
+      }
+    } catch(e) { console.error("Error deleting broken account:", e); }
+    try { await firebase.auth().signOut(); } catch(_) {}
+    
     sessionStorage.setItem('_kgGoogleAuthPending', '1');
     const p2 = new firebase.auth.GoogleAuthProvider();
     p2.addScope('email'); p2.addScope('profile');
