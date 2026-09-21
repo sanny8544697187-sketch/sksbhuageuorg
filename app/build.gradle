@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright 2019 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -152,7 +152,7 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('../../signing.keystore')
+            storeFile file('../signing.keystore')
             storePassword 'nUFgEhr7N8Jn'
             keyAlias 'my-key-alias'
             keyPassword 'nUFgEhr7N8Jn'
