@@ -4861,6 +4861,32 @@ async function renderAdmin(){
         <p style="font-size:13px;color:#777;">Sync mode: <strong style="color:${fbOK?"#00B050":"#c9690a"};">${fbOK?"🔥 Firebase (multi-device)":"💾 localStorage (single-device)"}</strong></p>
         ${!fbOK?'<p style="font-size:12px;color:#c9690a;margin-top:6px;line-height:1.5;">💡 Add Firebase config to enable multi-device sync.</p>':''}
       </div>
+      <div class="card" style="padding:22px;margin-bottom:14px;max-width:460px;border-left:4px solid #1565C0;">
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:10px;">🔧 Data Repair &amp; Force Sync</h3>
+        <p style="font-size:12px;color:#555;margin-bottom:12px;line-height:1.6;">
+          If resources, ebooks, or quizzes are not showing to users, tap the button below to force-push all local data to Firebase. This fixes issues caused by expired Firebase rules or failed syncs.
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          <div style="background:#E8F5E9;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#00B050;">${notes.length}</div>
+            <div style="font-size:11px;color:#555;">Total Notes</div>
+          </div>
+          <div style="background:#E8F5E9;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#00B050;">${getApproved().length}</div>
+            <div style="font-size:11px;color:#555;">Approved</div>
+          </div>
+          <div style="background:#FFF8E1;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#c9690a;">${pending.length}</div>
+            <div style="font-size:11px;color:#555;">Pending</div>
+          </div>
+          <div style="background:#E3F2FD;border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:800;color:#1565C0;">${adminEbooks.length}</div>
+            <div style="font-size:11px;color:#555;">Ebooks</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" onclick="adminForceSyncAll()">🔄 Force Sync All Data to Firebase</button>
+        <p style="font-size:11px;color:#777;text-align:center;">Firebase: <strong style="color:${fbOK?'#00B050':'#E53935'};">${fbOK?'🟢 Connected':'🔴 Not Connected'}</strong></p>
+      </div>
       <div style="background:#FFEBEE;border:1px solid #FFCDD2;border-radius:12px;padding:18px;max-width:460px;">
         <h3 style="font-size:13px;font-weight:700;color:#E53935;margin-bottom:9px;">⚠️ Danger Zone</h3>
         <button class="btn" style="background:#FFEBEE;color:#E53935;font-size:12px;padding:7px 16px;" onclick="clearAllData()">🗑 Reset All Portal Data</button>
@@ -5078,6 +5104,28 @@ async function changeAdminPass(){
   if(!v||v.length<6){toast("Min 6 characters.","e");return;}
   adminPass=v; await sSet("bhu:adminpass",v);
   document.getElementById("newAdminPass").value=""; toast("Password updated! ✅");
+}
+async function adminForceSyncAll(){
+  if(!fbOK){ toast("Firebase not connected. Cannot sync.","e"); return; }
+  toast("Syncing all data to Firebase…");
+  try {
+    await Promise.all([
+      sSet("bhu:notes", notes),
+      sSet("bhu:pending", pending),
+      sSet("bhu:users", usersDB),
+      sSet("bhu:questions", questions),
+      sSet("bhu:pyqdata", pyqData),
+      sSet("bhu:adminebooks", adminEbooks),
+      sSet("bhu:subjects", activeSubjects),
+    ]);
+    // Also sync individual users
+    usersDB.forEach(u => saveUserToFirebase(u));
+    toast(`✅ Sync complete! ${notes.length} notes, ${adminEbooks.length} ebooks pushed to Firebase.`);
+    renderAdmin();
+  } catch(e) {
+    toast("❌ Sync failed: " + e.message, "e");
+    console.error("adminForceSyncAll:", e);
+  }
 }
 async function clearAllData(){
   if(!window.confirm("⚠️ CLEAR ALL DATA? This cannot be undone.")) return;
