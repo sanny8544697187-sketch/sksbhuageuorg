@@ -55,7 +55,7 @@ android {
     namespace "online.sannykumar.krishigyan_v1"
     defaultConfig {
         applicationId "online.sannykumar.krishigyan_v1"
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 36
         versionCode 9
         versionName "2.1.0"
