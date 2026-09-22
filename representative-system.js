@@ -385,7 +385,7 @@ async function loadRepresentativeContributions() {
  * Load admin dashboard
  */
 async function loadAdminDashboard() {
-  if (window.userRole !== 'admin') return;
+  if (!(window.currentUser && window.currentUser.isAdmin)) return;
   
   try {
     // Load pending applications
@@ -395,6 +395,9 @@ async function loadAdminDashboard() {
       .get();
     
     const adminDiv = document.getElementById('adminApplicationsList');
+    const l2 = document.getElementById('adminApprovedRepsList'); if(l2) l2.style.display='none';
+    const l3 = document.getElementById('adminContributionsList'); if(l3) l3.style.display='none';
+    if(adminDiv) adminDiv.style.display='block';
     if (!adminDiv) return;
     
     if (pendingApps.empty) {
@@ -500,6 +503,9 @@ async function loadApprovedRepresentatives() {
       .get();
     
     const div = document.getElementById('adminApprovedRepsList');
+    const l1 = document.getElementById('adminApplicationsList'); if(l1) l1.style.display='none';
+    const l3 = document.getElementById('adminContributionsList'); if(l3) l3.style.display='none';
+    if(div) div.style.display='block';
     if (!div) return;
     
     if (repsQuery.empty) {
@@ -547,6 +553,9 @@ async function loadAdminContributions() {
       .get();
     
     const div = document.getElementById('adminContributionsList');
+    const l1 = document.getElementById('adminApplicationsList'); if(l1) l1.style.display='none';
+    const l2 = document.getElementById('adminApprovedRepsList'); if(l2) l2.style.display='none';
+    if(div) div.style.display='block';
     if (!div) return;
     
     if (contribQuery.empty) {
