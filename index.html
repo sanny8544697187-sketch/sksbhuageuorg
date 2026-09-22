@@ -3417,7 +3417,7 @@ function renderResources(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// RESOURCES — Institution → Subject → Semester drill-down
+// RESOURCES — Subject → Institution → Semester drill-down
 // ═══════════════════════════════════════════════════════════════
 let resOpenInst=null, resOpenSubjH=null;
 function toggleResInst(i){ resOpenInst=resOpenInst===i?null:i; resOpenSubjH=null; renderResourcesHierarchy(); }
@@ -3444,35 +3444,36 @@ function renderResourcesHierarchy(){
     </div>`; return;
   }
 
-  const byInst={};
+  // Group by Subject first, then Institution
+  const bySubj={};
   filtered.forEach(n=>{
-    const inst=n.institution||"General";
     const subj=n.subject||"General";
-    if(!byInst[inst]) byInst[inst]={};
-    if(!byInst[inst][subj]) byInst[inst][subj]=[];
-    byInst[inst][subj].push(n);
+    const inst=n.institution||"General";
+    if(!bySubj[subj]) bySubj[subj]={};
+    if(!bySubj[subj][inst]) bySubj[subj][inst]=[];
+    bySubj[subj][inst].push(n);
   });
 
-  el.innerHTML=Object.entries(byInst).map(([inst,subs])=>{
-    const instOpen=resOpenInst===inst;
-    const instCount=Object.values(subs).reduce((s,arr)=>s+arr.length,0);
+  el.innerHTML=Object.entries(bySubj).sort(([a],[b])=>a.localeCompare(b)).map(([subj,insts])=>{
+    const subjOpen=resOpenInst===subj;
+    const subjCount=Object.values(insts).reduce((s,arr)=>s+arr.length,0);
     return `<div class="card" style="margin-bottom:10px;overflow:hidden;padding:0;">
-      <div onclick="toggleResInst('${escapeHTML(inst)}')" style="padding:16px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${instOpen?"#0F3D23":"#fff"};color:${instOpen?"#fff":"#111"};transition:.15s;">
+      <div onclick="toggleResInst('${escapeHTML(subj)}')" style="padding:16px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${subjOpen?"#0F3D23":"#fff"};color:${subjOpen?"#fff":"#111"};transition:.15s;">
         <div style="font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px;">
-          <span style="background:${instOpen?"rgba(255,255,255,.18)":"#1565C0"};color:#fff;padding:3px 10px;border-radius:50px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">🏫 ${escapeHTML(inst)}</span>
+          <span style="background:${subjOpen?"rgba(255,255,255,.18)":"#00B050"};color:#fff;padding:3px 10px;border-radius:50px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">📚 ${escapeHTML(subj)}</span>
         </div>
-        <div style="font-size:12px;opacity:.85;">${instCount} files &nbsp;${instOpen?"▲":"▼"}</div>
+        <div style="font-size:12px;opacity:.85;">${subjCount} files &nbsp;${subjOpen?"▲":"▼"}</div>
       </div>
-      ${instOpen?`<div style="padding:12px 14px;background:#F8FBF8;">
-        ${Object.entries(subs).map(([subj,items])=>{
-          const subjKey=inst+"__"+subj;
-          const subjOpen=resOpenSubjH===subjKey;
+      ${subjOpen?`<div style="padding:12px 14px;background:#F8FBF8;">
+        ${Object.entries(insts).sort(([a],[b])=>a.localeCompare(b)).map(([inst,items])=>{
+          const instKey=subj+"__"+inst;
+          const instOpen=resOpenSubjH===instKey;
           return `<div style="margin-bottom:8px;border:1px solid #E0EAE0;border-radius:12px;overflow:hidden;background:#fff;">
-            <div onclick="toggleResSubjH('${escapeHTML(subjKey)}')" style="padding:11px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${subjOpen?"#E8F5E9":"#fff"};">
-              <div style="font-weight:700;font-size:13px;color:#0F3D23;">📚 ${escapeHTML(subj)}</div>
-              <div style="font-size:11px;color:#777;">${items.length} files &nbsp;${subjOpen?"▲":"▼"}</div>
+            <div onclick="toggleResSubjH('${escapeHTML(instKey)}')" style="padding:11px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${instOpen?"#E3F2FD":"#fff"};">
+              <div style="font-weight:700;font-size:13px;color:#1565C0;">🏫 ${escapeHTML(inst)}</div>
+              <div style="font-size:11px;color:#777;">${items.length} files &nbsp;${instOpen?"▲":"▼"}</div>
             </div>
-            ${subjOpen?`<div style="padding:10px;background:#FAFCFA;">${items.map(n=>resCardHTML(n)).join("")}</div>`:""}
+            ${instOpen?`<div style="padding:10px;background:#FAFCFA;">${items.map(n=>resCardHTML(n)).join("")}</div>`:""}
           </div>`;
         }).join("")}
       </div>`:""}
@@ -4851,8 +4852,6 @@ async function renderAdmin(){
       </div>
     `;
     if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
-    if (typeof loadApprovedRepresentatives === 'function') loadApprovedRepresentatives();
-    if (typeof loadAdminContributions === 'function') loadAdminContributions();
   } else if(adminTab==="settings"){
 
     el.innerHTML=`
@@ -7119,6 +7118,17 @@ function renderProfile(){
         <div style="font-size:24px;margin-bottom:4px;">${a.icon}</div>
         <div style="font-size:10px;font-weight:700;color:#333;">${a.label}</div>
       </div>`).join("");
+  }
+  // Representative card
+  const repApplyCard = document.getElementById("representativeApplyCard");
+  const repDashCard  = document.getElementById("repDashboardAccessCard");
+  if(!u.isAdmin){
+    const isRep = u.role === "representative";
+    if(repApplyCard)  repApplyCard.style.display  = isRep ? "none" : "block";
+    if(repDashCard)   repDashCard.style.display    = isRep ? "block" : "none";
+  } else {
+    if(repApplyCard)  repApplyCard.style.display  = "none";
+    if(repDashCard)   repDashCard.style.display    = "none";
   }
 }
 
