@@ -2809,12 +2809,11 @@ const expiryDate  = plan => { const d=new Date(); if(plan==="trial") d.setDate(d
 let notes=[],pending=[],usersDB=[],questions=[],pyqData=[],noticesList=[],currentUser=null,adminPass=ADMIN_PASS_DEFAULT,repApps=[];
 
 // Expose key globals on window so external scripts (representative-system.js) can access them
+// Note: sSet/sGet are function declarations so they're automatically on window already
 Object.defineProperties(window, {
-  repApps:     { get(){ return repApps; },     set(v){ repApps=v; },     configurable:true },
-  usersDB:     { get(){ return usersDB; },     set(v){ usersDB=v; },     configurable:true },
-  currentUser: { get(){ return currentUser; }, set(v){ currentUser=v; }, configurable:true },
-  sSet:        { get(){ return sSet; },                                  configurable:true },
-  sGet:        { get(){ return sGet; },                                  configurable:true },
+  repApps:     { get(){ return repApps; },     set(v){ repApps=v; },     configurable:true, enumerable:true },
+  usersDB:     { get(){ return usersDB; },     set(v){ usersDB=v; },     configurable:true, enumerable:true },
+  currentUser: { get(){ return currentUser; }, set(v){ currentUser=v; }, configurable:true, enumerable:true },
 });
 let section="home",dark=false,loginTab="login",catFilter="All",resType="All",resSubject="All";
 let uFileData="",uploading=false,folderFiles=[],uploadMode="file";
