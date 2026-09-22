@@ -1,4 +1,4 @@
-﻿ ﻿/**
+ ﻿/**
  * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  * KRISHIGYAN â€” REPRESENTATIVE SYSTEM v1.0
  * Role-based access control for Students, Representatives, and Admins
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadUserRole(uid) {
   try {
     if (!window._db) return;
-    const userDoc = await window._db.collection('users').doc(uid).get();
+    const userDoc = await window._db.collection('bhu_users').doc(uid).get();
     if (userDoc.exists) {
       window.userRole = userDoc.data().role || 'student';
       if (window.userRole === 'representative') {
@@ -44,7 +44,7 @@ async function loadUserRole(uid) {
       }
     } else {
       // Create default user document with student role
-      await window._db.collection('users').doc(uid).set({
+      await window._db.collection('bhu_users').doc(uid).set({
         uid: uid,
         email: window.currentUser.email,
         name: window.currentUser.displayName || 'User',
@@ -135,7 +135,7 @@ async function submitRepresentativeApplication(e) {
   }
   
   const formData = {
-    uid: window.currentUser.uid,
+    uid: (window.currentUser.uid || window.currentUser.id),
     email: window.currentUser.email,
     name: document.getElementById('repName').value,
     college: document.getElementById('repCollege').value,
@@ -154,7 +154,7 @@ async function submitRepresentativeApplication(e) {
     // Check if already applied
     const existingApp = await window._db
       .collection('representativeApplications')
-      .where('uid', '==', window.currentUser.uid)
+      .where('uid', '==', (window.currentUser.uid || window.currentUser.id))
       .where('status', '==', 'pending')
       .get();
     
@@ -187,7 +187,7 @@ async function checkApplicationStatus() {
   try {
     const appQuery = await window._db
       .collection('representativeApplications')
-      .where('uid', '==', window.currentUser.uid).limit(10)
+      .where('uid', '==', (window.currentUser.uid || window.currentUser.id)).limit(10)
       .get();
     
     const statusDiv = document.getElementById('repApplicationStatus');
@@ -234,7 +234,7 @@ async function loadRepresentativeProfile() {
   if (window.userRole !== 'representative' || !window.currentUser) return;
   
   try {
-    const userDoc = await window._db.collection('users').doc(window.currentUser.uid).get();
+    const userDoc = await window._db.collection('bhu_users').doc((window.currentUser.uid || window.currentUser.id)).get();
     const data = userDoc.data();
     
     const profileDiv = document.getElementById('repProfileInfo');
@@ -298,7 +298,7 @@ async function submitRepresentativeContribution(type) {
   
   try {
     const contribData = {
-      uid: window.currentUser.uid,
+      uid: (window.currentUser.uid || window.currentUser.id),
       representativeId: window.representativeData?.representativeId || 'N/A',
       type: type, // 'feedback', 'resource_suggestion', 'error_report', 'community_idea'
       title: titleInput.value,
@@ -332,7 +332,7 @@ async function loadRepresentativeContributions() {
   try {
     const contribQuery = await window._db
       .collection('representativeContributions')
-      .where('uid', '==', window.currentUser.uid).limit(50)
+      .where('uid', '==', (window.currentUser.uid || window.currentUser.id)).limit(50)
       .get();
     
     const contribDiv = document.getElementById('repContributionsList');
@@ -447,8 +447,16 @@ async function approveRepresentativeApplication(appId, uid, email) {
     // Generate representative ID
     const repId = 'KG-' + Date.now().toString(36).toUpperCase();
     
-    // Update user role to representative
-    await window._db.collection('users').doc(uid).update({
+    // Update user role locally and in Firebase
+    let lu = window.usersDB.find(u => u.id === uid);
+    if(lu) {
+      lu.role = 'representative';
+      lu.representativeId = repId;
+      lu.recognitionLevel = 'member';
+      window.sSet('bhu:users', window.usersDB);
+    }
+    
+    await window._db.collection('bhu_users').doc(uid).update({
       role: 'representative',
       representativeId: repId,
       recognitionLevel: 'member',
@@ -487,7 +495,7 @@ async function rejectRepresentativeApplication(appId) {
 async function loadApprovedRepresentatives() {
   try {
     const repsQuery = await window._db
-      .collection('users')
+      .collection('bhu_users')
       .where('role', '==', 'representative')
       .get();
     
