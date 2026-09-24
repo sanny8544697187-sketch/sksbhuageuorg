@@ -1253,10 +1253,10 @@ try {
     <div class="heal-widget" style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <div>
-          <div style="font-weight:800;font-size:15px;color:#0F3D23;">❓ Question of the Day</div>
-          <div style="font-size:12px;color:#777;margin-top:2px;">Test your knowledge instantly</div>
+          <div style="font-weight:800;font-size:15px;color:#0F3D23;">📌 Daily Challenge</div>
+          <div style="font-size:12px;color:#777;margin-top:2px;">🔥 Streak: <strong id="qotdStreakBadge" style="color:#f59e0b;">0 Days</strong></div>
         </div>
-        <div style="font-size:28px;">🎯</div>
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:11px;" onclick="setSection('quiz');setTimeout(()=>setQuizTab('daily'),100);">Start Today's Challenge 🎯</button>
       </div>
       <div id="qotdContainer" style="background:#F8FBF8; border:1px solid #E0EAE0; border-radius:14px; padding:16px;">
         <!-- Filled by JS -->
@@ -2799,7 +2799,9 @@ function loadRazorpay() {
     s.onload=()=>res(true);s.onerror=()=>res(false);document.body.appendChild(s);
   });
 }
-const isSubActive = u => { if(!u) return false; if(u.isAdmin) return true; if(u.role === 'representative' || window.userRole === 'representative') return true; if(!u.subExpiry) return false; return new Date(u.subExpiry)>new Date(); };
+const isRep = u => u && u.role === 'representative';
+const isManager = u => u && (u.isAdmin || isRep(u));
+const isSubActive = u => { if(!u) return false; if(u.isAdmin) return true; if(isRep(u) || window.userRole === 'representative') return true; if(!u.subExpiry) return false; return new Date(u.subExpiry)>new Date(); };
 const isProActive = u => { if(!isSubActive(u)) return false; return u.isAdmin || u.subPlan === "monthly" || u.subPlan === "yearly"; };
 const expiryDate  = plan => { const d=new Date(); if(plan==="trial") d.setDate(d.getDate()+7); else if(plan==="monthly") d.setMonth(d.getMonth()+1); else d.setFullYear(d.getFullYear()+1); return d.toISOString(); };
 
@@ -3163,20 +3165,20 @@ function renderHeader(){
     // Mobile header: show avatar + logout
     if(mhuEl) mhuEl.innerHTML=`<div class="mobile-user-avatar" onclick="setSection('profile')" title="${escapeHTML(u.name)}">${u.name[0].toUpperCase()}</div>`;
     const adminBtn=document.getElementById("navAdmin");
-    if(adminBtn) adminBtn.classList.toggle("hidden",!u.isAdmin);
+    if(adminBtn) adminBtn.classList.toggle("hidden",!isManager(u));
     const uploadBtn=document.getElementById("navUpload");
-    if(uploadBtn) uploadBtn.classList.toggle("hidden",!u.isAdmin);
+    if(uploadBtn) uploadBtn.classList.toggle("hidden",!isManager(u));
     const sbAdminBtn=document.getElementById("sb-admin");
-    if(sbAdminBtn) sbAdminBtn.classList.toggle("hidden",!u.isAdmin);
+    if(sbAdminBtn) sbAdminBtn.classList.toggle("hidden",!isManager(u));
     const sbUploadBtn=document.getElementById("sb-upload");
-    if(sbUploadBtn) sbUploadBtn.classList.toggle("hidden",!u.isAdmin);
+    if(sbUploadBtn) sbUploadBtn.classList.toggle("hidden",!isManager(u));
     // Sync mobile drawer admin buttons
     const diAdminBtn=document.getElementById("di-admin");
-    if(diAdminBtn) diAdminBtn.classList.toggle("hidden",!u.isAdmin);
+    if(diAdminBtn) diAdminBtn.classList.toggle("hidden",!isManager(u));
     const diUploadBtn=document.getElementById("di-upload");
-    if(diUploadBtn) diUploadBtn.classList.toggle("hidden",!u.isAdmin);
+    if(diUploadBtn) diUploadBtn.classList.toggle("hidden",!isManager(u));
     
-    document.querySelectorAll('.admin-only').forEach(e=>e.classList.toggle('hidden',!u.isAdmin));
+    document.querySelectorAll('.admin-only').forEach(e=>e.classList.toggle('hidden',!isManager(u)));
   } else {
     huEl.innerHTML=`<button class="btn btn-white" style="font-size:12px;padding:7px 14px;" onclick="openLogin()">Login / Register</button>`;
     if(mhuEl) mhuEl.innerHTML=`<button class="mobile-login-btn" onclick="openLogin()">Login / Register</button>`;
@@ -3216,11 +3218,15 @@ function initAndroidDashboard() {
       const streakEl = document.getElementById("gamificationStreak");
       if(nameEl) nameEl.textContent = "Hello, " + ((currentUser.name||"Student").split(" ")[0] || "Student") + "!";
       if(streakEl) streakEl.textContent = getDailyStreak();
+      const qsBadge = document.getElementById("qotdStreakBadge");
+      if(qsBadge) qsBadge.textContent = getDailyStreak() + " Days";
     } else {
       const nameEl = document.getElementById("gamificationName");
       const streakEl = document.getElementById("gamificationStreak");
       if(nameEl) nameEl.textContent = "Hello, Student!";
       if(streakEl) streakEl.textContent = "0";
+      const qsBadge = document.getElementById("qotdStreakBadge");
+      if(qsBadge) qsBadge.textContent = "0 Days";
     }
 
     // Question of the Day (random from quiz bank)
@@ -3287,7 +3293,7 @@ function renderHome(){
   document.getElementById("statResources").textContent=approved.length;
   document.getElementById("statBooks").textContent = (EBOOKS_LIBRARY.length + (adminEbooks||[]).length);
   document.getElementById("statSubjects").textContent=getSubjects().length;
-  document.getElementById("statQuizCount").textContent=Object.values(QUIZ_BANK).reduce((s, arr) => s + arr.length, 0) + "+";
+  document.getElementById("statQuizCount").textContent=(getAllQuizQuestions().length + (typeof pyqData !== 'undefined' ? pyqData.length : 0)) + "+";
   const qrcEl=document.getElementById("quickResCount"); if(qrcEl) qrcEl.textContent=approved.length+" file"+(approved.length===1?"":"s");
 
   const u=currentUser; const isPrem=isSubActive(u);
@@ -3505,8 +3511,8 @@ function resCardHTML(n){
             `${n.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="downloadNote('${n.id}')">📥 Download</button>`:''}
              ${n.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="openDrivePreview('${escapeHTML(n.link)}','${escapeHTML(n.title)}')">👁 Preview</button>`:''}`
           }
-          ${u?.isAdmin?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 10px;font-size:11px;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('uploads');setTimeout(()=>editUpload('${n.id}','approved'),100);},80);">✏️ Edit</button>`:''}
-          ${(u&&(u.isAdmin||u.email===n.uploaderEmail))?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deleteNote('${n.id}')">🗑</button>`:''}
+          ${isManager(u)?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 10px;font-size:11px;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('uploads');setTimeout(()=>editUpload('${n.id}','approved'),100);},80);">✏️ Edit</button>`:''}
+          ${(u&&(isManager(u)||u.email===n.uploaderEmail))?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deleteNote('${n.id}')">🗑</button>`:''}
         </div>
       </div>
     </div>`;
@@ -3568,11 +3574,11 @@ function renderUpload(){
   document.getElementById("uploadLock").classList.toggle("hidden",isAdmin);
   document.getElementById("uploadForm").classList.toggle("hidden",!isAdmin);
   if(!u) return;
-  document.getElementById("uploadHint").textContent=u.isAdmin?"Admin uploads are published instantly.":"Your upload goes to admin review first.";
+  document.getElementById("uploadHint").textContent=isManager(u)?"Manager uploads are published instantly.":"Your upload goes to admin review first.";
   const pwrap=document.getElementById("premCheckWrap");
-  pwrap.style.display=u.isAdmin?"flex":"none";
+  pwrap.style.display=isManager(u)?"flex":"none";
   const ubtn=document.getElementById("uploadBtn");
-  if(ubtn) ubtn.innerHTML=u.isAdmin?"🚀 Publish Now":"📨 Submit for Review";
+  if(ubtn) ubtn.innerHTML=isManager(u)?"🚀 Publish Now":"📨 Submit for Review";
   const sfz=document.getElementById("singleFileZone"); const fz=document.getElementById("folderZone");
   const mfb=document.getElementById("modeFileBtn"); const mdb=document.getElementById("modeFolderBtn");
   if(sfz&&fz){ sfz.style.display=uploadMode==="file"?"block":"none"; fz.style.display=uploadMode==="folder"?"block":"none"; }
@@ -3675,14 +3681,14 @@ async function doFolderUpload(){
         "mp4":"Video","webm":"Video","mov":"Video"}[ext]||type;
       const note={id,title:fileTitle,subject:subj,type:autoType,link:"",desc,institution,semester,
         uploader:u.name,uploaderEmail:u.email,date:fmtDate(),fileName:file.name,
-        status:u.isAdmin?"approved":"pending",hasFile:true,
+        status:isManager(u)?"approved":"pending",hasFile:true,
         submittedAt:new Date().toISOString(),isPremium:isPrem};
       await sSet("bhu:file:"+id,fileData);
       newEntries.push(note); uploaded++;
     } catch(e){ console.warn("Skipped:",file.name,e); failed++; }
   }
 
-  if(u.isAdmin){ notes=[...newEntries,...notes]; await sSet("bhu:notes",notes);
+  if(isManager(u)){ notes=[...newEntries,...notes]; await sSet("bhu:notes",notes);
     toast(`📢 ${uploaded} file(s) published!${failed?` (${failed} skipped)`:""}`);}
   else{ pending=[...newEntries,...pending]; await sSet("bhu:pending",pending);
     toast(`⏳ ${uploaded} file(s) submitted for review!${failed?` (${failed} skipped)`:""}`);}
@@ -3690,7 +3696,7 @@ async function doFolderUpload(){
   document.getElementById("uLink").value=""; document.getElementById("uDesc").value="";
   document.getElementById("uInstitution").value=""; document.getElementById("uSemester").value="";
   clearFolder();
-  btn.disabled=false; btn.textContent=u.isAdmin?"🚀 Publish Now":"📨 Submit for Review";
+  btn.disabled=false; btn.textContent=isManager(u)?"🚀 Publish Now":"📨 Submit for Review";
   uploading=false; renderUpload(); renderAll();
 }
 
@@ -3720,10 +3726,10 @@ async function doUpload(){
   const id=Date.now()+"";
   const note={id,title,subject:subj,type,link,desc,institution,semester,uploader:u.name,uploaderEmail:u.email,
     date:fmtDate(),fileName:uFileData?(document.getElementById("uFile").files[0]?.name||""):"",
-    status:u.isAdmin?"approved":"pending",hasFile:!!uFileData,submittedAt:new Date().toISOString(),isPremium:isPrem};
+    status:isManager(u)?"approved":"pending",hasFile:!!uFileData,submittedAt:new Date().toISOString(),isPremium:isPrem};
   if(uFileData){ if(pf) pf.width="60%"; if(pl) pl.textContent="Uploading file…"; await sSet("bhu:file:"+id,uFileData); }
   if(pf) pf.width="100%"; if(pl) pl.textContent="Done!";
-  if(u.isAdmin){notes=[note,...notes];await sSet("bhu:notes",notes);toast("Published! 📢");}
+  if(isManager(u)){notes=[note,...notes];await sSet("bhu:notes",notes);toast("Published! 📢");}
   else{pending=[note,...pending];await sSet("bhu:pending",pending);toast("Submitted for review! ⏳");}
   document.getElementById("uTitle").value="";document.getElementById("uSubject").value="";
   document.getElementById("uLink").value="";document.getElementById("uDesc").value="";
@@ -3731,7 +3737,7 @@ async function doUpload(){
   document.getElementById("uFile").value="";uFileData="";
   document.getElementById("fileName").textContent="Click to upload (PDF, DOC, PPT, image…)";
   setTimeout(()=>{ if(pw) pw.style.display="none"; if(pf) pf.width="0%"; },1200);
-  btn.disabled=false; btn.innerHTML=u.isAdmin?"🚀 Publish Now":"📨 Submit for Review";
+  btn.disabled=false; btn.innerHTML=isManager(u)?"🚀 Publish Now":"📨 Submit for Review";
   uploading=false; renderUpload(); renderAll();
 }
 
@@ -4368,10 +4374,17 @@ function setAdminTab(t){
 }
 
 async function renderAdmin(){
-  if(!currentUser?.isAdmin) return;
+  if(!isManager(currentUser)) return;
   const el=document.getElementById("adminContent"); if(!el) return;
   const pb=document.getElementById("pendingBadge");
   if(pb){ pb.textContent=pending.length; pb.classList.toggle("hidden",pending.length===0); }
+  
+  // Hide sensitive tabs from Reps
+  ["atUsers", "atSubs", "atOffers", "atReps", "atSettings"].forEach(id => {
+    const btn = document.getElementById(id);
+    if(btn) btn.style.display = currentUser.isAdmin ? "inline-block" : "none";
+  });
+
   if(adminTab==="uploads"){
     // Build PYQ counts per exam
     const pyqByExam = {};
@@ -5478,7 +5491,7 @@ function renderPYQ(){
         <button onclick="_toggleSavePYQQ('${q.id}')" style="background:${isPYQSaved(q.id)?"#E8F5E9":"#F2F5F2"};color:${isPYQSaved(q.id)?"#00B050":"#777"};border:none;padding:6px 12px;border-radius:50px;font-size:12px;font-weight:600;cursor:pointer;">
           ${isPYQSaved(q.id)?"📌 Saved":"📌 Save"}
         </button>
-        ${currentUser?.isAdmin?`<button class="btn" style="background:#E3F2FD;color:#1565C0;font-size:11px;padding:5px 10px;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('pyq');setTimeout(()=>editPYQQuestion('${q.id}'),100);},80);">✏️ Edit</button>`:""}
+        ${isManager(currentUser)?`<button class="btn" style="background:#E3F2FD;color:#1565C0;font-size:11px;padding:5px 10px;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('pyq');setTimeout(()=>editPYQQuestion('${q.id}'),100);},80);">✏️ Edit</button>`:""}
       </div>
     </div>`;
   }).join("");
