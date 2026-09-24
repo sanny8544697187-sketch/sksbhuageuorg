@@ -3570,7 +3570,7 @@ async function deleteNote(id){
 
 function renderUpload(){
   const u=currentUser;
-  const isAdmin=u&&u.isAdmin;
+  const isAdmin=isManager(u);
   document.getElementById("uploadLock").classList.toggle("hidden",isAdmin);
   document.getElementById("uploadForm").classList.toggle("hidden",!isAdmin);
   if(!u) return;
@@ -3659,7 +3659,7 @@ async function doFolderUpload(){
   const desc=document.getElementById("uDesc").value.trim();
   const institution=document.getElementById("uInstitution").value.trim();
   const semester=document.getElementById("uSemester").value;
-  const isPrem=u.isAdmin&&document.getElementById("uPrem").checked;
+  const isPrem=isManager(u)&&document.getElementById("uPrem").checked;
   if(!title){toast("Resource Title is required.","e");return;}
   if(!subj){toast("Please select a Subject.","e");return;}
   if(!institution||!semester){toast("Institution & Semester are required.","e");return;}
@@ -3710,7 +3710,7 @@ async function doUpload(){
   const desc=document.getElementById("uDesc").value.trim();
   const institution=document.getElementById("uInstitution").value.trim();
   const semester=document.getElementById("uSemester").value;
-  const isPrem=u.isAdmin&&document.getElementById("uPrem").checked;
+  const isPrem=isManager(u)&&document.getElementById("uPrem").checked;
   if(!title||!subj){toast("Title & Subject required.","e");return;}
   if(!institution||!semester){toast("Institution & Semester are required.","e");return;}
   if(!link&&!uFileData){toast("Provide a link or upload a file.","e");return;}
