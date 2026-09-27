@@ -1263,6 +1263,37 @@ try {
       </div>
     </div>
 
+    <!-- ENG: Streak + XP Card -->
+    <div class="card" style="padding:16px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🔥 Your Streak &amp; Level</div>
+      <div id="engStreakCard" style="margin-bottom:12px;"><div style="color:#777;font-size:12px;text-align:center;">Login to track your streak</div></div>
+      <div id="engXPBar"></div>
+    </div>
+
+    <!-- ENG: Daily Goals -->
+    <div class="card" style="padding:16px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-weight:800;font-size:14px;color:#0F3D23;">📅 Today's Goals</div>
+        <div id="engGoalsCount" style="font-size:11px;color:#777;"></div>
+      </div>
+      <div id="engDailyGoals"></div>
+    </div>
+
+    <!-- ENG: Daily Result Panel (hidden until quiz done) -->
+    <div id="engDailyResultPanel" style="display:none;"></div>
+
+    <!-- ENG: Exam Countdown -->
+    <div class="card" style="padding:16px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🎯 Exam Countdown</div>
+      <div id="engExamCountdown"></div>
+    </div>
+
+    <!-- ENG: Invite Friends -->
+    <div class="card" style="padding:16px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🎁 Invite Friends &amp; Earn XP</div>
+      <div id="engReferralCard"></div>
+    </div>
+
     <!-- KrishiGyan AI Widget -->
     <div style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
@@ -1836,7 +1867,7 @@ try {
         <button id="lbTabAllQ" class="btn btn-primary" style="font-size:12px;padding:8px 16px;" onclick="setLbTabQ('all')">🏆 Overall</button>
         <button id="lbTabDailyQ" class="btn btn-light" style="font-size:12px;padding:8px 16px;" onclick="setLbTabQ('daily')">🔥 Streak</button>
       </div>
-      <div id="leaderboardListQ"></div>
+      <div id="leaderboardListQ" data-eng="lb"></div>
       <div id="leaderboardEmptyQ" style="text-align:center;color:#777;padding:60px 20px;display:none;">
         <div style="font-size:48px;margin-bottom:12px;">🏆</div>
         <div style="font-weight:700;font-size:16px;margin-bottom:6px;">No rankings yet</div>
@@ -2045,6 +2076,12 @@ try {
         <div class="profile-stat-card"><strong id="pStatRank" style="color:#7B1FA2;">#—</strong><span>Rank</span></div>
       </div>
 
+      
+      <!-- ENG: Notification Settings -->
+      <div class="card" style="padding:18px;margin-bottom:18px;">
+        <div style="font-weight:700;font-size:14px;margin-bottom:12px;">🔔 Notification Settings</div>
+        <div id="engNotifSettings"></div>
+      </div>
       <!-- Become Representative Card -->
       <div id="representativeApplyCard" class="card" style="padding:18px;margin-bottom:18px;background:linear-gradient(135deg,#E8F5E9,#F8FBF8);display:none;">
         <div style="display:flex;align-items:start;gap:14px;">
@@ -2080,7 +2117,7 @@ try {
         <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📤 Share App</div>
         <div style="font-size:12px;color:#777;margin-bottom:14px;">Invite classmates to KrishiGyan — share the link below or send it directly.</div>
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-          <input id="shareAppLink" class="inp" readonly style="flex:1;min-width:180px;background:#F8FBF8;font-size:12px;" onclick="this.select();">
+          <input id="shareAppLink" data-eng="profile" class="inp" readonly style="flex:1;min-width:180px;background:#F8FBF8;font-size:12px;" onclick="this.select();">
           <button class="btn btn-light" style="padding:9px 16px;font-size:12px;flex-shrink:0;" onclick="copyShareLink()">📋 Copy</button>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -2107,8 +2144,20 @@ try {
       <!-- Achievements -->
       <div class="card" style="padding:20px;">
         <div style="font-weight:700;font-size:15px;margin-bottom:14px;">🏅 Achievements</div>
-        <div id="profileAchievements" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+        <div id="profileAchievements" data-eng="true" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
       </div>
+
+    <!-- ENG: Badges Panel -->
+    <div class="card" style="padding:18px;margin-bottom:18px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;">🏅 Achievements & Badges</div>
+      <div id="engBadgesPanel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;"></div>
+    </div>
+
+    <!-- ENG: Progress Dashboard -->
+    <div class="card" style="padding:18px;margin-bottom:18px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;">📊 My Progress</div>
+      <div id="engProgressPanel"></div>
+    </div>
 
       <!-- About Us + Legal Card -->
       <div class="card" style="padding:20px;">
@@ -2819,7 +2868,7 @@ Object.defineProperties(window, {
 });
 let section="home",dark=false,loginTab="login",catFilter="All",resType="All",resSubject="All";
 let uFileData="",uploading=false,folderFiles=[],uploadMode="file";
-let quizSubj="",quizQs=[],quizAns=[],quizIdx=0,quizDone=false;
+let quizSubj="",quizQs=[],quizAns=[],quizIdx=0,quizDone=false; window.quizQs=quizQs; window.quizAns=quizAns;
 let customQuizBank={};
 let quizMode="test";
 let quizFlagged={}, quizStartTime=null;
@@ -2996,7 +3045,8 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   renderAll();
   renderQuizStart(); // re-render after customQuizBank is fully loaded
-  initAndroidDashboard(); // re-init QOTD widget with complete quiz bank
+  initAndroidDashboard();
+  if(typeof refreshEngUI === "function") { refreshEngUI(); renderExamCountdown && renderExamCountdown(); renderReferralCard && renderReferralCard(); } // re-init QOTD widget with complete quiz bank
   renderChat();
   renderDoubts();
   document.querySelectorAll(".section[data-redirect]").forEach(sec=>{
@@ -6741,7 +6791,7 @@ async function doLogin(){
     if(found.password!==pass){errEl.textContent="Wrong password.";return;}
     const u={...found,isAdmin:false};
     currentUser=u; await sSet("bhu:session",u);
-    closeLogin(); toast(`Welcome back, ${found.name}! 🎓`); renderAll();
+    closeLogin(); if(typeof engInit === "function") setTimeout(engInit, 300); toast(`Welcome back, ${found.name}! 🎓`); renderAll();
     return;
   }
   
@@ -7132,6 +7182,9 @@ function renderProfile(){
         <div style="font-size:10px;font-weight:700;color:#333;">${a.label}</div>
       </div>`).join("");
   }
+  // Engagement UI
+  if(typeof refreshEngUI === "function") { refreshEngUI(); renderReferralCard && renderReferralCard(); renderProgressDashboard && renderProgressDashboard(); }
+
   // Representative card
   const repApplyCard = document.getElementById("representativeApplyCard");
   const repDashCard  = document.getElementById("repDashboardAccessCard");
@@ -9142,6 +9195,7 @@ async function deleteNotice(id) {
 </script>
 
 <script src="./representative-system.js"></script>
+<script src="./engagement-system.js"></script>
 </body>
 </html>
 

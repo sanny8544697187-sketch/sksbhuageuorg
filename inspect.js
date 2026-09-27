@@ -1,0 +1,10 @@
+const fs = require('fs');
+const c = fs.readFileSync('index.html', 'utf8');
+const repTag = c.indexOf('representative-system.js');
+const lines_before_rep = c.substring(0, repTag).split('\n').length;
+console.log('Rep tag at line:', lines_before_rep);
+const bodyEnd = c.lastIndexOf('</body>');
+const bodyLine = c.substring(0, bodyEnd).split('\n').length;
+console.log('Body ends at line:', bodyLine);
+const beforeBody = c.substring(bodyEnd-300, bodyEnd+5);
+console.log('Before body:', beforeBody);
