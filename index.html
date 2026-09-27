@@ -828,7 +828,16 @@
     .admin-status-badge.rejected{background:#FFEBEE;color:#C62828;}
     body.dark .rep-form-group textarea{background:#0d1510;color:#E8F0E8;border-color:#1e2e1e;}
     body.dark .rep-card{background:#111814;}
-</style>
+
+    /* KG Global Search Results */
+    .kgsr-group { padding:8px 0; }
+    .kgsr-type { font-size:11px;font-weight:700;color:#777;padding:4px 12px;text-transform:uppercase;letter-spacing:.5px; }
+    .kgsr-item { padding:8px 12px;font-size:13px;cursor:pointer;border-radius:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    .kgsr-item:hover { background:#F0F9F0; }
+    /* Krishi Tools */
+    #kgToolResult { margin-top:12px; }
+
+    </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591814606015176" crossorigin="anonymous"></script>
   <script type="application/ld+json">
   {
@@ -1232,6 +1241,25 @@ try {
 
   <!-- HOME -->
   <section id="home" class="section active fu">
+  <div class="hero">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;margin-bottom:14px;letter-spacing:.3px;">
+        🌾 KrishiGyan — e-LEARNING PORTAL
+      </div>
+      <h1>Your Complete<br>Agriculture Learning Hub</h1>
+      <p>Study notes, PDFs, video lectures & AI-powered doubt solving — synced live across every device.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" style="font-size:14px;padding:10px 22px;font-weight:700;box-shadow:0 4px 14px rgba(0,176,80,.4);" onclick="setSection('pyq')">Explore Mock Tests →</button>
+        <button class="btn btn-white" style="font-size:14px;padding:10px 20px;" onclick="setSection('chat')">💬 Ask AI Professor</button>
+      </div>
+      <div id="homeInstallBannerContainer" style="margin-top:16px;"></div>
+      <div class="hero-stats">
+        <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
+        <div><strong id="statResources">0</strong><span>Resources</span></div>
+        <div><strong id="statBooks">0</strong><span>Ebooks available</span></div>
+        <div><strong id="statQuizCount">0+</strong><span>Quiz Qs</span></div>
+      </div>
+    </div>
+
   <!-- ANDROID DASHBOARD WIDGETS (mobile only, shown via JS on small screens) -->
   <div class="android-home" id="androidDashboard">
     <!-- Gamification Dashboard Header -->
@@ -1247,51 +1275,6 @@ try {
           <div style="font-size:10px; font-weight:700;">Day Streak</div>
         </div>
       </div>
-    </div>
-
-    <!-- Question of the Day Widget -->
-    <div class="heal-widget" style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div>
-          <div style="font-weight:800;font-size:15px;color:#0F3D23;">📌 Daily Challenge</div>
-          <div style="font-size:12px;color:#777;margin-top:2px;">🔥 Streak: <strong id="qotdStreakBadge" style="color:#f59e0b;">0 Days</strong></div>
-        </div>
-        <button class="btn btn-primary" style="padding:6px 14px;font-size:11px;" onclick="setSection('quiz');setTimeout(()=>setQuizTab('daily'),100);">Start Today's Challenge 🎯</button>
-      </div>
-      <div id="qotdContainer" style="background:#F8FBF8; border:1px solid #E0EAE0; border-radius:14px; padding:16px;">
-        <!-- Filled by JS -->
-      </div>
-    </div>
-
-    <!-- ENG: Streak + XP Card -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🔥 Your Streak &amp; Level</div>
-      <div id="engStreakCard" style="margin-bottom:12px;"><div style="color:#777;font-size:12px;text-align:center;">Login to track your streak</div></div>
-      <div id="engXPBar"></div>
-    </div>
-
-    <!-- ENG: Daily Goals -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-weight:800;font-size:14px;color:#0F3D23;">📅 Today's Goals</div>
-        <div id="engGoalsCount" style="font-size:11px;color:#777;"></div>
-      </div>
-      <div id="engDailyGoals"></div>
-    </div>
-
-    <!-- ENG: Daily Result Panel (hidden until quiz done) -->
-    <div id="engDailyResultPanel" style="display:none;"></div>
-
-    <!-- ENG: Exam Countdown -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🎯 Exam Countdown</div>
-      <div id="engExamCountdown"></div>
-    </div>
-
-    <!-- ENG: Invite Friends -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🎁 Invite Friends &amp; Earn XP</div>
-      <div id="engReferralCard"></div>
     </div>
 
     <!-- KrishiGyan AI Widget -->
@@ -1311,26 +1294,55 @@ try {
         <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🧪 ICAR JRF</button>
       </div>
     </div>
-  </div>
 
-  <div class="hero">
-      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;margin-bottom:14px;letter-spacing:.3px;">
-        🌾 KrishiGyan — e-LEARNING PORTAL
+    
+    <!-- KG: Today's Agriculture Study -->
+    <div class="card" style="padding:16px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🌱 Today's Agriculture Study</div>
+      <div id="kgTodayStudy"></div>
+    </div>
+
+    <!-- KG: Continue Learning -->
+    <div id="kgContinueLearning" style="display:none;background:white;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);"></div>
+
+    <!-- KG: Study Recommendations -->
+    <div id="kgRecommendations" style="display:none;background:white;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);"></div>
+
+<!-- Question of the Day Widget -->
+    <div class="heal-widget" style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-weight:800;font-size:15px;color:#0F3D23;">📌 Daily Challenge</div>
+          <div style="font-size:12px;color:#777;margin-top:2px;">Test your knowledge instantly</div>
+        </div>
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:11px;" onclick="setSection('quiz');setTimeout(()=>setQuizTab('daily'),100);">Start Today's Challenge 🎯</button>
       </div>
-      <h1>Your Complete<br>Agriculture Learning Hub</h1>
-      <p>Study notes, PDFs, video lectures & AI-powered doubt solving — synced live across every device.</p>
-      <div class="hero-actions">
-        <button class="btn btn-primary" style="font-size:14px;padding:10px 22px;font-weight:700;box-shadow:0 4px 14px rgba(0,176,80,.4);" onclick="setSection('pyq')">Explore Mock Tests →</button>
-        <button class="btn btn-white" style="font-size:14px;padding:10px 20px;" onclick="setSection('chat')">💬 Ask AI Professor</button>
-      </div>
-      <div id="homeInstallBannerContainer" style="margin-top:16px;"></div>
-      <div class="hero-stats">
-        <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
-        <div><strong id="statResources">0</strong><span>Resources</span></div>
-        <div><strong id="statBooks">0</strong><span>Ebooks available</span></div>
-        <div><strong id="statQuizCount">0+</strong><span>Quiz Qs</span></div>
+      <div id="qotdContainer" style="background:#F8FBF8; border:1px solid #E0EAE0; border-radius:14px; padding:16px;">
+        <!-- Filled by JS -->
       </div>
     </div>
+
+    
+
+    
+
+    
+
+    <!-- ENG: Daily Result Panel (hidden until quiz done) -->
+    <div id="engDailyResultPanel" style="display:none;"></div>
+
+    
+
+    <!-- ENG: Invite Friends -->
+    <div class="card" style="padding:16px;margin-bottom:14px;">
+      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🎁 Invite Friends &amp; Earn XP</div>
+      <div id="engReferralCard"></div>
+    </div>
+
+    
+  </div>
+
+  
 
     <div id="userBar"></div>
 
@@ -1913,6 +1925,16 @@ try {
 
     <!-- ── WRONG QUESTIONS TAB ── -->
     <div id="qtab_wrong_content" style="display:none;">
+    <!-- KG: Practice My Mistakes (Primary Wrong Tab View) -->
+    <div class="card" style="padding:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div style="font-weight:800;font-size:15px;color:#0F3D23;">❌ Practice My Mistakes</div>
+          <div style="font-size:12px;color:#777;margin-top:2px;">Review and retry questions you got wrong</div>
+        </div>
+      </div>
+      <div id="kgMistakesPanel"></div>
+    </div>
       <div id="wrongQuizContent"></div>
     </div><!-- end qtab_wrong_content -->
 
@@ -2147,7 +2169,22 @@ try {
         <div id="profileAchievements" data-eng="true" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
       </div>
 
-    <!-- ENG: Badges Panel -->
+    
+    <!-- KG: Saved Bookmarks -->
+    <div class="card" style="padding:18px;margin-bottom:18px;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;">🔖 My Saved Resources</div>
+      <div id="kgBookmarksPanel"></div>
+    </div>
+
+    <!-- KG: Practice My Mistakes -->
+    <div class="card" style="padding:18px;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-weight:700;font-size:14px;">❌ Practice My Mistakes</div>
+      </div>
+      <div id="kgMistakesPanel"></div>
+    </div>
+
+<!-- ENG: Badges Panel -->
     <div class="card" style="padding:18px;margin-bottom:18px;">
       <div style="font-weight:700;font-size:14px;margin-bottom:12px;">🏅 Achievements & Badges</div>
       <div id="engBadgesPanel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;"></div>
@@ -2484,6 +2521,12 @@ try {
   <section id="pyq" class="section fu">
     <div class="section-title">Previous Papers 📋</div>
     <div class="section-subtitle">Browse by Exam → Year → Subject. Tap an option to answer!</div>
+    <!-- KG: PYQ Analyzer -->
+    <div class="card" style="padding:16px;margin-bottom:18px;">
+      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">📊 PYQ Analysis</div>
+      <div id="kgPYQAnalyzer"></div>
+    </div>
+
 
     <!-- Previous Papers Sub-tabs -->
     <div class="sub-tabs">
@@ -2514,7 +2557,23 @@ try {
     <div class="section-title">🎮 Games</div>
     <div class="section-subtitle">Blitz · True/False Lightning · Weekly Battle · 1v1 Duel</div>
     <!-- Hub grid: shown when no game is active -->
-    <div id="gamesHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:4px;"></div>
+    <div id="gamesHub" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-top:4px;">
+    <!-- KG: Krishi Tools -->
+    <div class="card" style="padding:18px;margin-bottom:18px;">
+      <div style="font-weight:800;font-size:15px;color:#0F3D23;margin-bottom:4px;">🔧 Krishi Tools</div>
+      <div style="font-size:12px;color:#777;margin-bottom:12px;">Free agricultural calculators</div>
+      <div id="kgKrishiTools"></div>
+    </div>
+
+    <!-- KG: Flashcards -->
+    <div class="card" style="padding:18px;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div style="font-weight:800;font-size:15px;color:#0F3D23;">🃏 Flashcards</div>
+      </div>
+      <div style="font-size:12px;color:#777;margin-bottom:12px;">Quick revision sets</div>
+      <div id="kgFlashcardsPanel"></div>
+    </div>
+</div>
     <!-- Game play area: shown when a game is running -->
     <div id="gameArea" style="display:none;"></div>
   </section>
@@ -3025,6 +3084,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("splash").style.display="none";
   initAndroidDashboard();
+  setTimeout(() => { if(typeof kgFeaturesInit === "function") kgFeaturesInit(); }, 500);
   rebuildSubjectDropdowns();
   rebuildInstitutionList();
 
@@ -3046,7 +3106,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   renderAll();
   renderQuizStart(); // re-render after customQuizBank is fully loaded
   initAndroidDashboard();
-  if(typeof refreshEngUI === "function") { refreshEngUI(); renderExamCountdown && renderExamCountdown(); renderReferralCard && renderReferralCard(); } // re-init QOTD widget with complete quiz bank
+  if(typeof refreshEngUI === "function") { refreshEngUI(); renderExamCountdown && renderExamCountdown(); renderReferralCard && renderReferralCard(); }
+  if(typeof renderTodayStudy === "function") { renderTodayStudy(); renderContinueLearning && renderContinueLearning(); renderStudyRecommendations && renderStudyRecommendations(); } // re-init QOTD widget with complete quiz bank
   renderChat();
   renderDoubts();
   document.querySelectorAll(".section[data-redirect]").forEach(sec=>{
@@ -9195,6 +9256,7 @@ async function deleteNotice(id) {
 </script>
 
 <script src="./representative-system.js"></script>
+<script src="./features.js"></script>
 <script src="./engagement-system.js"></script>
 </body>
 </html>
