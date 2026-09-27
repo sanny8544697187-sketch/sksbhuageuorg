@@ -4101,6 +4101,7 @@ function gcOpenMenu(msgId, event) {
   menu.style.left = x + "px";
   menu.style.top = y + "px";
   event.preventDefault();
+  if(event.stopPropagation) event.stopPropagation();
 }
 
 function gcCloseMenu() {
@@ -4163,6 +4164,7 @@ function renderGroupChat() {
 
   const u = currentUser;
   const myEmail = u ? u.email : "";
+  const currIsAdmin = u && (u.isAdmin || (typeof isManager === "function" && isManager(u)));
 
   if (!chatMsgs.length) {
     el.innerHTML = `<div style="text-align:center;padding:24px;">
@@ -4188,7 +4190,8 @@ function renderGroupChat() {
     const bubbleAlign = isMe ? "flex-end" : "flex-start";
     const bubbleRadius = isMe ? "12px 2px 12px 12px" : "2px 12px 12px 12px";
     const edited = m.edited ? ` <span style="font-size:9px;color:#888;font-style:italic;">edited</span>` : "";
-    const menuAttr = isMe ? `oncontextmenu="gcOpenMenu('${m.id}',event)" ontouchstart="gcTouchStart('${m.id}',event)" ontouchend="gcTouchEnd()" style="cursor:pointer;"` : "";
+    const canEditDelete = isMe || currIsAdmin;
+    const menuAttr = canEditDelete ? `onclick="gcOpenMenu('${m.id}',event)" oncontextmenu="gcOpenMenu('${m.id}',event)" ontouchstart="gcTouchStart('${m.id}',event)" ontouchend="gcTouchEnd()" style="cursor:pointer;" title="Click to edit or delete"` : "";
 
     return dateDivider + `
       <div style="display:flex;justify-content:${bubbleAlign};margin-bottom:2px;">
