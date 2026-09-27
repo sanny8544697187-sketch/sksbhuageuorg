@@ -3077,22 +3077,21 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("splash").style.display="none";
   initAndroidDashboard();
-  setTimeout(() => { if(typeof kgFeaturesInit === "function") kgFeaturesInit(); }, 500);
   rebuildSubjectDropdowns();
   rebuildInstitutionList();
 
   const qql=document.getElementById("quickQList");
-  QUICK_QS.forEach(q=>{
+  if(qql) QUICK_QS.forEach(q=>{
     qql.innerHTML+=`<button class="btn" onclick="setAiInput('${escapeHTML(q)}')" style="display:block;width:100%;text-align:left;background:#F8FBF8;border:1px solid #E0EAE0;border-radius:9px;padding:7px 10px;font-size:12px;color:#333;cursor:pointer;font-family:inherit;margin-bottom:5px;font-weight:500;">💬 ${escapeHTML(q)}</button>`;
   });
 
   const cf=document.getElementById("catFilters");
-  CATS.forEach(c=>{
+  if(cf) CATS.forEach(c=>{
     cf.innerHTML+=`<button class="btn hchip ${c==="All"?"btn-primary":"btn-light"}" onclick="setCatFilter('${c}')" id="cat_${c}" style="white-space:nowrap;padding:7px 14px;font-size:12px;">${c}</button>`;
   });
 
   const tf=document.getElementById("typeFilters");
-  RES_TYPES.forEach(t=>{
+  if(tf) RES_TYPES.forEach(t=>{
     tf.innerHTML+=`<button class="btn hchip ${t==="All"?"btn-primary":"btn-light"}" onclick="setResType('${t}')" id="rt_${t}" style="white-space:nowrap;padding:5px 12px;font-size:12px;">${t}</button>`;
   });
 
@@ -3100,7 +3099,6 @@ window.addEventListener("DOMContentLoaded", async () => {
   renderQuizStart(); // re-render after customQuizBank is fully loaded
   initAndroidDashboard();
   if(typeof refreshEngUI === "function") { refreshEngUI(); renderExamCountdown && renderExamCountdown(); renderReferralCard && renderReferralCard(); }
-  if(typeof renderTodayStudy === "function") { renderTodayStudy(); renderContinueLearning && renderContinueLearning(); renderStudyRecommendations && renderStudyRecommendations(); } // re-init QOTD widget with complete quiz bank
   renderChat();
   renderDoubts();
   document.querySelectorAll(".section[data-redirect]").forEach(sec=>{

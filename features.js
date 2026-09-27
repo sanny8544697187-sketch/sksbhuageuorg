@@ -732,32 +732,44 @@ function kgFeaturesInit() {
   renderStudyRecommendations();
 }
 
-// Re-render panels when section changes
-const _origSetSection = window.setSection;
-window.setSection = function(sec) {
-  if(typeof _origSetSection === "function") _origSetSection.apply(this, arguments);
-  setTimeout(() => {
-    kgHookSearch();
-    if(sec === "home") { renderTodayStudy(); renderContinueLearning(); renderStudyRecommendations(); }
-    if(sec === "profile") { renderBookmarks(); renderPracticeMyMistakes(); }
-    if(sec === "quiz") { /* handled by tab */ }
-  }, 150);
-};
+// Re-render panels when section changes — defer wrapping until AFTER main scripts load
+function kgHookSectionListeners() {
+  const _origSetSection = window.setSection;
+  if(typeof _origSetSection === "function") {
+    window.setSection = function(sec) {
+      _origSetSection.apply(this, arguments);
+      setTimeout(() => {
+        kgHookSearch();
+        if(sec === "home") { renderTodayStudy(); renderContinueLearning(); renderStudyRecommendations(); }
+        if(sec === "profile") { renderBookmarks(); renderPracticeMyMistakes(); }
+        if(sec === "games") { typeof renderKrishiTools==="function" && renderKrishiTools(); typeof renderFlashcards==="function" && renderFlashcards(); }
+        if(sec === "pyq") { typeof renderPYQAnalyzer==="function" && renderPYQAnalyzer(); }
+      }, 150);
+    };
+  }
 
-// Also re-render on tab change
-const _origSetQuizTab = window.setQuizTab;
-window.setQuizTab = function(tab) {
-  if(typeof _origSetQuizTab === "function") _origSetQuizTab.apply(this, arguments);
-  setTimeout(() => {
-    if(tab === "wrong") renderPracticeMyMistakes();
-    if(tab === "saved") renderBookmarks();
-  }, 100);
-};
+  const _origSetQuizTab = window.setQuizTab;
+  if(typeof _origSetQuizTab === "function") {
+    window.setQuizTab = function(tab) {
+      _origSetQuizTab.apply(this, arguments);
+      setTimeout(() => {
+        if(tab === "wrong") renderPracticeMyMistakes();
+        if(tab === "saved") renderBookmarks();
+      }, 100);
+    };
+  }
+}
+
+// Init — run AFTER main scripts define setSection/setQuizTab
+function kgFeaturesInitFull() {
+  kgFeaturesInit();
+  kgHookSectionListeners();
+}
 
 if(document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", kgFeaturesInit);
+  document.addEventListener("DOMContentLoaded", () => setTimeout(kgFeaturesInitFull, 600));
 } else {
-  setTimeout(kgFeaturesInit, 500);
+  setTimeout(kgFeaturesInitFull, 800);
 }
 
 // Globals
