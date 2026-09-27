@@ -1232,9 +1232,8 @@ try {
 
   <!-- HOME -->
   <section id="home" class="section active fu">
-  <!-- ANDROID DASHBOARD WIDGETS (mobile only, shown via JS on small screens) -->
+  <!-- PART 1: Hello User -->
   <div class="android-home" id="androidDashboard">
-    <!-- Gamification Dashboard Header -->
     <div class="weather-widget" id="weatherWidget" style="background: linear-gradient(135deg, #1B6B3A 0%, #0F3D23 100%);">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
@@ -1248,71 +1247,9 @@ try {
         </div>
       </div>
     </div>
-
-    <!-- Question of the Day Widget -->
-    <div class="heal-widget" style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div>
-          <div style="font-weight:800;font-size:15px;color:#0F3D23;">📌 Daily Challenge</div>
-          <div style="font-size:12px;color:#777;margin-top:2px;">🔥 Streak: <strong id="qotdStreakBadge" style="color:#f59e0b;">0 Days</strong></div>
-        </div>
-        <button class="btn btn-primary" style="padding:6px 14px;font-size:11px;" onclick="setSection('quiz');setTimeout(()=>setQuizTab('daily'),100);">Start Today's Challenge 🎯</button>
-      </div>
-      <div id="qotdContainer" style="background:#F8FBF8; border:1px solid #E0EAE0; border-radius:14px; padding:16px;">
-        <!-- Filled by JS -->
-      </div>
-    </div>
-
-    <!-- ENG: Streak + XP Card -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🔥 Your Streak &amp; Level</div>
-      <div id="engStreakCard" style="margin-bottom:12px;"><div style="color:#777;font-size:12px;text-align:center;">Login to track your streak</div></div>
-      <div id="engXPBar"></div>
-    </div>
-
-    <!-- ENG: Daily Goals -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div style="font-weight:800;font-size:14px;color:#0F3D23;">📅 Today's Goals</div>
-        <div id="engGoalsCount" style="font-size:11px;color:#777;"></div>
-      </div>
-      <div id="engDailyGoals"></div>
-    </div>
-
-    <!-- ENG: Daily Result Panel (hidden until quiz done) -->
-    <div id="engDailyResultPanel" style="display:none;"></div>
-
-    <!-- ENG: Exam Countdown -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🎯 Exam Countdown</div>
-      <div id="engExamCountdown"></div>
-    </div>
-
-    <!-- ENG: Invite Friends -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🎁 Invite Friends &amp; Earn XP</div>
-      <div id="engReferralCard"></div>
-    </div>
-
-    <!-- KrishiGyan AI Widget -->
-    <div style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-        <div style="width:44px;height:44px;background:linear-gradient(135deg,#00B050,#0F3D23);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🤖</div>
-        <div>
-          <div style="font-weight:800;font-size:14px;color:#0F3D23;">KrishiGyan AI</div>
-          <div style="font-size:11px;color:#777;">Your Agriculture Professor</div>
-        </div>
-        <button onclick="setSection('chat')" style="margin-left:auto;background:#00B050;color:white;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Ask Now →</button>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:7px;">
-        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🌿 Crop Disease?</button>
-        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🌱 Soil Health</button>
-        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">📅 Exam Tips</button>
-        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🧪 ICAR JRF</button>
-      </div>
-    </div>
   </div>
 
+  <!-- PART 2: KrishiGyan e-learning panel -->
   <div class="hero">
       <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);padding:4px 12px;border-radius:50px;font-size:11px;font-weight:700;margin-bottom:14px;letter-spacing:.3px;">
         🌾 KrishiGyan — e-LEARNING PORTAL
@@ -1332,11 +1269,44 @@ try {
       </div>
     </div>
 
-    <div id="userBar"></div>
+  <!-- PART 3: KrishiGyan AI & Daily Challenge -->
+  <div class="android-home">
+    <!-- KrishiGyan AI Widget -->
+    <div style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;background:linear-gradient(135deg,#00B050,#0F3D23);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🤖</div>
+        <div>
+          <div style="font-weight:800;font-size:14px;color:#0F3D23;">KrishiGyan AI</div>
+          <div style="font-size:11px;color:#777;">Your Agriculture Professor</div>
+        </div>
+        <button onclick="setSection('chat')" style="margin-left:auto;background:#00B050;color:white;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Ask Now →</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;">
+        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🌿 Crop Disease?</button>
+        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🌱 Soil Health</button>
+        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">📅 Exam Tips</button>
+        <button onclick="setSection('chat')" style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:20px;padding:6px 12px;font-size:11px;color:#0F3D23;cursor:pointer;font-family:inherit;">🧪 ICAR JRF</button>
+      </div>
+    </div>
+    <!-- ENG: Daily Result Panel (hidden until quiz done) -->
+    <div id="engDailyResultPanel" style="display:none;"></div>
+    <div class="heal-widget" style="background:white;border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-weight:800;font-size:15px;color:#0F3D23;">📌 Daily Challenge</div>
+          <div style="font-size:12px;color:#777;margin-top:2px;">🔥 Streak: <strong id="qotdStreakBadge" style="color:#f59e0b;">0 Days</strong></div>
+        </div>
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:11px;" onclick="setSection('quiz');setTimeout(()=>setQuizTab('daily'),100);">Start Today's Challenge 🎯</button>
+      </div>
+      <div id="qotdContainer" style="background:#F8FBF8; border:1px solid #E0EAE0; border-radius:14px; padding:16px;">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
 
-    <div id="premBannerHome"></div>
-
-    <div class="quick-grid" id="quickFeatureGrid">
+  <div id="userBar"></div>
+  <div id="premBannerHome"></div>
+  <div class="quick-grid" id="quickFeatureGrid">
       <div class="card quick-card hov-card" onclick="setSection('quiz');setTimeout(()=>setQuizTab('daily'),60)">
         <div class="quick-icon" style="background:#FFF8E1;">🔥</div>
         <div style="font-weight:700;font-size:13px;">Daily Quiz</div>
@@ -1358,62 +1328,7 @@ try {
         <div style="font-size:11px;color:#777;margin-top:2px;">PDFs & notes</div>
       </div>
     </div>
-
-    <div class="quick-grid">
-      <div class="card quick-card hov-card" onclick="setSection('subjects')">
-        <div class="quick-icon" style="background:#0F3D2315;">📚</div>
-        <div style="font-weight:700;font-size:13px;">Subjects</div>
-        <div style="font-size:11px;color:#777;margin-top:2px;">13 topics</div>
-      </div>
-      <div class="card quick-card hov-card" onclick="setSection('chat')">
-        <div class="quick-icon" style="background:#00B05015;">💬</div>
-        <div style="font-weight:700;font-size:13px;">Ask Doubts</div>
-        <div style="font-size:11px;color:#777;margin-top:2px;">AI + Community</div>
-      </div>
-      <div class="card quick-card hov-card" onclick="setSection('quiz')">
-        <div class="quick-icon" style="background:#7B1FA215;">🧠</div>
-        <div style="font-weight:700;font-size:13px;">Quiz</div>
-        <div style="font-size:11px;color:#777;margin-top:2px;">MCQs + explanations</div>
-      </div>
-      <div class="card quick-card hov-card" onclick="setSection('profile')">
-        <div class="quick-icon" style="background:#1565C015;">👤</div>
-        <div style="font-weight:700;font-size:13px;">My Profile</div>
-        <div style="font-size:11px;color:#777;margin-top:2px;">Stats & progress</div>
-      </div>
-    </div>
-
-    <!-- Explore Courses Panel -->
-    <div style="margin-bottom:22px; background:var(--card-bg); border-radius:18px; padding:16px; box-shadow:0 2px 14px rgba(0,0,0,.05);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <div style="font-weight:800;font-size:15px;color:var(--text-main);">🔍 Explore Courses</div>
-        <button class="btn" style="background:none;border:none;color:#00B050;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="setSection('pyq')">See all ➔</button>
-      </div>
-      <!-- Course items -->
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E0EAE0;border-left:4px solid #388E3C;border-radius:12px;padding:12px 16px;cursor:pointer;" class="hov-card" onclick="pyqOpenExam='IBPS AFO';setSection('pyq')">
-          <div>
-            <div style="font-weight:700;font-size:14px;color:var(--text-main);display:flex;align-items:center;gap:6px;">🌾 IBPS-AFO (Main)</div>
-            <div style="font-size:11px;color:#666;margin-top:3px;">Crack IBPS AFO with previous year questions & mock drills</div>
-          </div>
-          <button class="btn btn-primary" style="font-size:11px;padding:7px 12px;background:#2E7D32;box-shadow:none;white-space:nowrap;flex-shrink:0;">Explore ➔</button>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E0EAE0;border-left:4px solid #1565C0;border-radius:12px;padding:12px 16px;cursor:pointer;" class="hov-card" onclick="pyqOpenExam='ICAR JRF';setSection('pyq')">
-          <div>
-            <div style="font-weight:700;font-size:14px;color:var(--text-main);display:flex;align-items:center;gap:6px;">🎓 ICAR JRF</div>
-            <div style="font-size:11px;color:#666;margin-top:3px;">7 years PYQs + full-length mock tests, subject-wise</div>
-          </div>
-          <button class="btn btn-primary" style="font-size:11px;padding:7px 12px;background:#1565C0;box-shadow:none;white-space:nowrap;flex-shrink:0;">Explore ➔</button>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;border:1px solid #E0EAE0;border-left:4px solid #E65100;border-radius:12px;padding:12px 16px;cursor:pointer;" class="hov-card" onclick="pyqOpenExam='IBPS AFO';setSection('pyq')">
-          <div>
-            <div style="font-weight:700;font-size:14px;color:var(--text-main);display:flex;align-items:center;gap:6px;">📋 IBPS-AFO (Prelims)</div>
-            <div style="font-size:11px;color:#666;margin-top:3px;">Prelims pattern MCQs, speed tests & sectional mocks</div>
-          </div>
-          <button class="btn btn-primary" style="font-size:11px;padding:7px 12px;background:#E65100;box-shadow:none;white-space:nowrap;flex-shrink:0;">Explore ➔</button>
-        </div>
-      </div>
-    </div>
-  </section>
+</section>
 
   <!-- SUBJECTS (merged with Resources & Planner) -->
   <section id="subjects" class="section fu">
