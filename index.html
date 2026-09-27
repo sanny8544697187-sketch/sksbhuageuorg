@@ -1946,35 +1946,29 @@ try {
     <div class="section-subtitle">AI-powered instant answers + community Q&A board</div>
     <div style="display:flex;gap:8px;margin-bottom:16px;">
       <button id="communityTabBtn" class="btn btn-primary" onclick="setChatTab('community')">🙋 Community Doubts</button>
-      <button id="aiTabBtn" class="btn btn-light" onclick="setChatTab('ai')">🤖 AI Professor</button>
+      <button id="aiTabBtn" class="btn btn-light" onclick="setChatTab('ai')">💬 Live Chat</button>
     </div>
 
     <!-- AI Chat -->
-    <div id="aiChat" class="chat-layout" style="display:none;">
-      <div class="chat-sidebar">
-        <div class="card" style="padding:14px;">
-          <div style="font-size:11px;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Quick Questions</div>
-          <div id="quickQList"></div>
+    <div id="aiChat" class="chat-layout" style="display:none;background:#F8FBF8;border-radius:12px;overflow:hidden;border:1px solid #E0EAE0;">
+      <div style="background:#fff;padding:12px 16px;border-bottom:1px solid #E0EAE0;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#1565C0,#42A5F5);display:flex;align-items:center;justify-content:center;font-size:20px;">💬</div>
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#0F3D23;">Student Live Chat</div>
+            <div style="font-size:11px;color:#00B050;font-weight:700;">● Online now</div>
+          </div>
         </div>
       </div>
-      <div class="chat-area">
-        <div class="chat-header">
-          <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#0F3D23,#00B050);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🌾</div>
-          <div style="flex:1;">
-            <div style="font-weight:700;font-size:14px;">Agriculture AI Professor</div>
-            <div style="font-size:11px;color:#00B050;font-weight:600;display:flex;align-items:center;gap:4px;">
-              <span style="width:7px;height:7px;border-radius:50%;background:#00B050;display:inline-block;"></span>
-              Online · Ready to answer
-            </div>
-          </div>
-          <button class="btn btn-light" style="padding:5px 12px;font-size:11px;border:1px solid #E0EAE0;" onclick="clearChat()">Clear</button>
-        </div>
-        <div id="chatMessages" class="chat-messages"></div>
-        <div class="chat-input">
-          <div class="chat-input-row">
-            <textarea id="chatInput" class="inp" rows="1" placeholder="Ask anything about agriculture…" style="resize:none;border-radius:12px;font-size:13px;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI();}"></textarea>
-            <button class="btn btn-primary" style="width:44px;height:44px;padding:0;border-radius:12px;flex-shrink:0;font-size:16px;" onclick="sendAI()">➤</button>
-          </div>
+      
+      <div id="groupChatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:#F8FBF8;">
+        <div style="text-align:center;font-size:11px;color:#777;margin-bottom:10px;">Welcome to the Live Chat! Ask your doubts here.</div>
+      </div>
+      
+      <div style="background:#fff;padding:12px;border-top:1px solid #E0EAE0;">
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <textarea id="groupChatInput" class="inp" rows="1" placeholder="Type a message..." style="resize:none;flex:1;border-radius:20px;padding:12px 16px;font-size:13px;max-height:100px;background:#F0F5F0;border:none;" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendGroupChat();}"></textarea>
+          <button class="btn btn-primary" style="width:44px;height:44px;padding:0;border-radius:50%;flex-shrink:0;font-size:18px;background:#1565C0;box-shadow:0 4px 10px rgba(21,101,192,0.3);" onclick="sendGroupChat()">➤</button>
         </div>
       </div>
     </div>
@@ -1987,22 +1981,8 @@ try {
           <div class="stat-box"><strong id="totalA">0</strong><div style="font-size:11px;color:#777;">Answers</div></div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-light" style="font-size:13px;border:1.5px solid #00B050;color:#00B050;" onclick="openCommunityAI()">🤖 Ask AI Professor</button>
+          <button class="btn btn-light" style="font-size:13px;border:1.5px solid #1565C0;color:#1565C0;" onclick="setChatTab('ai')">💬 Live Chat</button>
           <button class="btn btn-primary" style="font-size:13px;" onclick="openAskDoubt()">+ Ask a Doubt</button>
-        </div>
-      </div>
-
-      <!-- AI Professor in Community -->
-      <div id="communityAIBox" class="card" style="padding:18px;margin-bottom:16px;display:none;border-left:4px solid #00B050;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-          <div style="width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#0F3D23,#00B050);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">🌾</div>
-          <div style="flex:1;"><div style="font-weight:700;font-size:14px;">AI Agriculture Professor</div><div style="font-size:11px;color:#00B050;font-weight:600;">Ask anything — instant answer</div></div>
-          <button onclick="document.getElementById('communityAIBox').style.display='none'" style="border:none;background:#F2F5F2;border-radius:50%;width:30px;height:30px;font-size:14px;cursor:pointer;color:#777;">✕</button>
-        </div>
-        <div id="communityAIMessages" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:12px;"></div>
-        <div style="display:flex;gap:8px;align-items:flex-end;">
-          <textarea id="communityAIInput" class="inp" rows="2" placeholder="Type your agriculture question here…" style="resize:none;flex:1;border-radius:10px;font-size:13px;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCommunityAI();}"></textarea>
-          <button class="btn btn-primary" style="width:42px;height:42px;padding:0;border-radius:10px;flex-shrink:0;font-size:16px;" onclick="sendCommunityAI()">➤</button>
         </div>
       </div>
 
@@ -4095,292 +4075,106 @@ function finishQuiz(){
 // ═══════════════════════════════════════════════════════════════
 // AI CHAT
 // ═══════════════════════════════════════════════════════════════
-function setChatTab(t){
-  chatTab=t;
-  document.getElementById("aiChat").style.display=t==="ai"?"flex":"none";
-  document.getElementById("communityChat").style.display=t==="community"?"block":"none";
-  document.getElementById("aiTabBtn").className="btn "+(t==="ai"?"btn-primary":"btn-light");
-  document.getElementById("communityTabBtn").className="btn "+(t==="community"?"btn-primary":"btn-light");
-  if(t==="community") renderDoubts();
-}
+// ─── LIVE GROUP CHAT ───────────────────────────────────────────────
+let gcInterval = null;
 
-function renderChat(){
-  const el=document.getElementById("chatMessages"); if(!el) return;
-  el.innerHTML=msgs.map(m=>{
-    const isUser=m.role==="user";
-    if(m.isTyping) return`<div class="message bot msg"><div class="avatar" style="background:linear-gradient(135deg,#0F3D23,#00B050);">🌾</div><div class="bubble"><div class="bubble-text"><div class="typing"><span></span><span></span><span></span></div></div></div></div>`;
-    return`
-      <div class="message ${isUser?"user":"bot"} msg">
-        ${!isUser?'<div class="avatar" style="background:linear-gradient(135deg,#0F3D23,#00B050);">🌾</div>':''}
-        ${isUser?`<div class="avatar" style="background:linear-gradient(135deg,#1565C0,#42A5F5);">${currentUser?currentUser.name[0].toUpperCase():"U"}</div>`:''}
-        <div class="bubble">
-          <div class="bubble-text">${escapeHTML(m.content)}</div>
-          <div class="bubble-time">${escapeHTML(m.time||"")}</div>
+function renderGroupChat() {
+  const el = document.getElementById("groupChatMessages");
+  if(!el) return;
+  let chatMsgs = [];
+  try { chatMsgs = JSON.parse(localStorage.getItem("bhu:groupchat") || "[]"); } catch{}
+  
+  const u = currentUser;
+  const myEmail = u ? u.email : "";
+  
+  if(!chatMsgs.length) {
+    el.innerHTML = '<div style="text-align:center;font-size:11px;color:#777;margin-top:20px;">Welcome to the Live Chat! Ask your doubts here.</div>';
+    return;
+  }
+  
+  el.innerHTML = chatMsgs.map(m => {
+    const isMe = m.email === myEmail;
+    return `
+      <div style="display:flex;flex-direction:column;align-items:${isMe?'flex-end':'flex-start'};margin-bottom:4px;">
+        ${!isMe ? `<div style="font-size:10px;color:#777;margin-bottom:2px;padding-left:4px;font-weight:700;">${escapeHTML(m.name||'Student')}</div>` : ''}
+        <div style="background:${isMe?'#1565C0':'#fff'};color:${isMe?'#fff':'#333'};padding:10px 14px;border-radius:${isMe?'14px 14px 2px 14px':'14px 14px 14px 2px'};max-width:85%;box-shadow:0 1px 2px rgba(0,0,0,0.05);font-size:13px;line-height:1.4;word-wrap:break-word;border:${isMe?'none':'1px solid #E0EAE0'};">
+          ${escapeHTML(m.text)}
         </div>
+        <div style="font-size:9px;color:#999;margin-top:2px;">${m.time}</div>
       </div>`;
   }).join("");
-  el.scrollTop=el.scrollHeight;
+  el.scrollTop = el.scrollHeight;
 }
 
-function setAiInput(text){
-  const inp=document.getElementById("chatInput"); if(inp){ inp.value=text; inp.focus(); }
-}
-
-function clearChat(){
-  msgs=[{role:"assistant",content:"Chat cleared! 🌱 How can I help you?",time:fmtTime()}];
-  renderChat();
-}
-
-// ── AI Professor — OpenRouter (Netlify) → Gemini fallback ──────
-const _cfg = ""; // API key is set via Netlify env var GEMINI_API_KEY — do not hardcode here
-const AI_SYS = "You are an expert AI Agriculture Professor at Banaras Hindu University (BHU). "+
-  "You have deep knowledge of all agriculture subjects: Agronomy, Horticulture, Soil Science, "+
-  "Genetics & Plant Breeding, Plant Pathology, Entomology, Agricultural Economics & Statistics, "+
-  "Extension Education, Dairy Science & Food Tech, and Agriculture Engineering. "+
-  "Answer student questions clearly and concisely. Use simple language with relevant examples from Indian "+
-  "agriculture, and keep answers exam-focused. Format answers in plain text without markdown symbols.";
-
-async function sendAI(){
-  if(aiLoading) return;
-  const inp = document.getElementById("chatInput");
-  const text = inp.value.trim(); if(!text) return;
+async function sendGroupChat() {
+  if(!currentUser) { toast("Please login to chat!"); return; }
+  const inp = document.getElementById("groupChatInput");
+  const text = inp.value.trim();
+  if(!text) return;
   inp.value = "";
-  msgs.push({role:"user", content:text, time:fmtTime()});
-  msgs.push({role:"assistant", isTyping:true});
-  renderChat(); aiLoading = true;
-
-  // Build Anthropic-format messages (alternating user/assistant, no Gemini parts)
-  const raw = msgs
-    .filter(m => !m.isTyping && m.content)
-    .slice(-10)
-    .map(m => ({ role: m.role === "user" ? "user" : "assistant", content: m.content }));
-  while(raw.length && raw[0].role === "assistant") raw.shift();
-  const messages = [];
-  for(const m of raw){
-    if(messages.length && messages[messages.length-1].role === m.role)
-      messages[messages.length-1].content += "\n" + m.content;
-    else messages.push({...m});
-  }
-
-  let reply = null;
-  try{
-    const headers = { "Content-Type": "application/json" };
-    if (_cfg) headers["X-Gemini-Key"] = _cfg;
-    const r = await fetch(AI_ENDPOINT, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ messages })
-    });
-    if(r.ok){
-      const d = await r.json();
-      reply = d.content || null;
-      if(d.error) console.warn("AI err:", d.error);
-    }
-  } catch(e){ console.warn("AI fetch failed:", e.message); }
-
-  msgs = msgs.filter(m => !m.isTyping);
-  msgs.push({
-    role: "assistant",
-    content: reply || "⚠️ AI Professor is temporarily unavailable. Please try again in a moment.",
-    time: fmtTime()
+  inp.style.height = "";
+  
+  let chatMsgs = [];
+  try { chatMsgs = JSON.parse(localStorage.getItem("bhu:groupchat") || "[]"); } catch{}
+  
+  chatMsgs.push({
+    id: Date.now().toString(),
+    email: currentUser.email,
+    name: currentUser.name,
+    text: text,
+    time: typeof fmtTime === "function" ? fmtTime() : new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
   });
-  aiLoading = false; renderChat();
+  
+  // Keep last 100 messages
+  if(chatMsgs.length > 100) chatMsgs = chatMsgs.slice(chatMsgs.length - 100);
+  
+  localStorage.setItem("bhu:groupchat", JSON.stringify(chatMsgs));
+  renderGroupChat();
+  
+  // Sync to Firebase
+  if(typeof sSet === "function") await sSet("bhu:groupchat", chatMsgs);
 }
 
-// ═══════════════════════════════════════════════════════════════
-// COMMUNITY DOUBTS
-// ═══════════════════════════════════════════════════════════════
-function openAskDoubt(){
-  if(!currentUser){openLogin();return;}
-  const f=document.getElementById("askDoubtForm");
-  f.style.display=f.style.display==="none"||!f.style.display?"block":"none";
-}
-
-function toggleMCQFields(){
-  const checked=document.getElementById("makeMCQ").checked;
-  document.getElementById("mcqFields").style.display=checked?"block":"none";
-}
-
-async function postDoubt(){
-  const u=currentUser; if(!u){openLogin();return;}
-  const title=document.getElementById("qTitle").value.trim();
-  const subj=document.getElementById("qSubject").value;
-  const body=document.getElementById("qBody").value.trim();
-  if(!title){toast("Question title is required.","e");return;}
-
-  const isMCQ=document.getElementById("makeMCQ").checked;
-  let mcq=null;
-  if(isMCQ){
-    const a=document.getElementById("mcqOptA").value.trim();
-    const b=document.getElementById("mcqOptB").value.trim();
-    const c=document.getElementById("mcqOptC").value.trim();
-    const d=document.getElementById("mcqOptD").value.trim();
-    const correct=document.getElementById("mcqCorrect").value;
-    if(!a||!b){toast("MCQ poll needs at least Option A and B.","e");return;}
-    const opts=[a,b]; if(c) opts.push(c); if(d) opts.push(d);
-    mcq={opts,correct:correct===""?-1:parseInt(correct),votes:new Array(opts.length).fill(0)};
-  }
-
-  const d={id:Date.now()+"",title,subject:subj||"General",body,author:u.name,authorEmail:u.email,
-    isAdmin:!!u.isAdmin,time:fmtDate(),createdAt:new Date().toISOString(),replies:[],upvotes:0,solved:false,mcq};
-  questions=[d,...questions]; await sSet("bhu:questions",questions);
-  document.getElementById("qTitle").value=""; document.getElementById("qBody").value="";
-  document.getElementById("makeMCQ").checked=false; toggleMCQFields();
-  ["mcqOptA","mcqOptB","mcqOptC","mcqOptD"].forEach(id=>document.getElementById(id).value="");
-  document.getElementById("mcqCorrect").value="";
-  document.getElementById("askDoubtForm").style.display="none";
-  toast(isMCQ?"MCQ poll posted! 🗳️":"Question posted! 💬"); renderDoubts(); renderHome();
-}
-
-// ── MCQ poll voting ──
-async function voteMCQ(qId,optIdx){
-  if(!currentUser){openLogin();return;}
-  const voteKey=qId+"_"+currentUser.email;
-  if(mcqVotes[voteKey]!==undefined){ toast("You've already voted on this poll.","e"); return; }
-  mcqVotes[voteKey]=optIdx;
-  await sSet("bhu:mcqvotes",mcqVotes);
-  questions=questions.map(q=>{
-    if(q.id!==qId||!q.mcq) return q;
-    const votes=[...q.mcq.votes]; votes[optIdx]=(votes[optIdx]||0)+1;
-    return {...q,mcq:{...q.mcq,votes}};
-  });
-  await sSet("bhu:questions",questions);
-  toast("Vote recorded! ✅"); renderDoubts();
-}
-
-// ── AI Professor answer for a specific community doubt ──
-async function askAIForDoubt(qId){
-  const q=questions.find(x=>x.id===qId); if(!q) return;
-  aiDoubtLoading[qId]=true; renderDoubts();
-  const prompt=q.title+(q.body?("\n\nDetails: "+q.body):"");
-  const answer=await callAIProfessor(prompt);
-  aiDoubtLoading[qId]=false;
-  aiDoubtAnswers[qId]=answer||"⚠️ Couldn't get an AI answer right now. Try again in a moment.";
-  renderDoubts();
-}
-
-// ── Shared AI Professor caller (used by both main chat & community) ──
-async function callAIProfessor(userText){
-  if(!isSubActive(currentUser) && !currentUser?.isAdmin) { toast("⭐ AI Professor is a Premium feature! Upgrade to unlock.","e"); openPay(); return null; }
-  let reply = null;
-  try{
-    const headers2 = { "Content-Type": "application/json" };
-    if (_cfg) headers2["X-Gemini-Key"] = _cfg;
-    const r = await fetch(AI_ENDPOINT, {
-      method: "POST",
-      headers: headers2,
-      body: JSON.stringify({ messages: [{ role:"user", content: userText }] })
-    });
-    if(r.ok){
-      const d = await r.json();
-      reply = d.content || null;
-      if(d.error) console.warn("AI Professor err:", d.error);
+async function syncGroupChat() {
+  if(typeof sGet === "function") {
+    const data = await sGet("bhu:groupchat");
+    if(data) {
+      localStorage.setItem("bhu:groupchat", JSON.stringify(data));
+      renderGroupChat();
     }
-  } catch(e){ console.warn("AI Professor fetch failed:", e.message); }
-  return reply;
-}
-
-// ── Community AI Professor chat box ──
-let communityAIMsgs=[];
-function openCommunityAI(){
-  if(!currentUser){openLogin();return;}
-  const box=document.getElementById("communityAIBox");
-  const show=box.style.display==="none"||!box.style.display;
-  box.style.display=show?"block":"none";
-  if(show&&communityAIMsgs.length===0){
-    communityAIMsgs.push({role:"assistant",content:"Hi! 🌾 Ask me any agriculture question right here in the community section.",time:fmtTime()});
-    renderCommunityAIMessages();
   }
 }
-function renderCommunityAIMessages(){
-  const el=document.getElementById("communityAIMessages"); if(!el) return;
-  el.innerHTML=communityAIMsgs.map(m=>{
-    const isUser=m.role==="user";
-    if(m.isTyping) return `<div class="message bot msg"><div class="avatar" style="background:linear-gradient(135deg,#0F3D23,#00B050);">🌾</div><div class="bubble"><div class="bubble-text"><div class="typing"><span></span><span></span><span></span></div></div></div></div>`;
-    return `<div class="message ${isUser?"user":"bot"} msg">
-      ${!isUser?'<div class="avatar" style="background:linear-gradient(135deg,#0F3D23,#00B050);">🌾</div>':''}
-      ${isUser?`<div class="avatar" style="background:linear-gradient(135deg,#1565C0,#42A5F5);">${currentUser?currentUser.name[0].toUpperCase():"U"}</div>`:''}
-      <div class="bubble"><div class="bubble-text">${escapeHTML(m.content)}</div><div class="bubble-time">${escapeHTML(m.time||"")}</div></div>
-    </div>`;
-  }).join("");
-  el.scrollTop=el.scrollHeight;
-}
-async function sendCommunityAI(){
-  const inp=document.getElementById("communityAIInput");
-  const text=inp.value.trim(); if(!text) return;
-  inp.value="";
-  communityAIMsgs.push({role:"user",content:text,time:fmtTime()});
-  communityAIMsgs.push({role:"assistant",isTyping:true});
-  renderCommunityAIMessages();
-  const reply=await callAIProfessor(text);
-  communityAIMsgs=communityAIMsgs.filter(m=>!m.isTyping);
-  communityAIMsgs.push({role:"assistant",content:reply||"⚠️ Couldn't get a response right now. Try again.",time:fmtTime()});
-  renderCommunityAIMessages();
+
+function setChatTab(t) {
+  chatTab = t;
+  document.getElementById("aiChat").style.display = t==="ai" ? "flex" : "none";
+  document.getElementById("communityChat").style.display = t==="community" ? "block" : "none";
+  document.getElementById("aiTabBtn").className = "btn " + (t==="ai" ? "btn-primary" : "btn-light");
+  document.getElementById("communityTabBtn").className = "btn " + (t==="community" ? "btn-primary" : "btn-light");
+  
+  if(t === "community") renderDoubts();
+  if(t === 'ai') {
+    renderGroupChat();
+    syncGroupChat();
+    if(!gcInterval) gcInterval = setInterval(syncGroupChat, 5000);
+  } else {
+    if(gcInterval) { clearInterval(gcInterval); gcInterval = null; }
+  }
 }
 
-async function postReply(qId){
-  const u=currentUser; if(!u){openLogin();return;}
-  const inp=document.getElementById("replyInput_"+qId); if(!inp) return;
-  const text=inp.value.trim(); if(!text){toast("Reply cannot be empty.","e");return;}
-  const r={id:Date.now()+"",text,author:u.name,authorEmail:u.email,isAdmin:!!u.isAdmin,time:fmtDate(),createdAt:new Date().toISOString()};
-  questions=questions.map(q=>q.id===qId?{...q,replies:[...q.replies,r]}:q);
-  await sSet("bhu:questions",questions); toast("Reply posted! ✅"); renderDoubts();
-}
+document.addEventListener("DOMContentLoaded", () => {
+  if(document.getElementById("aiChat") && document.getElementById("aiChat").style.display !== "none") {
+    syncGroupChat();
+    if(!gcInterval) gcInterval = setInterval(syncGroupChat, 5000);
+  }
+});
 
-async function toggleUpvote(qId){
-  if(!currentUser){openLogin();return;}
-  upvoted[qId]=!upvoted[qId];
-  questions=questions.map(q=>q.id===qId?{...q,upvotes:(q.upvotes||0)+(upvoted[qId]?1:-1)}:q);
-  await sSet("bhu:questions",questions); renderDoubts();
-}
-
-async function markSolved(qId){
-  questions=questions.map(q=>q.id===qId?{...q,solved:!q.solved}:q);
-  await sSet("bhu:questions",questions); renderDoubts();
-}
-
-async function delQuestion(qId){
-  if(!window.confirm("Delete this question permanently?")) return;
-  questions=questions.filter(q=>q.id!==qId); await sSet("bhu:questions",questions);
-  if(expandedQ===qId) expandedQ=null; renderDoubts(); renderHome();
-}
-
-async function delReply(qId,rId){
-  questions=questions.map(q=>q.id===qId?{...q,replies:q.replies.filter(r=>r.id!==rId)}:q);
-  await sSet("bhu:questions",questions); renderDoubts();
-}
-
-function renderMCQPoll(q){
-  const mcq=q.mcq;
-  const letters=["A","B","C","D"];
-  const voteKey=q.id+"_"+(currentUser?.email||"");
-  const myVote=currentUser?mcqVotes[voteKey]:undefined;
-  const hasVoted=myVote!==undefined;
-  const totalVotes=mcq.votes.reduce((s,v)=>s+v,0);
-  return `
-    <div style="padding:14px 18px;border-bottom:1px solid #E0EAE0;">
-      <div style="font-size:11px;font-weight:700;color:#5E35B1;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;">🗳️ Poll · ${totalVotes} vote${totalVotes===1?"":"s"}</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        ${mcq.opts.map((opt,i)=>{
-          const count=mcq.votes[i]||0;
-          const pct=totalVotes?Math.round(count/totalVotes*100):0;
-          const isMine=myVote===i;
-          const isCorrect=mcq.correct===i;
-          const showResult=hasVoted;
-          return `
-          <div onclick="${hasVoted?'':`voteMCQ('${q.id}',${i})`}" style="position:relative;border:2px solid ${isMine?"#5E35B1":"#E0EAE0"};border-radius:10px;padding:10px 14px;cursor:${hasVoted?"default":"pointer"};overflow:hidden;background:#fff;">
-            ${showResult?`<div style="position:absolute;inset:0;background:${isCorrect&&mcq.correct>=0?"#E8F5E9":"#F3F0FA"};width:${pct}%;transition:width .4s;z-index:0;"></div>`:''}
-            <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;">
-              <span style="font-size:13px;font-weight:${isMine?"700":"500"};color:#111;">${letters[i]}. ${escapeHTML(opt)} ${showResult&&isCorrect&&mcq.correct>=0?"✅":""}</span>
-              ${showResult?`<span style="font-size:12px;font-weight:700;color:#5E35B1;flex-shrink:0;">${pct}% (${count})</span>`:''}
-            </div>
-          </div>`;
-        }).join("")}
-      </div>
-      ${!currentUser?`<div style="font-size:12px;color:#777;margin-top:8px;">🔑 <a href="#" onclick="event.preventDefault();openLogin();" style="color:#00B050;font-weight:600;">Login</a> to vote</div>`:
-        hasVoted?`<div style="font-size:12px;color:#777;margin-top:8px;">✓ You voted for ${letters[myVote]}</div>`:''}
-    </div>`;
-}
+function openCommunityAI(){}
+function sendCommunityAI(){}
+function clearChat(){}
+function renderChat(){}
+function setAiInput(){}
+async function sendAI(){}
 
 function renderDoubts(){
   const totalQEl=document.getElementById("totalQ"); const totalAEl=document.getElementById("totalA");
