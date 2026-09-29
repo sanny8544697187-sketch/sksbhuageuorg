@@ -837,7 +837,77 @@
     /* Krishi Tools */
     #kgToolResult { margin-top:12px; }
 
-    </style>
+    
+    /* ════════════════════════════════════════════
+       MOBILE RESPONSIVE OVERRIDES  (≤ 768px)
+       ════════════════════════════════════════════ */
+    @media (max-width: 768px) {
+
+      /* --- Global layout --- */
+      body { overflow-x: hidden; width: 100%; }
+      .content { padding: 10px 10px 80px !important; max-width: 100% !important; box-sizing: border-box; }
+
+      /* --- Hero panel --- */
+      .hero { border-radius: 16px !important; padding: 20px 16px !important; margin-bottom: 14px !important; }
+      .hero h1 { font-size: 20px !important; }
+      .hero p { font-size: 13px !important; margin-bottom: 14px !important; }
+      .hero-actions { gap: 8px !important; }
+      .hero-actions .btn { font-size: 12px !important; padding: 9px 14px !important; }
+      .hero-stats { gap: 14px !important; margin-top: 16px !important; padding-top: 14px !important; flex-wrap: wrap; }
+      .hero-stats strong { font-size: 20px !important; }
+      .hero-stats span { font-size: 10px !important; }
+
+      /* --- Hello/Streak panel --- */
+      .card { border-radius: 14px !important; }
+
+      /* --- Quick grid nav icons --- */
+      .quick-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 8px !important; margin-bottom: 16px !important; }
+      .quick-card { padding: 12px 6px !important; border-radius: 14px !important; }
+      .quick-icon { width: 38px !important; height: 38px !important; font-size: 18px !important; }
+
+      /* --- Subject grid --- */
+      .subject-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+      .subject-card { padding: 14px !important; border-radius: 14px !important; }
+
+      /* --- Section titles --- */
+      .section-title { font-size: 18px !important; }
+      .section-subtitle { font-size: 12px !important; }
+
+      /* --- Resource cards --- */
+      .res-card { padding: 12px !important; }
+      .res-title { font-size: 13px !important; }
+      .res-meta { font-size: 10px !important; }
+
+      /* --- Upload grid --- */
+      .upload-grid { grid-template-columns: 1fr !important; }
+
+      /* --- Quiz --- */
+      .quiz-container { max-width: 100% !important; }
+      .quiz-option { font-size: 13px !important; padding: 10px 12px !important; }
+
+      /* --- Modals --- */
+      .modal { padding: 10px !important; }
+      .modal-card { border-radius: 16px !important; padding: 20px !important; }
+
+      /* --- Buttons --- */
+      .btn { padding: 9px 16px !important; font-size: 13px !important; }
+
+      /* --- Search box --- */
+      .search-box { border-radius: 10px !important; padding: 8px 12px !important; }
+
+      /* --- Features injected cards (features.js) --- */
+      #kgTodayStudy, #kgContinueLearning, #kgRecommendations { margin-bottom: 12px !important; }
+    }
+
+    @media (max-width: 400px) {
+      .hero h1 { font-size: 17px !important; }
+      .quick-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 4px !important; }
+      .quick-card { padding: 10px 4px !important; }
+      .quick-icon { width: 32px !important; height: 32px !important; font-size: 16px !important; }
+      .subject-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    }
+
+  </style>
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2591814606015176" crossorigin="anonymous"></script>
   <script type="application/ld+json">
   {
@@ -1231,7 +1301,6 @@ try {
     <button id="navGames"      class="btn btn-ghost" onclick="setSection('games')">🎮 Games</button>
     <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
     <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
-      <button id="installAppBtn" class="nav-btn" style="display:none; color:#f59e0b;" onclick="installPWA()">⬇️ Install App</button>
     <button id="navUpload"     class="btn btn-ghost hidden admin-only" onclick="setSection('upload')">⬆️ Upload</button>
     <button id="navRepresentative" class="btn btn-ghost hidden" onclick="setSection('representative')">ðŸŒ± Representative</button>
     <button id="navAdmin"      class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
@@ -9192,6 +9261,21 @@ async function deleteNotice(id) {
 <script src="./features.js"></script>
 <script src="./engagement-system.js"></script>
   <script src="./pwa-install.js"></script>
+
+<!-- PWA Install Banner -->
+<div id="pwaInstallBanner" style="display:none; position:fixed; bottom:0; left:0; width:100%; background:#0F3D23; color:white; z-index:10000; padding:12px 16px; box-shadow:0 -4px 12px rgba(0,0,0,0.15); align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+  <div style="display:flex; align-items:center; gap:12px; flex:1;">
+    <img src="/icons/icon-72.png" alt="Icon" style="width:40px; height:40px; border-radius:8px;">
+    <div>
+      <div style="font-weight:700; font-size:14px;">Install KrishiGyan App</div>
+      <div style="font-size:11px; opacity:0.8;">Get the full-screen app experience</div>
+    </div>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button onclick="document.getElementById('pwaInstallBanner').style.display='none'" style="background:transparent; border:none; color:rgba(255,255,255,0.7); font-size:13px; font-weight:600; padding:8px; cursor:pointer;">Dismiss</button>
+    <button onclick="installPWA()" style="background:#00B050; border:none; color:white; font-size:13px; font-weight:700; padding:8px 16px; border-radius:8px; cursor:pointer;">Install</button>
+  </div>
+</div>
 </body>
 </html>
 

@@ -3,9 +3,10 @@ let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  const installBtn = document.getElementById('installAppBtn');
-  if (installBtn) {
-    installBtn.style.display = 'flex';
+  // Show the mobile sticky banner
+  const banner = document.getElementById('pwaInstallBanner');
+  if (banner) {
+    banner.style.display = 'flex';
   }
 });
 
@@ -14,8 +15,8 @@ async function installPWA() {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      const installBtn = document.getElementById('installAppBtn');
-      if (installBtn) installBtn.style.display = 'none';
+      const banner = document.getElementById('pwaInstallBanner');
+      if (banner) banner.style.display = 'none';
     }
     deferredPrompt = null;
   }
