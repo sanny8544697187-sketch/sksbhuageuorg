@@ -1231,6 +1231,7 @@ try {
     <button id="navGames"      class="btn btn-ghost" onclick="setSection('games')">🎮 Games</button>
     <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
     <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
+      <button id="installAppBtn" class="nav-btn" style="display:none; color:#f59e0b;" onclick="installPWA()">⬇️ Install App</button>
     <button id="navUpload"     class="btn btn-ghost hidden admin-only" onclick="setSection('upload')">⬆️ Upload</button>
     <button id="navRepresentative" class="btn btn-ghost hidden" onclick="setSection('representative')">ðŸŒ± Representative</button>
     <button id="navAdmin"      class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
@@ -2691,6 +2692,8 @@ function rebuildInstitutionList(){
 
 let QUIZ_BANK = {
   "Agronomy":[
+    {q:"<b>Match the following:</b><br><br><div style='display:flex;gap:40px;'><div><b>List I (Crop)</b><br>A. Paddy<br>B. Wheat<br>C. Sugarcane<br>D. Cotton</div><div><b>List II (Pest/Weed)</b><br>1. Phalaris minor<br>2. Early shoot borer<br>3. Pink bollworm<br>4. Echinochloa spp.</div></div>", opts:["A-4, B-1, C-2, D-3","A-1, B-4, C-3, D-2","A-4, B-2, C-1, D-3","A-3, B-1, C-4, D-2"], ans:0, exp:"Paddy: Echinochloa, Wheat: Phalaris minor, Sugarcane: Early shoot borer, Cotton: Pink bollworm.", premium:false},
+    {q:"<b>Assertion (A):</b> Application of phosphorus is essential for root development.<br><br><b>Reason (R):</b> Phosphorus is a structural component of cell membranes and ATP.", opts:["Both A and R are true and R is the correct explanation of A","Both A and R are true but R is not the correct explanation of A","A is true but R is false","A is false but R is true"], ans:0, exp:"Phosphorus is crucial for roots and is found in phospholipids and ATP, explaining its metabolic role.", premium:false},
     {q:"Which nutrient is primarily responsible for vegetative growth?",opts:["Phosphorus","Nitrogen","Potassium","Calcium"],ans:1,exp:"Nitrogen promotes leafy growth and is essential for chlorophyll formation.",premium:false},
     {q:"Critical period of weed competition in crops is:",opts:["At harvest time","First 20-45 days after sowing","After 60 days","At flowering stage"],ans:1,exp:"Crops are most vulnerable to weed competition in the first 20–45 days after sowing.",premium:false},
     {q:"Which irrigation method has the highest water-use efficiency?",opts:["Flood irrigation","Furrow irrigation","Sprinkler irrigation","Drip irrigation"],ans:3,exp:"Drip irrigation delivers water directly to the root zone, minimising losses.",premium:true},
@@ -9188,6 +9191,7 @@ async function deleteNotice(id) {
 <script src="./representative-system.js"></script>
 <script src="./features.js"></script>
 <script src="./engagement-system.js"></script>
+  <script src="./pwa-install.js"></script>
 </body>
 </html>
 
