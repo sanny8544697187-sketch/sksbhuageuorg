@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KrishiGyan</string>
+    <string name="title_activity_main">KrishiGyan</string>
+    <string name="package_name">online.sannykumar.krishigyan_v1</string>
+    <string name="custom_url_scheme">online.sannykumar.krishigyan_v1</string>
+</resources>

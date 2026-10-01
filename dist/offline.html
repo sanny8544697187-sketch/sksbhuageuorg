@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>KrishiDiagnos — Offline</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#0D2B1A,#1A6B3A);min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fff;padding:20px}
+.box{background:rgba(255,255,255,0.1);backdrop-filter:blur(12px);border-radius:20px;padding:36px 28px;text-align:center;max-width:360px;border:1px solid rgba(255,255,255,0.2)}
+.icon{font-size:56px;margin-bottom:16px}
+h1{font-size:22px;font-weight:800;margin-bottom:8px}
+p{font-size:14px;opacity:.8;line-height:1.6;margin-bottom:20px}
+.tips{text-align:left;background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:20px}
+.tip{font-size:13px;margin-bottom:8px;display:flex;gap:8px;align-items:flex-start;opacity:.9}
+.tip:last-child{margin-bottom:0}
+button{width:100%;padding:13px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);border-radius:12px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+button:hover{background:rgba(255,255,255,0.3)}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;background:rgba(220,38,38,.8);font-size:11px;font-weight:700;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="badge">📡 NO CONNECTION</div>
+  <div class="icon">🌿</div>
+  <h1>You're Offline</h1>
+  <p>KrishiDiagnos needs internet to run AI diagnosis. But you can still access cached data.</p>
+  <div class="tips">
+    <div class="tip">📋 <span>Your <b>Ledger</b> records are stored locally and available offline.</span></div>
+    <div class="tip">🌦️ <span><b>Field Data</b> shows your last synced sensor readings.</span></div>
+    <div class="tip">🎤 <span><b>Voice AI</b> needs connection — prepare your questions and ask when back online.</span></div>
+    <div class="tip">📷 <span>You can <b>capture photos</b> offline — diagnosis runs when connection returns.</span></div>
+  </div>
+  <button onclick="location.reload()">↻ Try Reconnecting</button>
+</div>
+</body>
+</html>
