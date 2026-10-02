@@ -4,5 +4,35 @@
   "description": "Agriculture e-Learning Portal — BHU",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "main": "add_qs.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sanny8544697187-sketch/sksbhuageuorg.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/sanny8544697187-sketch/sksbhuageuorg/issues"
+  },
+  "homepage": "https://github.com/sanny8544697187-sketch/sksbhuageuorg#readme",
+  "dependencies": {
+    "@capacitor-firebase/authentication": "^8.5.2",
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/app": "^8.1.1",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/dialog": "^8.0.1",
+    "@capacitor/network": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
   }
 }
