@@ -954,6 +954,33 @@ try {
   window._db = firebase.firestore();
   window._st = firebase.storage();
   window._fbConfigured = true;
+
+  try {
+    firebase.auth().getRedirectResult().then(async (result) => {
+      if (result && result.user) {
+        console.log('Google redirect login successful!');
+        await processGoogleUser(result.user);
+      }
+    }).catch(error => {
+      console.error('Redirect auth error:', error);
+      if (error.code === 'auth/unauthorized-domain') {
+        const toastEl = document.getElementById('toast');
+        if (toastEl) {
+          toastEl.innerText = 'Google Login failed: You must add localhost to Firebase Authorized Domains.';
+          toastEl.classList.remove('hidden');
+          setTimeout(() => toastEl.classList.add('hidden'), 5000);
+        }
+      } else {
+        const toastEl = document.getElementById('toast');
+        if (toastEl) {
+          toastEl.innerText = 'Google Login failed: ' + error.message;
+          toastEl.classList.remove('hidden');
+          setTimeout(() => toastEl.classList.add('hidden'), 5000);
+        }
+      }
+    });
+  } catch(e) { console.error(e); }
+
   console.log("✅ Firebase connected — multi-device sync ON");
 } catch(e) { console.error("❌ Firebase:", e); }
 </script>
@@ -6932,7 +6959,13 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
     p2.addScope('email'); p2.addScope('profile');
     p2.setCustomParameters({ prompt: 'select_account' });
     toast("Please select your Google account again…","");
-    const res = await firebase.auth().signInWithPopup(p2);
+    let res;
+    if (window.Capacitor && window.Capacitor.isNative) {
+      await firebase.auth().signInWithRedirect(p2);
+      return; // Stop execution as the page will redirect
+    } else {
+      res = await firebase.auth().signInWithPopup(p2);
+    }
     if (res && res.user) await processGoogleUser(res.user);
     return;
   }
@@ -7009,7 +7042,13 @@ async function doGoogleLogin(){
     provider.setCustomParameters({ prompt: 'select_account' });
     toast("Opening Google Sign-In…","");
     
-    const res = await firebase.auth().signInWithPopup(provider);
+    let res;
+    if (window.Capacitor && window.Capacitor.isNative) {
+      await firebase.auth().signInWithRedirect(provider);
+      return; // Stop execution as the page will redirect
+    } else {
+      res = await firebase.auth().signInWithPopup(provider);
+    }
     if (res && res.user) {
       await processGoogleUser(res.user);
     }
