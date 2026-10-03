@@ -13078,10 +13078,21 @@ function handleGoogleRedirectResult() {
 async function doGoogleLogin(){
   if(!window.firebase || !firebase.auth) { toast('Firebase not initialized.','e'); return; }
   try {
-    // ANDROID (Capacitor): Use native Google Sign-In via @capacitor-firebase/authentication
-    if (window.Capacitor && window.Capacitor.isNative && window.CapacitorFirebaseAuth) {
+    // ─── ANDROID (Capacitor native) ───────────────────────────────────────────
+    // Uses @capacitor-firebase/authentication which calls the native Google
+    // Sign-In SDK. This avoids ANY browser redirect entirely.
+    if (window.Capacitor && window.Capacitor.isNative) {
+      if (!window.CapacitorFirebaseAuth) {
+        // Plugin not loaded — likely google-services.json SHA-1 is missing.
+        // NEVER fall through to signInWithPopup on Android: Firebase SDK
+        // automatically converts popups to signInWithRedirect in WebViews,
+        // which then fails with "missing initial state".
+        toast('Google Sign-In is not ready. Please restart the app.', 'e');
+        console.error('CapacitorFirebaseAuth bridge not available. Check that SHA-1 fingerprints are added to Firebase Console for package online.sannykumar.krishigyan_v1');
+        return;
+      }
       try {
-        toast('Opening Google Sign-In...','');
+        toast('Opening Google Sign-In...', '');
         const result = await window.CapacitorFirebaseAuth.signInWithGoogle();
         if (result && result.idToken) {
           const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken);
@@ -13089,25 +13100,32 @@ async function doGoogleLogin(){
           if (res && res.user) {
             await processGoogleUser(res.user);
           }
+        } else {
+          toast('Google Sign-In cancelled.', '');
         }
         return;
       } catch(nativeErr) {
-        if (nativeErr.message && nativeErr.message.includes('cancel')) {
-          console.log('User cancelled Google sign-in');
+        console.error('Native Google Sign-In error:', nativeErr);
+        if (nativeErr.message && (nativeErr.message.includes('cancel') || nativeErr.code === '12501')) {
+          // User cancelled — silent
           return;
         }
-        console.error('Native Google Sign-In error:', nativeErr);
-        toast('Google login failed. Please try again.', 'e');
+        if (nativeErr.code === '10' || (nativeErr.message && nativeErr.message.includes('DEVELOPER_ERROR'))) {
+          toast('Google Sign-In setup is incomplete. Please contact support.', 'e');
+          console.error('DEVELOPER_ERROR (code 10): SHA-1 fingerprint is not registered in Firebase Console for this app.');
+        } else {
+          toast('Google login failed: ' + (nativeErr.message || nativeErr.code || 'Please try again.'), 'e');
+        }
         return;
       }
     }
 
-    // WEB: Use signInWithPopup
+    // ─── WEB browser: Use signInWithPopup ─────────────────────────────────────
     const provider = new firebase.auth.GoogleAuthProvider();
     provider.addScope('email');
     provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
-    toast('Opening Google Sign-In...','');
+    toast('Opening Google Sign-In...', '');
     const res = await firebase.auth().signInWithPopup(provider);
     if (res && res.user) {
       await processGoogleUser(res.user);
@@ -13117,7 +13135,7 @@ async function doGoogleLogin(){
       console.log('Popup closed by user');
     } else {
       console.error('Google login failed:', e);
-      toast('Google login failed: ' + (e.message||e.code||'Please try again.'), 'e');
+      toast('Google login failed: ' + (e.message || e.code || 'Please try again.'), 'e');
     }
   }
 }
