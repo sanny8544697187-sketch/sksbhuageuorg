@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "419404326160",
+    "firebase_url": "https://bhuagorg-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "bhuagorg",
+    "storage_bucket": "bhuagorg.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:419404326160:android:61c49ec83ea5cb209ab195",
+        "android_client_info": {
+          "package_name": "online.sannykumar.krishigyan_v1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "419404326160-2p7c1tju2qcsrq2ikugkriu0qenkdh0m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "online.sannykumar.krishigyan_v1",
+            "certificate_hash": "759785086662785bc25ef00ef898a4d08df87746"
+          }
+        },
+        {
+          "client_id": "419404326160-1smeb5lgsmfpims7viqfbfecr7dcnroo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHqxB89mQ0GdwRmhrMLsvzw1QWa6c0MCQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "419404326160-1smeb5lgsmfpims7viqfbfecr7dcnroo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
