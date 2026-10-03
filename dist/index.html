@@ -952,9 +952,13 @@ const FIREBASE_CONFIG = {
   appId:             "1:419404326160:web:888dfabcb1609f9e9ab195",
 };
 window._fbConfigured = false;
-
-  console.log("✅ Firebase connected — multi-device sync ON");
-} catch(e) { console.error("❌ Firebase:", e); }
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    window._db = firebase.firestore();
+    window._st = firebase.storage();
+    window._fbConfigured = true;
+    console.log("?? Firebase connected � multi-device sync ON");
+  } catch(e) { console.error("?? Firebase:", e); }
 </script>
 
 <!-- TOAST -->
@@ -7063,9 +7067,13 @@ const FIREBASE_CONFIG = {
   appId:             "1:419404326160:web:888dfabcb1609f9e9ab195",
 };
 window._fbConfigured = false;
-
-  console.log("✅ Firebase connected — multi-device sync ON");
-} catch(e) { console.error("❌ Firebase:", e); }
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    window._db = firebase.firestore();
+    window._st = firebase.storage();
+    window._fbConfigured = true;
+    console.log("?? Firebase connected � multi-device sync ON");
+  } catch(e) { console.error("?? Firebase:", e); }
 </script>
 
 <!-- TOAST -->
@@ -15392,6 +15400,7 @@ async function deleteNotice(id) {
 </div>
 </body>
 </html>
+
 
 
 
