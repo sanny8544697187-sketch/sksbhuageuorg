@@ -7006,22 +7006,6 @@ function handleGoogleRedirectResult() {
 }
 
 // ── FIREBASE CONFIG ─────────────────────────────────────────────
-const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyCIpRs1roHzLNn-u9I3aLu8EYzS5Lybwjs",
-  authDomain:        "bhuagorg.firebaseapp.com",
-  projectId:         "bhuagorg",
-  storageBucket:     "bhuagorg.firebasestorage.app",
-  messagingSenderId: "419404326160",
-  appId:             "1:419404326160:web:888dfabcb1609f9e9ab195",
-};
-window._fbConfigured = false;
-  try {
-    firebase.initializeApp(FIREBASE_CONFIG);
-    window._db = firebase.firestore();
-    window._st = firebase.storage();
-    window._fbConfigured = true;
-    console.log("?? Firebase connected � multi-device sync ON");
-  } catch(e) { console.error("?? Firebase:", e); }
 </script>
 
 <!-- TOAST -->
