@@ -7331,35 +7331,7 @@ function handleGoogleRedirectResult() {
   <div class="main-layout">
 
 <!-- HEADER -->
-<header>
-  <div class="header-inner">
-    <button class="hamburger-btn" onclick="openMobileDrawer()" style="display:none;margin-right:4px;">☰</button>
-    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;" onclick="setSection('home')">
-      <div style="width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;">🌾</div>
-      <div><div style="font-weight:800;font-size:14px;line-height:1.1;">KrishiGyan</div><div style="font-size:9px;opacity:.6;font-weight:500;">e-Learning Hub</div></div>
-    </div>
-    <div class="header-search" style="flex:1;">
-      <span style="font-size:13px;opacity:.6;">🔍</span>
-      <input id="headerSearch" type="text" placeholder="Search resources…" onkeydown="if(event.key==='Enter')searchHeader()">
-    </div>
-    <button class="btn btn-ghost" style="padding:7px 12px;font-size:12px;flex-shrink:0;" onclick="toggleDark()">🌙</button>
-    <div id="headerUser" style="flex-shrink:0;"></div>
-  </div>
-  <div class="nav-chips chips-row">
-    <button id="navHome"       class="btn btn-ghost active" onclick="setSection('home')">🏠 Home</button>
-    <button id="navNotices"    class="btn btn-ghost" onclick="setSection('notices')">📢 Notices</button>
-    <button id="navTestSeries" class="btn btn-ghost" onclick="setSection('test-series')">📝 Test Series</button>
-    <button id="navSubjects"   class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
-    <button id="navQuiz"       class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
-    <button id="navPyq"        class="btn btn-ghost" style="display:none;" onclick="setSection('pyq')">📋 PYQ</button>
-    <button id="navGames"      class="btn btn-ghost" onclick="setSection('games')">🎮 Games</button>
-    <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
-    <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
-    <button id="navUpload"     class="btn btn-ghost hidden admin-only" onclick="setSection('upload')">⬆️ Upload</button>
-    <button id="navRepresentative" class="btn btn-ghost hidden" onclick="setSection('representative')">ðŸŒ± Representative</button>
-    <button id="navAdmin"      class="btn btn-ghost hidden" onclick="setSection('admin')">🛡️ Admin</button>
-  </div>
-</header>
+
 
 <main class="content">
 
