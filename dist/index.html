@@ -6936,7 +6936,16 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
     p2.setCustomParameters({ prompt: 'select_account' });
     toast("Please select your Google account again…","");
     let res;
-    res = await firebase.auth().signInWithPopup(p2);
+    // On Android: use native sign-in to avoid WebView redirect loop
+    if (window.Capacitor && window.Capacitor.isNative && window.CapacitorFirebaseAuth) {
+      const nativeResult = await window.CapacitorFirebaseAuth.signInWithGoogle();
+      if (nativeResult && nativeResult.idToken) {
+        const cred2 = firebase.auth.GoogleAuthProvider.credential(nativeResult.idToken);
+        res = await firebase.auth().signInWithCredential(cred2);
+      }
+    } else {
+      res = await firebase.auth().signInWithPopup(p2);
+    }
     if (res && res.user) await processGoogleUser(res.user);
     return;
   }
@@ -12924,107 +12933,6 @@ async function doLogout(){
   if(section==="admin") setSection("home");
 }
 
-async function processGoogleUser(fbUser, customName="", customRoll="", customYear="Other") {
-  // ── 1. Extract email from all possible sources ──────────────────
-  let rawEmail = fbUser.email;
-  const googleProviderData = (fbUser.providerData||[]).find(p => p && p.providerId === 'google.com');
-  if (!rawEmail && googleProviderData) rawEmail = googleProviderData.email;
-  if (!rawEmail && fbUser.providerData) {
-    rawEmail = (fbUser.providerData.map(p => p && p.email).find(e => e)) || null;
-  }
-  if (!rawEmail && fbUser.getIdTokenResult) {
-    try {
-      const tok = await fbUser.getIdTokenResult(true);
-      rawEmail = (tok.claims && tok.claims.email) || 
-                 (tok.claims && tok.claims.firebase && tok.claims.firebase.identities && 
-                  tok.claims.firebase.identities.email && tok.claims.firebase.identities.email[0]) || null;
-    } catch(_) {}
-  }
-
-  // ── 2. If still no email, force fresh sign-in ───────────────────
-  if (!rawEmail) {
-    console.warn("No email found — forcing fresh Google sign-in");
-    try {
-      const curUser = firebase.auth().currentUser;
-      if(curUser) {
-        console.log("Deleting broken Firebase Auth account...");
-        await curUser.delete();
-      }
-    } catch(e) { console.error("Error deleting broken account:", e); }
-    try { await firebase.auth().signOut(); } catch(_) {}
-    
-    const p2 = new firebase.auth.GoogleAuthProvider();
-    p2.addScope('email'); p2.addScope('profile');
-    p2.setCustomParameters({ prompt: 'select_account' });
-    toast("Please select your Google account again…","");
-    let res;
-    res = await firebase.auth().signInWithPopup(p2);
-    if (res && res.user) await processGoogleUser(res.user);
-    return;
-  }
-
-  const em = rawEmail.toLowerCase();
-  const name = customName || fbUser.displayName || googleProviderData?.displayName || em.split("@")[0];
-  const firebaseUid = fbUser.uid || "";
-  const googleUid = googleProviderData ? googleProviderData.uid : "";  // Google sub ID e.g. "116239767451219737871"
-
-  console.log("processGoogleUser ✓ email:", em, "firebaseUid:", firebaseUid, "googleUid:", googleUid);
-
-  // ── 3. Admin check ──────────────────────────────────────────────
-  if(em === ADMIN_EMAIL.toLowerCase()) {
-    const u = { email: em, name: "Admin", isAdmin: true, year: "Administrator", roll: "" };
-    currentUser = u; await sSet("bhu:session", u);
-    closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll();
-    return;
-  }
-
-  // ── 4. Robust user lookup — 4 ways to find the same person ──────
-  let found = null;
-  // (a) Firebase UID match
-  if (!found && firebaseUid) found = usersDB.find(u => u.id === firebaseUid);
-  // (b) Google sub UID match (stored in googleUid field)
-  if (!found && googleUid) found = usersDB.find(u => u.googleUid === googleUid);
-  // (c) Real email match
-  if (!found) found = usersDB.find(u => u.email && u.email.toLowerCase() === em);
-  // (d) Old @noemail.com pattern — match by Firebase UID prefix in fake email
-  if (!found && firebaseUid) found = usersDB.find(u => u.email && u.email === firebaseUid + "@noemail.com");
-
-  if (!found) {
-    // ── New user — create account ──────────────────────────────────
-    found = {
-      id: firebaseUid || (Date.now()+""),
-      googleUid: googleUid,
-      name: name,
-      roll: customRoll,
-      year: customYear,
-      email: em,
-      password: "FB_AUTH_USER",
-      joinedAt: new Date().toISOString(),
-      subPlan: null,
-      subExpiry: null
-    };
-    usersDB = [...usersDB, found];
-    await sSet("bhu:users", usersDB);
-    if(fbOK) await saveUserToFirebase(found);
-    toast(`Registered! Welcome, ${name}! 🎉`);
-  } else {
-    // ── Existing user — repair any stale data ─────────────────────
-    let changed = false;
-    if (found.email && (found.email.endsWith("@noemail.com") || found.email !== em)) { found.email = em; changed = true; }
-    if (firebaseUid && found.id !== firebaseUid) { found.id = firebaseUid; changed = true; }
-    if (googleUid && found.googleUid !== googleUid) { found.googleUid = googleUid; changed = true; }
-    if (changed) {
-      usersDB = usersDB.map(u => (u.id === found.id || u.email === found.email || u.googleUid === found.googleUid) ? found : u);
-      await sSet("bhu:users", usersDB);
-      if(fbOK) await saveUserToFirebase(found);
-    }
-    toast(`Welcome back, ${found.name}! 🎓`);
-  }
-
-  const sess = { ...found, isAdmin: false };
-  currentUser = sess; await sSet("bhu:session", sess);
-  closeLogin(); renderAll();
-}
 
 function handleGoogleRedirectResult() {
   // No-op since we use popup
