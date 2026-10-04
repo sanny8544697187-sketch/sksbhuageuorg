@@ -3091,7 +3091,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),
     sGet("bhu:session"),sGet("bhu:adminpass"),sGet("bhu:theme"),sGet("bhu:questions"),sGet("bhu:pyqdata"),sGet("bhu:subjects"),sGet("bhu:notices"),sGet("bhu:repapps")
   ]);
-  if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q; if(pyq) pyqData=pyq; 
+  if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q; if(pyq) { pyqData=pyq; updateQuizCount(); } // update counter after PYQ loads 
   if(ra) repApps=ra;
   if(ntc && ntc.length) { noticesList=ntc; } else {
     noticesList = [
@@ -3144,6 +3144,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     });
   }
   rebuildQuizBank();
+  updateQuizCount(); // update counter after Firebase quiz bank loads
 
   const mv = await sGet("bhu:mcqvotes");
   if(mv) mcqVotes=mv;
@@ -3473,7 +3474,7 @@ function renderHome(){
   document.getElementById("statResources").textContent=approved.length;
   document.getElementById("statBooks").textContent = (EBOOKS_LIBRARY.length + (adminEbooks||[]).length);
   document.getElementById("statSubjects").textContent=getSubjects().length;
-  document.getElementById("statQuizCount").textContent=(getAllQuizQuestions().length + (typeof pyqData !== 'undefined' ? pyqData.length : 0)) + "+";
+  updateQuizCount(); // MCQ Bank + Quiz Bank
   const qrcEl=document.getElementById("quickResCount"); if(qrcEl) qrcEl.textContent=approved.length+" file"+(approved.length===1?"":"s");
 
   const u=currentUser; const isPrem=isSubActive(u);
@@ -4516,7 +4517,7 @@ async function renderAdmin(){
           <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #1565C0;" onclick="setAdminTab('quiz')">
             <div style="font-size:28px;margin-bottom:6px;">📝</div>
             <div style="font-weight:800;font-size:14px;">MCQ Quiz Bank</div>
-            <div style="font-size:12px;color:#777;margin:4px 0;">${getAllQuizQuestions().length} Questions</div>
+            <div style="font-size:12px;color:#777;margin:4px 0;">${Object.values(QUIZ_BANK).reduce(function(s,a){return s+a.length;},0)} Questions</div>
             <div style="font-size:10px;background:#E3F2FD;color:#1565C0;padding:3px 8px;border-radius:20px;display:inline-block;">Manage →</div>
           </div>
           <div class="card hov-card" style="padding:16px;cursor:pointer;border-left:4px solid #00B050;" onclick="setAdminTab('pyq')">
@@ -6789,6 +6790,7 @@ async function addManualQuestion(){
 
   await saveCustomQuizBank(customQuizBank);
   rebuildQuizBank();
+  updateQuizCount(); // refresh stat after admin adds question
   // ✅ FIXED: Only update list & count — renderAdmin() would wipe the form inputs
   renderCustomQList();
   const totalQ=Object.values(QUIZ_BANK).reduce((s,a)=>s+a.length,0);
@@ -8539,6 +8541,25 @@ function syncPlannerToTab(){}
 // GAMES MODULE — Blitz · True/False Lightning · Weekly Battle · 1v1 Duel
 // Uses existing sGet/sSet (Firestore-backed) so scores sync across devices.
 // ═══════════════════════════════════════════════════════════════
+
+// ── Quiz Qs counter (MCQ Bank + Quiz Bank) ─────────────────────────────────
+function updateQuizCount() {
+  try {
+    // QUIZ_BANK = builtin questions + admin-added (customQuizBank) merged by rebuildQuizBank()
+    const mcqBankCount = (typeof QUIZ_BANK !== 'undefined')
+      ? Object.values(QUIZ_BANK).reduce(function(s, a){ return s + a.length; }, 0)
+      : 0;
+    // pyqData = Previous Year Questions loaded from Firebase
+    const quizBankCount = (typeof pyqData !== 'undefined' && Array.isArray(pyqData))
+      ? pyqData.length
+      : 0;
+    const total = mcqBankCount + quizBankCount;
+    var el = document.getElementById('statQuizCount');
+    if (el) el.textContent = total + '+';
+  } catch(e) {
+    console.warn('updateQuizCount error (non-critical):', e);
+  }
+}
 
 function getAllQuizQuestions(){
   let all=[];
