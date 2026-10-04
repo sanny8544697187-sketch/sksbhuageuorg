@@ -3030,6 +3030,27 @@ function rebuildQuizBank(){
   QUIZ_BANK=merged;
 }
 
+
+// ── Quiz Qs counter (MCQ Bank + Quiz Bank) ─────────────────────────────────
+function updateQuizCount() {
+  try {
+    // QUIZ_BANK = builtin questions + admin-added (customQuizBank) merged by rebuildQuizBank()
+    const mcqBankCount = (typeof QUIZ_BANK !== 'undefined')
+      ? Object.values(QUIZ_BANK).reduce(function(s, a){ return s + a.length; }, 0)
+      : 0;
+    // pyqData = Previous Year Questions loaded from Firebase
+    const quizBankCount = (typeof pyqData !== 'undefined' && Array.isArray(pyqData))
+      ? pyqData.length
+      : 0;
+    const total = mcqBankCount + quizBankCount;
+    var el = document.getElementById('statQuizCount');
+    if (el) el.textContent = total + '+';
+  } catch(e) {
+    console.warn('updateQuizCount error (non-critical):', e);
+  }
+}
+
+
 async function loadCustomQuizBank() {
   const result = {};
   // 1. Try reading the combined doc from Firestore (old format, small banks)
@@ -8542,24 +8563,6 @@ function syncPlannerToTab(){}
 // Uses existing sGet/sSet (Firestore-backed) so scores sync across devices.
 // ═══════════════════════════════════════════════════════════════
 
-// ── Quiz Qs counter (MCQ Bank + Quiz Bank) ─────────────────────────────────
-function updateQuizCount() {
-  try {
-    // QUIZ_BANK = builtin questions + admin-added (customQuizBank) merged by rebuildQuizBank()
-    const mcqBankCount = (typeof QUIZ_BANK !== 'undefined')
-      ? Object.values(QUIZ_BANK).reduce(function(s, a){ return s + a.length; }, 0)
-      : 0;
-    // pyqData = Previous Year Questions loaded from Firebase
-    const quizBankCount = (typeof pyqData !== 'undefined' && Array.isArray(pyqData))
-      ? pyqData.length
-      : 0;
-    const total = mcqBankCount + quizBankCount;
-    var el = document.getElementById('statQuizCount');
-    if (el) el.textContent = total + '+';
-  } catch(e) {
-    console.warn('updateQuizCount error (non-critical):', e);
-  }
-}
 
 function getAllQuizQuestions(){
   let all=[];
