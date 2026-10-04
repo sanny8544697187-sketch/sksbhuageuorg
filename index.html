@@ -7380,55 +7380,38 @@ function handleGoogleRedirectResult() {
         <button class="btn btn-white" style="font-size:14px;padding:10px 20px;" onclick="setSection('chat')">💬 Ask AI Professor</button>
       </div>
       <div id="homeInstallBannerContainer" style="margin-top:16px;"></div>
-      async function doGoogleLogin(){
-  if(!window.firebase || !firebase.auth) { toast('Firebase not initialized.','e'); return; }
+
+async function doGoogleLogin(){
+  if(!window.firebase || !firebase.auth){ toast('Firebase not ready.','e'); return; }
   try {
-    // ── ANDROID (Capacitor native) ────────────────────────────────────────────
-    // Uses @capacitor-firebase/authentication which invokes the native Google
-    // Sign-In SDK. No browser redirect, no sessionStorage conflict.
-    if (window.Capacitor && window.Capacitor.isNative) {
-      if (!window.CapacitorFirebaseAuth) {
-        toast('Google Sign-In is not ready. Please restart the app.', 'e');
-        console.error('CapacitorFirebaseAuth bridge not available.');
-        return;
-      }
+    // ANDROID: Try native Capacitor Google Sign-In first
+    if(window.Capacitor && window.Capacitor.isNative && window.CapacitorFirebaseAuth){
       try {
-        toast('Opening Google Sign-In...', '');
+        toast('Opening Google Sign-In...','');
         const result = await window.CapacitorFirebaseAuth.signInWithGoogle();
-        if (result && result.idToken) {
-          const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken);
-          const res = await firebase.auth().signInWithCredential(credential);
-          if (res && res.user) { await processGoogleUser(res.user); }
-        } else {
-          toast('Google Sign-In cancelled.', '');
+        if(result && result.idToken){
+          const cred = firebase.auth.GoogleAuthProvider.credential(result.idToken);
+          const res = await firebase.auth().signInWithCredential(cred);
+          if(res && res.user) await processGoogleUser(res.user);
         }
         return;
-      } catch(nativeErr) {
-        console.error('Native Google Sign-In error:', nativeErr);
-        if (nativeErr.message && nativeErr.message.includes('cancel')) { return; }
-        if (String(nativeErr.code) === '10' || (nativeErr.message && nativeErr.message.includes('DEVELOPER_ERROR'))) {
-          toast('Google Sign-In setup error. Please contact support.', 'e');
-        } else {
-          toast('Google login failed: ' + (nativeErr.message || nativeErr.code || 'Try again.'), 'e');
-        }
-        return;
+      } catch(nErr){
+        if(nErr.message && nErr.message.includes('cancel')) return;
+        console.warn('Native Google Sign-In failed, falling back to browser:', nErr);
+        // Fall through to browser sign-in below
       }
     }
-    // ── WEB browser: signInWithPopup ──────────────────────────────────────────
+    // WEB / ANDROID FALLBACK: Opens Google sign-in in browser / Chrome Custom Tab
     const provider = new firebase.auth.GoogleAuthProvider();
-    provider.addScope('email');
-    provider.addScope('profile');
+    provider.addScope('email'); provider.addScope('profile');
     provider.setCustomParameters({ prompt: 'select_account' });
-    toast('Opening Google Sign-In...', '');
+    toast('Opening Google Sign-In...','');
     const res = await firebase.auth().signInWithPopup(provider);
-    if (res && res.user) { await processGoogleUser(res.user); }
-  } catch(e) {
-    if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') {
-      console.log('Popup closed by user');
-    } else {
-      console.error('Google login failed:', e);
-      toast('Google login failed: ' + (e.message || e.code || 'Please try again.'), 'e');
-    }
+    if(res && res.user) await processGoogleUser(res.user);
+  } catch(e){
+    if(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request') return;
+    console.error('Google login error:', e);
+    toast('Google login failed: '+(e.message||e.code||'Try again.'),'e');
   }
 }
 
