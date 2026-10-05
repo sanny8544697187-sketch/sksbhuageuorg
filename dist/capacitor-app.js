@@ -1,8 +1,19 @@
 // KrishiGyan — Capacitor Native App Logic
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (window.Capacitor && window.Capacitor.Plugins) {
-    const { App, StatusBar, SplashScreen, Network, Dialog, FirebaseAuthentication } = window.Capacitor.Plugins;
+  if (window.Capacitor && window.Capacitor.isNative) {
+    const getPlugin = (name) => {
+      if (window.Capacitor.Plugins && window.Capacitor.Plugins[name]) return window.Capacitor.Plugins[name];
+      if (typeof window.Capacitor.registerPlugin === 'function') return window.Capacitor.registerPlugin(name);
+      return null;
+    };
+
+    const App = getPlugin('App');
+    const StatusBar = getPlugin('StatusBar');
+    const SplashScreen = getPlugin('SplashScreen');
+    const Network = getPlugin('Network');
+    const Dialog = getPlugin('Dialog');
+    const FirebaseAuthentication = getPlugin('FirebaseAuthentication');
 
     // ─── Status Bar ───────────────────────────────────────────────
     if (StatusBar) {

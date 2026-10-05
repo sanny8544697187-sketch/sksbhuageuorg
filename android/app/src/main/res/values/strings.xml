@@ -4,4 +4,5 @@
     <string name="title_activity_main">KrishiGyan</string>
     <string name="package_name">online.sannykumar.krishigyan_v1</string>
     <string name="custom_url_scheme">online.sannykumar.krishigyan_v1</string>
+    <string name="default_web_client_id">419404326160-1smeb5lgsmfpims7viqfbfecr7dcnroo.apps.googleusercontent.com</string>
 </resources>
