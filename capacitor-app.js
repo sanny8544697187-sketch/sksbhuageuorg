@@ -1,7 +1,7 @@
 // KrishiGyan — Capacitor Native App Logic
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (window.Capacitor && window.Capacitor.isNative) {
+  if (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) {
     const getPlugin = (name) => {
       if (window.Capacitor.Plugins && window.Capacitor.Plugins[name]) return window.Capacitor.Plugins[name];
       if (typeof window.Capacitor.registerPlugin === 'function') return window.Capacitor.registerPlugin(name);

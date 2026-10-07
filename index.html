@@ -6928,7 +6928,7 @@ async function doLogout(){
 async function doGoogleLogin(){
   if(!window.firebase||!firebase.auth){toast('Firebase not ready.','e');return;}
   try{
-    if(window.Capacitor&&window.Capacitor.isNative&&window.CapacitorFirebaseAuth){
+    if(window.Capacitor&&window.Capacitor.isNativePlatform()&&window.CapacitorFirebaseAuth){
       try{
         toast('Opening Google Sign-In...','');
         var result=await window.CapacitorFirebaseAuth.signInWithGoogle();
@@ -6991,7 +6991,7 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
     toast("Please select your Google account again…","");
     let res;
     // On Android: use native sign-in to avoid WebView redirect loop
-    if (window.Capacitor && window.Capacitor.isNative && window.CapacitorFirebaseAuth) {
+    if (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform() && window.CapacitorFirebaseAuth) {
       const nativeResult = await window.CapacitorFirebaseAuth.signInWithGoogle();
       if (nativeResult && nativeResult.idToken) {
         const cred2 = firebase.auth.GoogleAuthProvider.credential(nativeResult.idToken);
