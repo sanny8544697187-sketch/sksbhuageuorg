@@ -3082,7 +3082,7 @@ async function loadCustomQuizBank() {
   }
   return Object.keys(result).length > 0 ? result : null;
 }
-async function saveCustomQuizBank(cqb) {
+async async function saveCustomQuizBank(cqb) {
   const subjects = Object.keys(cqb);
   // Always write localStorage backup per-subject first (survives hard refresh + Firebase failures)
   try {
@@ -6482,6 +6482,7 @@ async function handleQuizDocument(input){
   }
   if(file.size>5*1024*1024) toast("⏳ Large file — OCR may take a minute. Please wait…");
   const isPdf=file.type==="application/pdf"||/\.pdf$/i.test(file.name);
+    const isCsv=file.type==="text/csv"||/\.(csv|tsv)$/i.test(file.name);
 
   if(!isImage&&!isPdf){
     status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ Unsupported file type. Upload a PDF or an image (JPG/PNG) of the question paper.</div>`;
@@ -6595,6 +6596,37 @@ function autoDetectSubject(qText, opts){
 // Parses raw text (from native PDF extraction, OCR, or a hand-pasted block) into
 // structured questions. Tolerant of common OCR noise: stray spaces around punctuation,
 // "(A)"/"a)"/"A:" option markers, and "Answer:"/"Ans:" variants.
+
+function parseCsvToQuizText(csvText) {
+  const lines = csvText.replace(/\r/g, "").split("\n").filter(l => l.trim().length > 0);
+  if (lines.length < 2) return csvText;
+  let result = "";
+  // Check if first row is header
+  const startIdx = lines[0].toLowerCase().includes("question") || lines[0].toLowerCase().includes("option") ? 1 : 0;
+  for (let i = startIdx; i < lines.length; i++) {
+    // Basic CSV cell extraction respecting quotes
+    const cells = [];
+    let cur = "", inQuotes = false;
+    for (let c = 0; c < lines[i].length; c++) {
+      const ch = lines[i][c];
+      if (ch === '"') { inQuotes = !inQuotes; }
+      else if (ch === ',' && !inQuotes) { cells.push(cur.trim()); cur = ""; }
+      else { cur += ch; }
+    }
+    cells.push(cur.trim());
+    if (cells.length >= 5) {
+      result += "\nQ. " + cells[0].replace(/^["']|["']$/g, "") + "\n";
+      result += "A. " + (cells[1] || "").replace(/^["']|["']$/g, "") + "\n";
+      result += "B. " + (cells[2] || "").replace(/^["']|["']$/g, "") + "\n";
+      result += "C. " + (cells[3] || "").replace(/^["']|["']$/g, "") + "\n";
+      result += "D. " + (cells[4] || "").replace(/^["']|["']$/g, "") + "\n";
+      if (cells[5]) result += "ANS: " + cells[5].replace(/^["']|["']$/g, "").toUpperCase() + "\n";
+      if (cells[6]) result += "EXP: " + cells[6].replace(/^["']|["']$/g, "") + "\n";
+    }
+  }
+  return result || csvText;
+}
+
 function parsePdfQuizText(text){
   const questions=[];
   const lines=text.replace(/\r/g,"").split("\n").map(l=>l.replace(/\s+/g," ").trim()).filter(Boolean);
@@ -8057,6 +8089,10 @@ async function handlePYQBulkFile(input){
     if(isImage){
       status.innerHTML=`<div style="color:#c9690a;font-size:13px;">🔎 Running OCR… <span id="pyqOcrPct">0%</span></div>`;
       fullText=await ocrRecognize(file,"eng",pct=>{const e=document.getElementById("pyqOcrPct");if(e)e.textContent=pct+"%";});
+    } else if(isCsv){
+      status.innerHTML=`<div style="color:#c9690a;font-size:13px;">⏳ Reading CSV/TSV table…</div>`;
+      const csvContent = await file.text();
+      fullText = parseCsvToQuizText(csvContent);
     } else if(isPdf){
       await ensurePdfJs();
       status.innerHTML=`<div style="color:#c9690a;font-size:13px;">⏳ Reading PDF…</div>`;
@@ -8102,21 +8138,48 @@ async function handlePYQBulkFile(input){
   } catch(e){ status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ Error: ${escapeHTML(e.message)}</div>`; }
 }
 
-async function addBulkPYQQuestions(){
+async async function addBulkPYQQuestions(){
   if(!_parsedPYQQuestions.length){ toast("No parsed questions.","e"); return; }
   const exam=document.getElementById("pyqBulkExam").value;
   const year=document.getElementById("pyqBulkYear").value;
   const fallbackSubj=document.getElementById("pyqBulkSubject").value;
-  const entries=_parsedPYQQuestions.map(q=>({
-    id:Date.now()+"_"+Math.random().toString(36).slice(2,6),
-    exam, year, subject:q.subject||fallbackSubj,
-    q:q.q, opts:q.opts, ans:q.ans, exp:q.exp, diff:"medium",
-    addedBy:currentUser?.name||"Admin", addedAt:new Date().toISOString()
-  }));
-  pyqData=[...entries,...pyqData];
-  await sSet("bhu:pyqdata",pyqData);
-  toast(`✅ ${entries.length} PYQs added for ${exam} ${year}!`);
-  _parsedPYQQuestions=[];
+  
+  // Deduplicate against existing questions in pyqData
+  const existingSet = new Set(pyqData.map(p => (p.q || "").trim().toLowerCase()));
+  const validEntries = [];
+  let dupCount = 0;
+
+  for (const q of _parsedPYQQuestions) {
+    const qKey = (q.q || "").trim().toLowerCase();
+    if (!qKey || existingSet.has(qKey)) {
+      dupCount++;
+      continue;
+    }
+    existingSet.add(qKey);
+    validEntries.push({
+      id: Date.now() + "_" + Math.random().toString(36).slice(2,6),
+      exam,
+      year,
+      subject: q.subject || fallbackSubj,
+      q: q.q,
+      opts: q.opts || [],
+      ans: q.ans !== undefined ? q.ans : 0,
+      exp: q.exp || "",
+      diff: "medium",
+      addedBy: currentUser?.name || "Admin",
+      addedAt: new Date().toISOString()
+    });
+  }
+
+  if (validEntries.length === 0) {
+    toast(dupCount > 0 ? "All questions were duplicates of existing PYQs." : "No valid questions to add.", "w");
+    return;
+  }
+
+  pyqData = [...validEntries, ...pyqData];
+  await sSet("bhu:pyqdata", pyqData);
+  toast(`✅ ${validEntries.length} PYQs added!${dupCount ? " (" + dupCount + " duplicates skipped)" : ""}`);
+  _parsedPYQQuestions = [];
   renderAdmin();
 }
 
