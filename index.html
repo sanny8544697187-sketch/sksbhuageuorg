@@ -2359,6 +2359,7 @@ window._fbConfigured = false;
       <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
       <button id="atEbooks"   class="btn btn-light"   onclick="setAdminTab('ebooks')">📚 Ebooks</button>
       <button id="atReps" class="btn btn-light" onclick="setAdminTab('reps')">ðŸŒ± Reps</button>
+      <button id="atHarvester" class="btn btn-light" onclick="setAdminTab('harvester')">🤖 Auto Harvester</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
     </div>
     <div id="adminContent"></div>
@@ -3231,7 +3232,16 @@ window.addEventListener("DOMContentLoaded", async () => {
         const pb=document.getElementById("pendingBadge");
         if(pb){ pb.textContent=pending.length; pb.classList.toggle("hidden",pending.length===0); }
         const _editingSomething = !!editingUploadId || !!editingCustomQ || !!_editingPYQId;
-        if(adminTab==="uploads"){
+        if(adminTab==="harvester"){
+    if(window.AgriHarvester && typeof window.AgriHarvester.renderAdminView === "function"){
+      el.innerHTML = window.AgriHarvester.renderAdminView();
+    } else {
+      el.innerHTML = "<div style='padding:20px; text-align:center;'>Loading Harvester Dashboard...</div>";
+    }
+    return;
+  }
+
+  if(adminTab==="uploads"){
           if(!editingUploadId) renderAdmin(); // don't wipe an open "All Uploads" edit form
         } else if(adminTab==="quiz"){
           const isTypingQuizBulk = document.getElementById("bulkPasteText")?.value.trim().length > 0;
@@ -4507,7 +4517,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","ebooks","settings","reps"].forEach(k=>{
+  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","ebooks","settings","reps","harvester"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -9401,7 +9411,11 @@ function renderNotices() {
   
   if(!hasFetchedRSS) fetchLiveExamNotices();
   
-  const allNotices = [...noticesList, ...fetchedRSSNotices].sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+  let harvestedPub = [];
+  if(window.AgriHarvester && typeof window.AgriHarvester.getHarvestedItems === "function") {
+    harvestedPub = window.AgriHarvester.getHarvestedItems().filter(i => i.status === 'published');
+  }
+  const allNotices = [...noticesList, ...fetchedRSSNotices, ...harvestedPub].sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
   
   if(allNotices.length === 0) {
     el.innerHTML = `<div style="text-align:center; padding:40px; color:#777;">No recent notices available.</div>`;
@@ -9516,6 +9530,7 @@ async function deleteNotice(id) {
   </a>
   <button onclick="document.getElementById('pwaInstallBanner').style.display='none'" style="background:transparent; border:none; color:#777; font-size:22px; padding:4px 8px; cursor:pointer; line-height:1; flex-shrink:0;">✕</button>
 </div>
+  <script src="./agri-harvester.js"></script>
 </body>
 </html>
 
