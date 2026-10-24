@@ -88,6 +88,26 @@ const RESOURCE_SOURCES = [
     copyright: "ICAR Government Publication",
     trustedOfficial: true,
     noteOnly: true
+  },
+  {
+    id: "tnau_agritech",
+    name: "TNAU Agritech Portal",
+    metadataUrl: "https://agritech.tnau.ac.in/",
+    type: "resource_index",
+    resourceType: "Study Material & Guides",
+    copyright: "TNAU Open Resource",
+    trustedOfficial: true,
+    noteOnly: true
+  },
+  {
+    id: "agmoocs",
+    name: "AgMOOCs Agriculture Online Courses",
+    metadataUrl: "https://www.agmoocs.in/",
+    type: "resource_index",
+    resourceType: "Online Course",
+    copyright: "IIT Kanpur / COL",
+    trustedOfficial: true,
+    noteOnly: true
   }
 ];
 
@@ -245,6 +265,61 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({
       success: false,
       error: 'Unauthorized. Requires Vercel Cron signature, CRON_SECRET, or Firebase Admin token.'
+    });
+  }
+
+  // ── Action: Check link status & detect dead links ──────────────────────
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch (_) { body = {}; }
+  }
+  const action = (req.query && req.query.action) || (body && body.action);
+  if (action === 'check_links') {
+    const urlsToCheck = Array.isArray(body && body.urls)
+      ? body.urls.slice(0, 30)
+      : (req.query && req.query.urls ? req.query.urls.split(',').slice(0, 30) : []);
+
+    const results = {};
+    for (const rawUrl of urlsToCheck) {
+      if (!rawUrl || typeof rawUrl !== 'string') continue;
+      const url = rawUrl.trim();
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 4000);
+        let resp = await fetch(url, {
+          method: 'HEAD',
+          headers: { 'User-Agent': 'Mozilla/5.0 (KrishiGyanBot/2.0)' },
+          signal: ctrl.signal
+        });
+        clearTimeout(t);
+        if (resp.status === 405 || resp.status === 403) {
+          const ctrl2 = new AbortController();
+          const t2 = setTimeout(() => ctrl2.abort(), 3500);
+          resp = await fetch(url, {
+            method: 'GET',
+            headers: { 'User-Agent': 'Mozilla/5.0 (KrishiGyanBot/2.0)' },
+            signal: ctrl2.signal
+          });
+          clearTimeout(t2);
+        }
+        results[url] = {
+          ok: resp.status < 400,
+          status: resp.status
+        };
+      } catch (err) {
+        results[url] = {
+          ok: false,
+          status: 0,
+          error: err.name === 'AbortError' ? 'Timeout' : err.message
+        };
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      action: 'check_links',
+      checkedCount: Object.keys(results).length,
+      results
     });
   }
 

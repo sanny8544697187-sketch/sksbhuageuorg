@@ -4889,10 +4889,10 @@ async function renderAdmin(){
           </div>
         </div>
         <div class="drop-zone" id="pdfDropZone" onclick="document.getElementById('pdfQuizFile').click()" style="margin-bottom:12px;">
-          <input id="pdfQuizFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" style="display:none;" onchange="handleQuizDocument(this)">
+          <input id="pdfQuizFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.csv,.tsv" style="display:none;" onchange="handleQuizDocument(this)">
           <div style="font-size:28px;margin-bottom:6px;">📄🖼️</div>
-          <div id="pdfDropLabel" style="font-size:13px;color:#333;font-weight:500;">Click to upload a PDF or photo of the question paper</div>
-          <div style="font-size:11px;color:#777;margin-top:4px;">PDF, JPG or PNG · max 15 MB · scanned pages run through automatic OCR</div>
+          <div id="pdfDropLabel" style="font-size:13px;color:#333;font-weight:500;">Click to upload a PDF, CSV/TSV table, or photo of the question paper</div>
+          <div style="font-size:11px;color:#777;margin-top:4px;">PDF, CSV, Excel TSV, JPG or PNG · max 15 MB · scanned pages run through automatic OCR</div>
         </div>
         <div id="pdfParseStatus" style="display:none;margin-bottom:12px;"></div>
         <button class="btn btn-primary" id="pdfUploadBtn" onclick="uploadQuizPdf()" disabled>📤 Parse & Add to Quiz Bank</button>
@@ -4987,8 +4987,15 @@ async function renderAdmin(){
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
           <div><label class="lbl">Exam</label>
             <select id="pyqBulkExam" class="inp">
-              <option>ICAR JRF</option><option>IARI PG PAPER</option><option>NABARD</option>
-              <option>IBPS AFO</option><option>BHU ENTRANCE</option><option>OTHER</option>
+              <option>CUET PG / ICAR AIEEA</option>
+              <option>ICAR JRF / SRF</option>
+              <option>IBPS AFO</option>
+              <option>NABARD Grade A</option>
+              <option>State PSC / ADO / SADO</option>
+              <option>UPSC IFS / Agriculture</option>
+              <option>BHU ENTRANCE</option>
+              <option>IARI PG PAPER</option>
+              <option>OTHER</option>
             </select>
           </div>
           <div><label class="lbl">Year</label>
@@ -5018,8 +5025,15 @@ async function renderAdmin(){
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
           <div><label class="lbl">Exam</label>
             <select id="pyqPasteExam" class="inp">
-              <option>ICAR JRF</option><option>IARI PG PAPER</option><option>NABARD</option>
-              <option>IBPS AFO</option><option>BHU ENTRANCE</option><option>OTHER</option>
+              <option>CUET PG / ICAR AIEEA</option>
+              <option>ICAR JRF / SRF</option>
+              <option>IBPS AFO</option>
+              <option>NABARD Grade A</option>
+              <option>State PSC / ADO / SADO</option>
+              <option>UPSC IFS / Agriculture</option>
+              <option>BHU ENTRANCE</option>
+              <option>IARI PG PAPER</option>
+              <option>OTHER</option>
             </select>
           </div>
           <div><label class="lbl">Year</label>
@@ -5874,9 +5888,14 @@ function renderPYQHierarchy(){
 
   const pyqExamIcons = {
     "ICAR JRF": "🎓",
+    "ICAR JRF / SRF": "🔬",
+    "CUET PG / ICAR AIEEA": "🎓",
     "IARI PG PAPER": "🏫",
     "NABARD": "🏛️",
+    "NABARD GRADE A": "🏛️",
     "IBPS AFO": "🏦",
+    "STATE PSC / ADO / SADO": "🏛️",
+    "UPSC IFS / AGRICULTURE": "⚖️",
     "BHU ENTRANCE": "🏛️",
     "OTHER": "🌾"
   };
@@ -6311,9 +6330,14 @@ function renderPYQPdfLibrary(){
 
   const pyqExamIcons = {
     "ICAR JRF": "🎓",
+    "ICAR JRF / SRF": "🔬",
+    "CUET PG / ICAR AIEEA": "🎓",
     "IARI PG PAPER": "🏫",
     "NABARD": "🏛️",
+    "NABARD GRADE A": "🏛️",
     "IBPS AFO": "🏦",
+    "STATE PSC / ADO / SADO": "🏛️",
+    "UPSC IFS / AGRICULTURE": "⚖️",
     "BHU ENTRANCE": "🏛️",
     "OTHER": "🌾"
   };
@@ -6640,8 +6664,8 @@ async function handleQuizDocument(input){
   const isPdf=file.type==="application/pdf"||/\.pdf$/i.test(file.name);
     const isCsv=file.type==="text/csv"||/\.(csv|tsv)$/i.test(file.name);
 
-  if(!isImage&&!isPdf){
-    status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ Unsupported file type. Upload a PDF or an image (JPG/PNG) of the question paper.</div>`;
+  if(!isImage && !isPdf && !isCsv){
+    status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ Unsupported file type. Upload a PDF, CSV/TSV table, or an image (JPG/PNG).</div>`;
     return;
   }
 
@@ -6651,6 +6675,10 @@ async function handleQuizDocument(input){
     if(isImage){
       status.innerHTML=`<div style="color:#c9690a;font-size:13px;">🔎 Running OCR on image… <span id="ocrPct">0%</span></div>`;
       fullText=await ocrRecognize(file, lang, pct=>{ const e=document.getElementById("ocrPct"); if(e) e.textContent=pct+"%"; });
+    } else if(isCsv){
+      status.innerHTML=`<div style="color:#c9690a;font-size:13px;">⏳ Reading CSV/TSV table…</div>`;
+      const csvContent = await file.text();
+      fullText = parseCsvToQuizText(csvContent);
     } else {
       status.innerHTML=`<div style="color:#c9690a;font-size:13px;">⏳ Loading PDF engine…</div>`;
       await ensurePdfJs();
@@ -8212,15 +8240,239 @@ function toggleDark(){
 }
 
 function searchHeader(){
-  const val=document.getElementById("headerSearch").value.trim(); if(!val) return;
-  resType="All"; resSubject="All";
-  setSection("subjects");
-  setTimeout(()=>{
-    setSubjectsTab("resources");
-    const sEl=document.getElementById("resHierSearch");
-    if(sEl) sEl.value=val;
-    renderResourcesHierarchy();
-  },60);
+  const val=(document.getElementById("headerSearch")?.value || "").trim();
+  if(!val) return;
+  showUnifiedSearch(val);
+}
+
+function showUnifiedSearch(initialQuery) {
+  let modal = document.getElementById("unifiedSearchModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "unifiedSearchModal";
+    modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:9500;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;box-sizing:border-box;";
+    modal.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:760px;margin:20px auto;box-shadow:0 12px 36px rgba(0,0,0,0.25);overflow:hidden;display:flex;flex-direction:column;max-height:88vh;">
+      <div style="padding:16px 20px;border-bottom:1px solid #EBEBEB;display:flex;align-items:center;justify-content:space-between;background:#FBFDFB;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:20px;">🔍</span>
+          <div>
+            <h3 style="margin:0;font-size:16px;color:#0F3D23;font-weight:800;">Global Agriculture Resource Search</h3>
+            <div style="font-size:11px;color:#666;">Search across Exams, Study Notes, PYQs, E-Books &amp; Notifications</div>
+          </div>
+        </div>
+        <button onclick="document.getElementById('unifiedSearchModal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;padding:4px 8px;">✕</button>
+      </div>
+
+      <div style="padding:14px 20px;border-bottom:1px solid #F0F0F0;background:#fff;">
+        <input id="unifiedSearchInput" type="text" placeholder="Type exam, subject, topic, book, or question keyword…" value="${escapeHTML(initialQuery || '')}"
+          oninput="execUnifiedSearch(this.value)"
+          style="width:100%;padding:10px 14px;border:1.5px solid #00B050;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;">
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;" id="unifiedSearchTabs">
+          <button class="btn btn-sm btn-primary" onclick="setUnifiedTab('all')">All</button>
+          <button class="btn btn-sm btn-light" onclick="setUnifiedTab('exams')">🎓 Exams</button>
+          <button class="btn btn-sm btn-light" onclick="setUnifiedTab('notes')">📚 Notes</button>
+          <button class="btn btn-sm btn-light" onclick="setUnifiedTab('pyq')">📋 PYQs</button>
+          <button class="btn btn-sm btn-light" onclick="setUnifiedTab('ebooks')">📖 E-Books</button>
+          <button class="btn btn-sm btn-light" onclick="setUnifiedTab('news')">📢 Updates</button>
+        </div>
+      </div>
+
+      <div id="unifiedSearchResults" style="padding:16px 20px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;">
+      </div>
+    </div>
+  `;
+
+  modal.style.display = "flex";
+  const inp = document.getElementById("unifiedSearchInput");
+  if (inp) {
+    inp.focus();
+    execUnifiedSearch(inp.value);
+  }
+}
+
+let _unifiedTab = 'all';
+function setUnifiedTab(tab) {
+  _unifiedTab = tab;
+  const tabs = document.querySelectorAll("#unifiedSearchTabs button");
+  const tabNames = ['all', 'exams', 'notes', 'pyq', 'ebooks', 'news'];
+  tabs.forEach((btn, i) => {
+    if (tabNames[i] === tab) {
+      btn.className = "btn btn-sm btn-primary";
+    } else {
+      btn.className = "btn btn-sm btn-light";
+    }
+  });
+  const inp = document.getElementById("unifiedSearchInput");
+  execUnifiedSearch(inp ? inp.value : "");
+}
+
+function execUnifiedSearch(query) {
+  const q = (query || "").trim().toLowerCase();
+  const resContainer = document.getElementById("unifiedSearchResults");
+  if (!resContainer) return;
+
+  if (!q) {
+    resContainer.innerHTML = '<div style="text-align:center;color:#888;padding:40px 20px;font-size:13px;">Type in the search box above to find exams, study notes, past papers, questions, and books.</div>';
+    return;
+  }
+
+  const results = {
+    exams: [],
+    notes: [],
+    pyq: [],
+    ebooks: [],
+    news: []
+  };
+
+  // 1. Search Exams DB
+  if (window.AGRI_EXAMS_DB && Array.isArray(window.AGRI_EXAMS_DB)) {
+    results.exams = window.AGRI_EXAMS_DB.filter(e =>
+      (e.name || "").toLowerCase().includes(q) ||
+      (e.shortName || "").toLowerCase().includes(q) ||
+      (e.authority || "").toLowerCase().includes(q) ||
+      (Array.isArray(e.tags) && e.tags.some(t => t.toLowerCase().includes(q))) ||
+      (Array.isArray(e.subjects) && e.subjects.some(s => s.toLowerCase().includes(q)))
+    ).slice(0, 10);
+  }
+
+  // 2. Search Notes
+  if (Array.isArray(notes)) {
+    results.notes = notes.filter(n =>
+      n.status === "approved" && (
+        (n.title || "").toLowerCase().includes(q) ||
+        (n.subject || "").toLowerCase().includes(q) ||
+        (n.topic || "").toLowerCase().includes(q) ||
+        (n.author || "").toLowerCase().includes(q) ||
+        (n.desc || "").toLowerCase().includes(q)
+      )
+    ).slice(0, 10);
+  }
+
+  // 3. Search PYQ
+  if (Array.isArray(pyqData)) {
+    results.pyq = pyqData.filter(p =>
+      (p.q || "").toLowerCase().includes(q) ||
+      (p.subject || "").toLowerCase().includes(q) ||
+      (p.exam || "").toLowerCase().includes(q) ||
+      String(p.year || "").includes(q)
+    ).slice(0, 10);
+  }
+
+  // 4. Search E-Books
+  const allBooks = [...(typeof EBOOKS_LIBRARY !== "undefined" ? EBOOKS_LIBRARY : []), ...(adminEbooks || [])];
+  results.ebooks = allBooks.filter(b =>
+    (b.title || "").toLowerCase().includes(q) ||
+    (b.author || "").toLowerCase().includes(q) ||
+    (b.subject || "").toLowerCase().includes(q)
+  ).slice(0, 10);
+
+  // 5. Search Harvested Updates & Notices
+  const harvItems = (window.AgriHarvester && typeof window.AgriHarvester.getHarvestedItems === "function")
+    ? window.AgriHarvester.getHarvestedItems()
+    : [];
+  const allNotices = [...(Array.isArray(noticesList) ? noticesList : []), ...harvItems];
+  const seenNotice = new Set();
+  results.news = allNotices.filter(n => {
+    const key = n.link || n.title;
+    if (seenNotice.has(key)) return false;
+    seenNotice.add(key);
+    return (n.title || "").toLowerCase().includes(q) ||
+      (n.examTag || n.exam || "").toLowerCase().includes(q) ||
+      (n.category || "").toLowerCase().includes(q);
+  }).slice(0, 10);
+
+  let htmlOut = "";
+  const renderExams = (_unifiedTab === "all" || _unifiedTab === "exams") && results.exams.length > 0;
+  const renderNotes = (_unifiedTab === "all" || _unifiedTab === "notes") && results.notes.length > 0;
+  const renderPYQ = (_unifiedTab === "all" || _unifiedTab === "pyq") && results.pyq.length > 0;
+  const renderBooks = (_unifiedTab === "all" || _unifiedTab === "ebooks") && results.ebooks.length > 0;
+  const renderNews = (_unifiedTab === "all" || _unifiedTab === "news") && results.news.length > 0;
+
+  if (renderExams) {
+    htmlOut += `<div style="font-weight:800;font-size:12px;color:#0F3D23;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">🎓 Target Exams (${results.exams.length})</div>`;
+    htmlOut += results.exams.map(e => `
+      <div style="background:#F7FCF7;border:1px solid #D8EED8;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div style="font-weight:700;font-size:13px;color:#0F3D23;">${escapeHTML(e.name)} (${escapeHTML(e.shortName)})</div>
+          <div style="font-size:11px;color:#666;margin-top:2px;">Authority: ${escapeHTML(e.authority)} &bull; ${escapeHTML(e.eligibility || '')}</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          ${e.official_url ? `<a href="${e.official_url}" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="font-size:11px;text-decoration:none;padding:5px 10px;">Official Site ↗</a>` : ''}
+          ${e.syllabus_url ? `<a href="${e.syllabus_url}" target="_blank" rel="noopener" class="btn btn-sm btn-light" style="font-size:11px;text-decoration:none;padding:5px 10px;">Syllabus ↗</a>` : ''}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  if (renderNotes) {
+    htmlOut += `<div style="font-weight:800;font-size:12px;color:#0F3D23;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">📚 Study Notes (${results.notes.length})</div>`;
+    htmlOut += results.notes.map(n => `
+      <div style="background:#fff;border:1px solid #EBEBEB;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div style="font-weight:700;font-size:13px;color:#111;">${escapeHTML(n.title)}</div>
+          <div style="font-size:11px;color:#666;margin-top:2px;">Subject: ${escapeHTML(n.subject)} &bull; ${escapeHTML(n.author || 'KrishiGyan')}</div>
+        </div>
+        <div>
+          ${n.link ? `<a href="${n.link}" target="_blank" rel="noopener" class="btn btn-sm btn-light" style="font-size:11px;text-decoration:none;padding:5px 10px;border:1px solid #00B050;color:#00B050;">View PDF ↗</a>` : ''}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  if (renderPYQ) {
+    htmlOut += `<div style="font-weight:800;font-size:12px;color:#0F3D23;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">📋 Past Questions &amp; PYQs (${results.pyq.length})</div>`;
+    htmlOut += results.pyq.map(p => `
+      <div style="background:#fff;border:1px solid #EBEBEB;border-radius:10px;padding:12px;margin-bottom:8px;">
+        <div style="display:flex;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
+          <span style="background:#E8F5E9;color:#0F3D23;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;">${escapeHTML(p.exam || 'General')}</span>
+          <span style="background:#EEEEEE;color:#444;font-size:10px;padding:2px 6px;border-radius:4px;">${escapeHTML(p.subject || '')} &bull; ${escapeHTML(String(p.year || ''))}</span>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:#111;line-height:1.4;">${escapeHTML(p.q)}</div>
+      </div>
+    `).join("");
+  }
+
+  if (renderBooks) {
+    htmlOut += `<div style="font-weight:800;font-size:12px;color:#0F3D23;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">📖 E-Books (${results.ebooks.length})</div>`;
+    htmlOut += results.ebooks.map(b => `
+      <div style="background:#fff;border:1px solid #EBEBEB;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div style="font-weight:700;font-size:13px;color:#111;">${escapeHTML(b.title)}</div>
+          <div style="font-size:11px;color:#666;margin-top:2px;">Author: ${escapeHTML(b.author || 'Agricultural Faculty')} &bull; ${escapeHTML(b.subject || '')}</div>
+        </div>
+        <div>
+          ${b.link || b.driveUrl ? `<a href="${b.link || b.driveUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="font-size:11px;text-decoration:none;padding:5px 10px;">Read Book ↗</a>` : ''}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  if (renderNews) {
+    htmlOut += `<div style="font-weight:800;font-size:12px;color:#0F3D23;text-transform:uppercase;letter-spacing:.5px;margin:12px 0 6px;">📢 Exam Updates &amp; News (${results.news.length})</div>`;
+    htmlOut += results.news.map(u => `
+      <div style="background:#FAFCFA;border:1px solid #EAEAEA;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div style="font-weight:700;font-size:13px;color:#111;">${escapeHTML(u.title)}</div>
+          <div style="font-size:11px;color:#666;margin-top:2px;">${escapeHTML(u.source || '')} &bull; ${escapeHTML(u.examTag || u.exam || '')}</div>
+        </div>
+        <div>
+          ${u.link ? `<a href="${u.link}" target="_blank" rel="noopener" class="btn btn-sm btn-light" style="font-size:11px;text-decoration:none;padding:5px 10px;">Notice Link ↗</a>` : ''}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  const totalCount = results.exams.length + results.notes.length + results.pyq.length + results.ebooks.length + results.news.length;
+  if (totalCount === 0) {
+    htmlOut = `<div style="text-align:center;color:#888;padding:40px 20px;font-size:13px;">No resources found matching "<strong>${escapeHTML(query)}</strong>". Try searching for general terms like "Agronomy", "ICAR", "Soil", or "AFO".</div>`;
+  }
+
+  resContainer.innerHTML = htmlOut;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -9452,6 +9704,37 @@ function renderEbooksLibrary(){
   }
 
   root.innerHTML = bannerHtml + `
+    <div style="background:#F4FBF4;border:1px solid #C8E6C9;border-radius:12px;padding:16px;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+        <div style="font-weight:800;font-size:14px;color:#0F3D23;">🌐 Official Open-Access Learning Portals &amp; ICAR e-Courses</div>
+        <span style="font-size:11px;background:#E8F5E9;color:#2E7D32;font-weight:700;padding:2px 8px;border-radius:20px;">Govt Verified &bull; Free Access</span>
+      </div>
+      <div style="font-size:12px;color:#555;margin-bottom:12px;line-height:1.5;">
+        Direct access to official university course notes, degree syllabi, video lectures, and open-access publications without copyright restrictions.
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+        <a href="https://ecourses.icar.gov.in/" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
+          <div style="font-weight:700;font-size:13px;color:#0F3D23;">🌾 ICAR e-Courses</div>
+          <div style="font-size:11px;color:#666;margin:2px 0 6px;">BSc (Agri) 14 disciplines complete course notes</div>
+          <span style="font-size:10px;color:#00B050;font-weight:700;">Visit Portal ↗</span>
+        </a>
+        <a href="https://ekrishishiksha.icar.gov.in/" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
+          <div style="font-weight:700;font-size:13px;color:#0F3D23;">📖 e-Krishi Shiksha</div>
+          <div style="font-size:11px;color:#666;margin:2px 0 6px;">ICAR national e-learning portal for agriculture</div>
+          <span style="font-size:10px;color:#00B050;font-weight:700;">Visit Portal ↗</span>
+        </a>
+        <a href="https://nptel.ac.in/courses/agriculture" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
+          <div style="font-weight:700;font-size:13px;color:#0F3D23;">🎥 NPTEL Agriculture</div>
+          <div style="font-size:11px;color:#666;margin:2px 0 6px;">IIT / ICAR video lecture courses &amp; certifications</div>
+          <span style="font-size:10px;color:#00B050;font-weight:700;">Visit Portal ↗</span>
+        </a>
+        <a href="https://agritech.tnau.ac.in/" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
+          <div style="font-weight:700;font-size:13px;color:#0F3D23;">🌱 TNAU Agritech Portal</div>
+          <div style="font-size:11px;color:#666;margin:2px 0 6px;">Crop production, protection &amp; farm technology bank</div>
+          <span style="font-size:10px;color:#00B050;font-weight:700;">Visit Portal ↗</span>
+        </a>
+      </div>
+    </div>
     <div style="margin-bottom:14px;">
       <div style="font-weight:800;font-size:17px;margin-bottom:4px;">📖 Agriculture E-Books Library</div>
       <div style="color:#777;font-size:13px;">${EBOOKS_LIBRARY.length + (adminEbooks||[]).length} free reference books — search, preview & download</div>

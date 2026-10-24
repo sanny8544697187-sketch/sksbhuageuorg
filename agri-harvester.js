@@ -209,6 +209,67 @@ window.AgriHarvester = (function() {
     if (typeof toast === "function") toast(`Item ${newStatus}`);
   }
 
+  // Verify Link Health & Detect Dead/Broken Links
+  async function checkLinks() {
+    const btn = document.getElementById("btnCheckLinks");
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "⏳ Testing Links...";
+    }
+    try {
+      const itemsWithLinks = harvestedItems.filter(i => i.link && typeof i.link === 'string').slice(0, 30);
+      if (!itemsWithLinks.length) {
+        if (typeof toast === "function") toast("No links found to check.", "w");
+        return;
+      }
+
+      const headers = { "Content-Type": "application/json" };
+      if (window.firebase && firebase.auth && firebase.auth().currentUser) {
+        try {
+          const idToken = await firebase.auth().currentUser.getIdToken(true);
+          if (idToken) headers["Authorization"] = `Bearer ${idToken}`;
+        } catch (_) {}
+      }
+
+      const res = await fetch("/api/cron-collector?action=check_links", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ urls: itemsWithLinks.map(i => i.link) })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Link health check failed");
+      }
+
+      let deadCount = 0;
+      let okCount = 0;
+      const results = data.results || {};
+      harvestedItems.forEach(item => {
+        if (results[item.link]) {
+          const r = results[item.link];
+          item.linkStatus = r.ok ? 'ok' : 'dead';
+          item.lastChecked = Date.now();
+          if (r.ok) okCount++; else deadCount++;
+        }
+      });
+
+      await safeSet(STORAGE_KEY, harvestedItems);
+      if (typeof toast === "function") {
+        toast(`✅ Link check done: ${okCount} OK, ${deadCount} dead/unreachable.`);
+      }
+      if (typeof renderAdmin === "function") renderAdmin();
+    } catch (e) {
+      console.warn("Link check error:", e);
+      if (typeof toast === "function") toast("⚠️ Link check: " + e.message, "e");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "🔍 Check Link Health";
+      }
+    }
+  }
+
   // Save Settings from Admin Panel
   async function saveSettings(newSettings) {
     settings = { ...settings, ...newSettings };
@@ -231,9 +292,12 @@ window.AgriHarvester = (function() {
               Vercel Daily Cron (06:00 UTC / 11:30 AM IST) &bull; Last run: <strong>${lastRunFormatted}</strong>
             </div>
           </div>
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button id="btnCheckLinks" class="btn btn-light" onclick="AgriHarvester.checkLinks()" style="font-size:13px; padding:8px 14px; border:1px solid #00B050; color:#00B050;">
+              🔍 Check Link Health
+            </button>
             <button id="btnTriggerHarvest" class="btn btn-primary" onclick="AgriHarvester.triggerHarvest()" style="font-size:13px; padding:8px 16px;">
-              🚀 Fetch & Harvest Now
+              🚀 Fetch &amp; Harvest Now
             </button>
           </div>
         </div>
@@ -253,6 +317,66 @@ window.AgriHarvester = (function() {
             <div style="font-size:24px; font-weight:800; color:#1976D2;">${harvestedItems.length}</div>
           </div>
         </div>
+
+        <!-- Execution Run Logs & Diagnostics -->
+        <details style="background:#F8FBF8; border-radius:8px; padding:12px; border:1px solid #E0EAE0; margin-bottom:20px;">
+          <summary style="font-weight:700; color:#0F3D23; cursor:pointer;">📋 Harvester Run History &amp; Diagnostics (${executionLogs.length} runs)</summary>
+          <div style="margin-top:12px; max-height:220px; overflow-y:auto;">
+            ${executionLogs.length === 0 ? '<div style="font-size:12px; color:#888;">No collection runs recorded yet. Click Fetch &amp; Harvest Now to run.</div>' : `
+              <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                <thead>
+                  <tr style="text-align:left; border-bottom:1px solid #ddd; color:#666;">
+                    <th style="padding:6px 8px;">Run Time</th>
+                    <th style="padding:6px 8px;">Found</th>
+                    <th style="padding:6px 8px;">New Added</th>
+                    <th style="padding:6px 8px;">Duration</th>
+                    <th style="padding:6px 8px;">Status / Errors</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${executionLogs.map(l => `
+                    <tr style="border-bottom:1px solid #eee;">
+                      <td style="padding:6px 8px;">${new Date(l.timestamp).toLocaleString('en-IN')}</td>
+                      <td style="padding:6px 8px;">${l.itemsFound || 0}</td>
+                      <td style="padding:6px 8px; font-weight:700; color:#00B050;">+${l.newItemsAdded || 0}</td>
+                      <td style="padding:6px 8px;">${l.durationMs ? (l.durationMs/1000).toFixed(1)+'s' : '—'}</td>
+                      <td style="padding:6px 8px; color:${l.errors && l.errors.length ? '#C62828' : '#2E7D32'}; font-size:11px;">
+                        ${l.errors && l.errors.length ? l.errors.join('; ') : '✅ Success'}
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `}
+          </div>
+        </details>
+
+        <!-- Official Open-Access Learning Portals Directory -->
+        <details style="background:#F0F8F0; border-radius:8px; padding:12px; border:1px solid #C8E6C9; margin-bottom:20px;">
+          <summary style="font-weight:700; color:#0F3D23; cursor:pointer;">🌐 Official Open-Access Repositories &amp; Portals</summary>
+          <div style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+            <div style="background:#fff; border:1px solid #D0EBD0; border-radius:8px; padding:10px;">
+              <div style="font-weight:700; font-size:13px; color:#0F3D23;">🌾 ICAR e-Courses Portal</div>
+              <div style="font-size:11px; color:#666; margin:3px 0 6px;">BSc Agriculture degree notes (14 disciplines)</div>
+              <a href="https://ecourses.icar.gov.in/" target="_blank" rel="noopener" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
+            </div>
+            <div style="background:#fff; border:1px solid #D0EBD0; border-radius:8px; padding:10px;">
+              <div style="font-weight:700; font-size:13px; color:#0F3D23;">📖 e-Krishi Shiksha (ICAR)</div>
+              <div style="font-size:11px; color:#666; margin:3px 0 6px;">National agriculture e-learning resources</div>
+              <a href="https://ekrishishiksha.icar.gov.in/" target="_blank" rel="noopener" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
+            </div>
+            <div style="background:#fff; border:1px solid #D0EBD0; border-radius:8px; padding:10px;">
+              <div style="font-weight:700; font-size:13px; color:#0F3D23;">🎥 NPTEL Agriculture</div>
+              <div style="font-size:11px; color:#666; margin:3px 0 6px;">Video lecture series &amp; certifications</div>
+              <a href="https://nptel.ac.in/courses/agriculture" target="_blank" rel="noopener" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
+            </div>
+            <div style="background:#fff; border:1px solid #D0EBD0; border-radius:8px; padding:10px;">
+              <div style="font-weight:700; font-size:13px; color:#0F3D23;">🌱 TNAU Agritech Portal</div>
+              <div style="font-size:11px; color:#666; margin:3px 0 6px;">Comprehensive crop production &amp; tech bank</div>
+              <a href="https://agritech.tnau.ac.in/" target="_blank" rel="noopener" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
+            </div>
+          </div>
+        </details>
 
         <!-- Automation Settings -->
         <details style="background:#F8FBF8; border-radius:8px; padding:12px; border:1px solid #E0EAE0; margin-bottom:20px;">
@@ -310,6 +434,8 @@ window.AgriHarvester = (function() {
             <span style="font-size:11px; color:#888;">
               ${item.source} &bull; ${item.pubDate ? new Date(item.pubDate).toLocaleDateString() : ''}
             </span>
+            ${item.linkStatus === 'ok' ? '<span style="background:#E8F5E9; color:#2E7D32; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">🟢 Link Active</span>' : ''}
+            ${item.linkStatus === 'dead' ? '<span style="background:#FFEBEE; color:#C62828; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">🔴 Dead / Broken</span>' : ''}
           </div>
           <div style="font-weight:700; font-size:13px; color:#111; margin-bottom:4px;">
             <a href="${item.link}" target="_blank" rel="noopener" style="color:inherit; text-decoration:none;">
@@ -342,6 +468,7 @@ window.AgriHarvester = (function() {
   return {
     init,
     triggerHarvest,
+    checkLinks,
     saveSettings,
     setItemStatus,
     renderAdminView,
