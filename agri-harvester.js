@@ -18,16 +18,39 @@ window.AgriHarvester = (function() {
   let harvestedItems = [];
   let executionLogs = [];
 
+  // Safe getter for Firestore / LocalStorage
+  async function safeGet(key) {
+    if (typeof sGet === "function") {
+      return await sGet(key);
+    }
+    try {
+      const v = localStorage.getItem(key);
+      return v ? JSON.parse(v) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Safe setter for Firestore / LocalStorage
+  async function safeSet(key, val) {
+    if (typeof sSet === "function") {
+      return await sSet(key, val);
+    }
+    try {
+      localStorage.setItem(key, JSON.stringify(val));
+    } catch (_) {}
+  }
+
   // Load from database / local storage
   async function init() {
     try {
-      const s = await sGet(SETTINGS_KEY);
+      const s = await safeGet(SETTINGS_KEY);
       if (s) settings = { ...settings, ...s };
       
-      const items = await sGet(STORAGE_KEY);
+      const items = await safeGet(STORAGE_KEY);
       if (Array.isArray(items)) harvestedItems = items;
 
-      const logs = await sGet(LOGS_KEY);
+      const logs = await safeGet(LOGS_KEY);
       if (Array.isArray(logs)) executionLogs = logs;
     } catch (e) {
       console.warn("AgriHarvester init error:", e);
@@ -68,7 +91,6 @@ window.AgriHarvester = (function() {
     try {
       const headers = {};
 
-      // Get Firebase Auth token securely from current user session (never stored or exposed in code)
       if (window.firebase && firebase.auth && firebase.auth().currentUser) {
         try {
           const idToken = await firebase.auth().currentUser.getIdToken(true);
@@ -102,10 +124,9 @@ window.AgriHarvester = (function() {
 
       settings.lastRun = logEntry.timestamp;
 
-      // Save back to Firestore
-      await sSet(STORAGE_KEY, harvestedItems);
-      await sSet(SETTINGS_KEY, settings);
-      await sSet(LOGS_KEY, executionLogs);
+      await safeSet(STORAGE_KEY, harvestedItems);
+      await safeSet(SETTINGS_KEY, settings);
+      await safeSet(LOGS_KEY, executionLogs);
 
       if (settings.autoSyncNoticeBoard) {
         syncToNoticesBoard();
@@ -183,7 +204,7 @@ window.AgriHarvester = (function() {
       }
     }
 
-    await sSet(STORAGE_KEY, harvestedItems);
+    await safeSet(STORAGE_KEY, harvestedItems);
     if (typeof renderAdmin === "function") renderAdmin();
     if (typeof toast === "function") toast(`Item ${newStatus}`);
   }
@@ -191,7 +212,7 @@ window.AgriHarvester = (function() {
   // Save Settings from Admin Panel
   async function saveSettings(newSettings) {
     settings = { ...settings, ...newSettings };
-    await sSet(SETTINGS_KEY, settings);
+    await safeSet(SETTINGS_KEY, settings);
     if (typeof toast === "function") toast("Harvester settings updated!");
   }
 
@@ -330,9 +351,11 @@ window.AgriHarvester = (function() {
   };
 })();
 
-// Auto initialize when window is ready
+// Auto initialize when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => AgriHarvester.init());
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => AgriHarvester.init(), 100);
+  });
 } else {
-  AgriHarvester.init();
+  setTimeout(() => AgriHarvester.init(), 100);
 }

@@ -3082,7 +3082,7 @@ async function loadCustomQuizBank() {
   }
   return Object.keys(result).length > 0 ? result : null;
 }
-async async function saveCustomQuizBank(cqb) {
+async function saveCustomQuizBank(cqb) {
   const subjects = Object.keys(cqb);
   // Always write localStorage backup per-subject first (survives hard refresh + Firebase failures)
   try {
@@ -8138,7 +8138,7 @@ async function handlePYQBulkFile(input){
   } catch(e){ status.innerHTML=`<div style="color:#E53935;font-size:13px;">❌ Error: ${escapeHTML(e.message)}</div>`; }
 }
 
-async async function addBulkPYQQuestions(){
+async function addBulkPYQQuestions(){
   if(!_parsedPYQQuestions.length){ toast("No parsed questions.","e"); return; }
   const exam=document.getElementById("pyqBulkExam").value;
   const year=document.getElementById("pyqBulkYear").value;
@@ -9432,41 +9432,32 @@ async function adminDeleteEbook(id){
 let fetchedRSSNotices = [];
 let hasFetchedRSS = false;
 
-async function fetchLiveExamNotices() {
+async async function fetchLiveExamNotices() {
   if(hasFetchedRSS) return;
+  hasFetchedRSS = true;
   try {
-    const rssUrl = 'https://news.google.com/rss/search?q="ICAR"+OR+"IBPS+AFO"+OR+"NABARD+Agriculture"+exam+notification&hl=en-IN&gl=IN&ceid=IN:en';
-    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-    
-    const res = await fetch(apiUrl);
-    const data = await res.json();
-    
-    if(data.status === "ok" && data.items) {
-      fetchedRSSNotices = data.items.slice(0, 8).map((item, i) => {
-        const d = new Date(item.pubDate);
-        const fDate = !isNaN(d) ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : "Recent";
-        
-        // Clean up title/desc
-        let cleanTitle = item.title.split(' - ')[0]; // Remove source name from Google News
-        let cleanDesc = item.description ? item.description.replace(/<[^>]*>?/gm, '') : "Tap View to read this exam update.";
-        if(cleanDesc.length > 120) cleanDesc = cleanDesc.substring(0, 120) + "...";
-
-        return {
-          id: `rss_${Date.now()}_${i}`,
-          title: cleanTitle,
-          category: "NEWS",
-          desc: cleanDesc,
-          link: item.link,
-          date: fDate,
-          timestamp: d.getTime(),
-          isLive: true
-        };
-      });
-      hasFetchedRSS = true;
-      if(section === 'notices') renderNotices();
+    // Attempt fast local sync from AgriHarvester
+    if (window.AgriHarvester && typeof window.AgriHarvester.getHarvestedItems === "function") {
+      const pub = window.AgriHarvester.getHarvestedItems().filter(i => i.status === 'published');
+      if (pub.length > 0) {
+        fetchedRSSNotices = pub.slice(0, 10).map(i => ({
+          id: i.id,
+          title: i.title,
+          category: i.category || "EXAM",
+          examTag: i.exam || "GENERAL",
+          desc: i.desc || "",
+          date: i.pubDate ? new Date(i.pubDate).toLocaleDateString() : "Recent",
+          link: i.link,
+          source: i.source,
+          timestamp: i.timestamp || Date.now()
+        }));
+        renderNotices();
+        return;
+      }
     }
-  } catch(e) { console.error("Failed to fetch RSS notices:", e); }
-}
+  } catch(e) {
+    console.warn("fetchLiveExamNotices fallback:", e);
+  }
 
 function renderNotices() {
   const el = document.getElementById("noticeList");
