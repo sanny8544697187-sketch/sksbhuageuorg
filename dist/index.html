@@ -2116,7 +2116,10 @@ window._fbConfigured = false;
 
       <!-- Filters -->
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-        <div class="search-box" style="flex:1;min-width:180px;">
+        <div style="margin-bottom:16px;display:flex;justify-content:flex-end;">
+      <button class="btn btn-primary" style="font-size:13px;padding:8px 18px;" onclick="showExamDirectory()">🎓 Browse Exam Directory</button>
+    </div>
+    <div class="search-box" style="flex:1;min-width:180px;">
           <span style="font-size:14px;color:#777;">🔍</span>
           <input id="qSearch" type="text" placeholder="Search doubts…" oninput="renderDoubts()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;">
         </div>
@@ -2360,6 +2363,7 @@ window._fbConfigured = false;
       <button id="atEbooks"   class="btn btn-light"   onclick="setAdminTab('ebooks')">📚 Ebooks</button>
       <button id="atReps" class="btn btn-light" onclick="setAdminTab('reps')">ðŸŒ± Reps</button>
       <button id="atHarvester" class="btn btn-light" onclick="setAdminTab('harvester')">🤖 Auto Harvester</button>
+      <button id="atExamDir" class="btn btn-light" onclick="setAdminTab('examdir')">🎓 Exam Directory</button>
       <button id="atSettings" class="btn btn-light"   onclick="setAdminTab('settings')">⚙️ Settings</button>
     </div>
     <div id="adminContent"></div>
@@ -3232,7 +3236,12 @@ window.addEventListener("DOMContentLoaded", async () => {
         const pb=document.getElementById("pendingBadge");
         if(pb){ pb.textContent=pending.length; pb.classList.toggle("hidden",pending.length===0); }
         const _editingSomething = !!editingUploadId || !!editingCustomQ || !!_editingPYQId;
-        if(adminTab==="harvester"){
+        if(adminTab==="examdir"){
+    el.innerHTML = renderExamDirectoryAdmin();
+    return;
+  }
+
+  if(adminTab==="harvester"){
     if(window.AgriHarvester && typeof window.AgriHarvester.renderAdminView === "function"){
       el.innerHTML = window.AgriHarvester.renderAdminView();
     } else {
@@ -4136,6 +4145,153 @@ function exitQuiz(){
   renderQuizStart();
 }
 
+
+// Render Exam Directory in Admin Panel
+function renderExamDirectoryAdmin() {
+  const exams = window.AGRI_EXAMS_DB || [];
+  const typeColors = {
+    entrance: { bg: '#E3F2FD', fg: '#1565C0', label: 'Entrance' },
+    recruitment: { bg: '#E8F5E9', fg: '#2E7D32', label: 'Recruitment' },
+    banking: { bg: '#FFF8E1', fg: '#F57C00', label: 'Banking' },
+    state_psc: { bg: '#F3E5F5', fg: '#7B1FA2', label: 'State PSC' },
+    upsc: { bg: '#FFEBEE', fg: '#C62828', label: 'UPSC' },
+    fellowship: { bg: '#E0F7FA', fg: '#00838F', label: 'Fellowship' },
+    teaching: { bg: '#F1F8E9', fg: '#558B2F', label: 'Teaching' }
+  };
+
+  const filterHtml = `
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <input id="examDirSearch" type="text" placeholder="🔍 Search exams..." oninput="filterExamDirAdmin()" style="flex:1;min-width:180px;padding:8px 12px;border:1px solid #E0EAE0;border-radius:8px;font-size:13px;">
+      <select id="examDirTypeFilter" onchange="filterExamDirAdmin()" style="padding:8px 12px;border:1px solid #E0EAE0;border-radius:8px;font-size:13px;background:#fff;">
+        <option value="">All Types</option>
+        <option value="entrance">Entrance</option>
+        <option value="recruitment">Recruitment</option>
+        <option value="banking">Banking</option>
+        <option value="state_psc">State PSC</option>
+        <option value="upsc">UPSC</option>
+        <option value="fellowship">Fellowship</option>
+        <option value="teaching">Teaching</option>
+      </select>
+    </div>
+  `;
+
+  const examCards = exams.map(e => {
+    const tc = typeColors[e.type] || { bg: '#F5F5F5', fg: '#555', label: e.type };
+    return `
+      <div class="card" style="padding:14px;margin-bottom:10px;" data-exam-type="${e.type}" data-exam-name="${e.name.toLowerCase()}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
+          <div style="flex:1;min-width:200px;">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+              <span style="background:${tc.bg};color:${tc.fg};font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">${tc.label}</span>
+              <span style="background:${e.status==='active'?'#E8F5E9':'#FFEBEE'};color:${e.status==='active'?'#2E7D32':'#C62828'};font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">${e.status==='active'?'Active':'Inactive'}</span>
+            </div>
+            <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:4px;">${escapeHTML(e.shortName)}</div>
+            <div style="font-size:12px;color:#555;margin-bottom:4px;">${escapeHTML(e.name)}</div>
+            <div style="font-size:11px;color:#777;">Authority: ${escapeHTML(e.authority)} &bull; Level: ${escapeHTML(e.level)}</div>
+            <div style="font-size:11px;color:#777;margin-top:3px;">Next Expected: ${escapeHTML(e.nextExpected || 'TBA')}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
+            ${e.official_url ? `<a href="${e.official_url}" target="_blank" rel="noopener" class="btn btn-light" style="font-size:11px;padding:5px 10px;">Official ↗</a>` : ''}
+            ${e.syllabus_url ? `<a href="${e.syllabus_url}" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:11px;padding:5px 10px;">Syllabus ↗</a>` : ''}
+          </div>
+        </div>
+        <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">
+          ${(e.subjects || []).slice(0, 5).map(s => `<span style="background:#F5F5F5;color:#555;font-size:10px;padding:2px 7px;border-radius:4px;">${escapeHTML(s)}</span>`).join('')}
+          ${e.subjects && e.subjects.length > 5 ? `<span style="color:#777;font-size:10px;padding:2px 7px;">+${e.subjects.length-5} more</span>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #E0EAE0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <h3 style="margin:0 0 4px 0;color:#0F3D23;font-size:18px;">🎓 Agriculture Exam Directory</h3>
+          <div style="font-size:12px;color:#666;">${exams.length} exams tracked &bull; Data sourced from official websites</div>
+        </div>
+      </div>
+      ${filterHtml}
+      <div id="examDirList" style="max-height:600px;overflow-y:auto;">
+        ${examCards}
+      </div>
+    </div>
+  `;
+}
+
+
+// Show Exam Directory Modal for students
+function showExamDirectory() {
+  const exams = window.AGRI_EXAMS_DB || [];
+  const typeLabels = {
+    entrance: '🎓 Entrance', recruitment: '💼 Recruitment', banking: '🏦 Banking',
+    state_psc: '🏛️ State PSC', upsc: '⚖️ UPSC', fellowship: '🔬 Fellowship', teaching: '📖 Teaching'
+  };
+
+  const grouped = {};
+  exams.forEach(e => {
+    const g = typeLabels[e.type] || e.type;
+    if (!grouped[g]) grouped[g] = [];
+    grouped[g].push(e);
+  });
+
+  const modalHtml = Object.entries(grouped).map(([grp, list]) => `
+    <div style="margin-bottom:20px;">
+      <div style="font-weight:800;font-size:13px;color:#0F3D23;margin-bottom:8px;padding-bottom:4px;border-bottom:2px solid #E8F5E9;">${grp}</div>
+      ${list.map(e => `
+        <div style="background:#FAFCFA;border:1px solid #EBEBEB;border-radius:8px;padding:12px;margin-bottom:8px;">
+          <div style="font-weight:700;font-size:13px;color:#111;">${escapeHTML(e.shortName)}</div>
+          <div style="font-size:11px;color:#666;margin-top:3px;">Authority: ${escapeHTML(e.authority)} &bull; Next: ${escapeHTML(e.nextExpected||'TBA')}</div>
+          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
+            ${e.official_url ? `<a href="${e.official_url}" target="_blank" rel="noopener" style="font-size:11px;background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:4px;text-decoration:none;font-weight:600;">Official Site ↗</a>` : ''}
+            ${e.syllabus_url ? `<a href="${e.syllabus_url}" target="_blank" rel="noopener" style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:3px 10px;border-radius:4px;text-decoration:none;font-weight:600;">Syllabus ↗</a>` : ''}
+            ${e.notification_url ? `<a href="${e.notification_url}" target="_blank" rel="noopener" style="font-size:11px;background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:4px;text-decoration:none;font-weight:600;">Notification ↗</a>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+
+  const overlay = document.createElement('div');
+  overlay.id = 'examDirModal';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:700px;padding:20px;margin:auto;position:relative;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div>
+          <h3 style="margin:0;font-size:18px;color:#0F3D23;">🎓 Agriculture Exam Directory</h3>
+          <div style="font-size:12px;color:#666;">${exams.length} exams — tap links to visit official sites</div>
+        </div>
+        <button onclick="document.getElementById('examDirModal')?.remove()" style="background:none;border:1px solid #ccc;padding:5px 12px;border-radius:8px;cursor:pointer;font-size:13px;">✕ Close</button>
+      </div>
+      <input type="text" placeholder="🔍 Search exams..." oninput="filterExamDirModal(this.value)" style="width:100%;padding:8px 12px;border:1px solid #E0EAE0;border-radius:8px;font-size:13px;margin-bottom:14px;box-sizing:border-box;">
+      <div id="examDirModalContent" style="max-height:65vh;overflow-y:auto;">${modalHtml}</div>
+    </div>
+  `;
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+  document.body.appendChild(overlay);
+}
+
+function filterExamDirModal(q) {
+  const qLower = (q || '').toLowerCase();
+  const content = document.getElementById('examDirModalContent');
+  if (!content) return;
+  content.querySelectorAll('[style*="FAFCFA"]').forEach(el => {
+    const text = el.textContent.toLowerCase();
+    el.style.display = !qLower || text.includes(qLower) ? '' : 'none';
+  });
+}
+
+function filterExamDirAdmin() {
+  const q = (document.getElementById('examDirSearch')?.value || '').toLowerCase();
+  const type = document.getElementById('examDirTypeFilter')?.value || '';
+  document.querySelectorAll('#examDirList [data-exam-type]').forEach(el => {
+    const matchType = !type || el.dataset.examType === type;
+    const matchQ = !q || el.dataset.examName.includes(q);
+    el.style.display = (matchType && matchQ) ? '' : 'none';
+  });
+}
+
 function finishQuiz(){
   quizDone=true;
   stopQuizTimer();
@@ -4517,7 +4673,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","ebooks","settings","reps","harvester"].forEach(k=>{
+  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","ebooks","settings","reps","harvester","examdir"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -9503,6 +9659,7 @@ async function deleteNotice(id) {
   </a>
   <button onclick="document.getElementById('pwaInstallBanner').style.display='none'" style="background:transparent; border:none; color:#777; font-size:22px; padding:4px 8px; cursor:pointer; line-height:1; flex-shrink:0;">✕</button>
 </div>
+  <script src="./agri-exams-db.js"></script>
   <script src="./agri-harvester.js"></script>
 </body>
 </html>
