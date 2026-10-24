@@ -9349,7 +9349,7 @@ function renderEbooksGrid(){
 // ═══════════════════════════════════════════════════════════════
 // ADMIN EBOOKS MANAGEMENT
 // ═══════════════════════════════════════════════════════════════
-let adminEbooks = [];
+// adminEbooks initialized at top scope
 
 // adminEbooks is now loaded inside DOMContentLoaded after Firebase is ready (see startup sequence above)
 
@@ -9433,10 +9433,9 @@ let fetchedRSSNotices = [];
 let hasFetchedRSS = false;
 
 async function fetchLiveExamNotices() {
-  if(hasFetchedRSS) return;
+  if (hasFetchedRSS) return;
   hasFetchedRSS = true;
   try {
-    // Attempt fast local sync from AgriHarvester
     if (window.AgriHarvester && typeof window.AgriHarvester.getHarvestedItems === "function") {
       const pub = window.AgriHarvester.getHarvestedItems().filter(i => i.status === 'published');
       if (pub.length > 0) {
@@ -9452,91 +9451,11 @@ async function fetchLiveExamNotices() {
           timestamp: i.timestamp || Date.now()
         }));
         renderNotices();
-        return;
       }
     }
-  } catch(e) {
-    console.warn("fetchLiveExamNotices fallback:", e);
+  } catch (e) {
+    console.warn("fetchLiveExamNotices:", e);
   }
-
-function renderNotices() {
-  const el = document.getElementById("noticeList");
-  if(!el) return;
-  
-  if(!hasFetchedRSS) fetchLiveExamNotices();
-  
-  let harvestedPub = [];
-  if(window.AgriHarvester && typeof window.AgriHarvester.getHarvestedItems === "function") {
-    harvestedPub = window.AgriHarvester.getHarvestedItems().filter(i => i.status === 'published');
-  }
-  const allNotices = [...noticesList, ...fetchedRSSNotices, ...harvestedPub].sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-  
-  if(allNotices.length === 0) {
-    el.innerHTML = `<div style="text-align:center; padding:40px; color:#777;">No recent notices available.</div>`;
-    return;
-  }
-  
-  const iconMap = { "EXAM": "📝", "SCHEDULE": "📅", "ALERT": "🚨", "NEWS": "📰" };
-  const colorMap = { 
-    "EXAM": { bg:"#E8F5E9", fg:"#00B050" },
-    "SCHEDULE": { bg:"#F3E5F5", fg:"#7B1FA2" },
-    "ALERT": { bg:"#FFEBEE", fg:"#E53935" },
-    "NEWS": { bg:"#E3F2FD", fg:"#1565C0" }
-  };
-
-  let html = "";
-  allNotices.forEach(n => {
-    const c = colorMap[n.category] || colorMap["NEWS"];
-    const i = iconMap[n.category] || "📰";
-    const liveBadge = n.isLive ? `<span style="font-size:10px; background:#e3f2fd; color:#0d47a1; padding:3px 8px; border-radius:4px; font-weight:700; border:1px solid #bbdefb;"><i class="fas fa-globe"></i> Live Web Update</span>` : "";
-
-    html += `
-      <div class="notice-card">
-        <div class="notice-icon">${i}</div>
-        <div style="flex:1;">
-          <div style="display:flex; gap:8px; margin-bottom:4px; align-items:center; flex-wrap:wrap;">
-            <span style="font-size:10px; background:${c.bg}; color:${c.fg}; padding:3px 8px; border-radius:4px; font-weight:700;">${escapeHTML(n.category)}</span>
-            ${liveBadge}
-            <span style="font-size:10px; color:#777;">${escapeHTML(n.date)}</span>
-          </div>
-          <div style="font-weight:700; font-size:15px; margin-bottom:4px;">${escapeHTML(n.title)}</div>
-          <div style="font-size:13px; color:#777; line-height:1.4;">${escapeHTML(n.desc)}</div>
-        </div>
-        ${n.link ? `<button class="btn btn-primary" style="padding:8px 16px;" onclick="window.open('${escapeHTML(n.link)}', '_blank')">View</button>` : ''}
-      </div>
-    `;
-  });
-  el.innerHTML = html;
-}
-
-async function adminPostNotice() {
-  if(!currentUser?.isAdmin) return;
-  const title = document.getElementById('noticeTitle')?.value?.trim();
-  const cat = document.getElementById('noticeCat')?.value || 'NEWS';
-  const desc = document.getElementById('noticeDesc')?.value?.trim();
-  const link = document.getElementById('noticeLink')?.value?.trim() || "";
-
-  if(!title || !desc) { toast("Title and Description are required", "e"); return; }
-
-  const notice = {
-    id: Date.now().toString(),
-    title,
-    category: cat,
-    desc,
-    link,
-    date: fmtDate(),
-    timestamp: Date.now()
-  };
-
-  noticesList = [notice, ...noticesList];
-  await sSet("bhu:notices", noticesList);
-  toast("Notice posted successfully!");
-  
-  document.getElementById('noticeTitle').value = "";
-  document.getElementById('noticeDesc').value = "";
-  document.getElementById('noticeLink').value = "";
-  
-  renderAdminNotices();
 }
 
 function renderAdminNotices() {
