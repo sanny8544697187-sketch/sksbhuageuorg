@@ -934,6 +934,7 @@
   <p style="font-size:13px;color:#777">Loading resources…</p>
   <div class="splash-bar"><div></div></div>
 </div>
+<script>setTimeout(function(){var s=document.getElementById("splash");if(s)s.style.display="none";}, 1000);</script>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1737,7 +1738,7 @@ window._fbConfigured = false;
     <!-- PROMOTIONAL CAROUSEL -->
     <div class="promo-carousel">
       <div class="promo-card">
-        <img src="https://images.unsplash.com/photo-1495592822108-9e627184069a?w=500&q=80" class="promo-img" alt="Promo">
+        <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=500&q=80" class="promo-img" alt="Promo">
         <div class="promo-content">
           <div style="font-size:10px; font-weight:700; color:#f59e0b; letter-spacing:1px; margin-bottom:4px;">ADMISSIONS OPEN</div>
           <div style="font-size:16px; font-weight:800; line-height:1.2;">UPSC Agriculture Optional 2026 Batch</div>
@@ -7475,206 +7476,6 @@ function handleGoogleRedirectResult() {
   // No-op: replaced by native sign-in on Android, popup on web
 }
 
-// ── FIREBASE CONFIG ─────────────────────────────────────────────
-</script>
-
-<!-- TOAST -->
-<div id="toast" class="toast hidden"></div>
-
-<!-- LOGIN MODAL -->
-<div id="loginModal" class="modal hidden">
-  <div class="modal-card">
-    <button class="close-modal" onclick="closeLogin()">&times;</button>
-    <h2 style="font-size:24px;margin-bottom:8px;" id="loginModalTitle">Welcome Back 🌾</h2>
-    <p style="color:#777;font-size:13px;margin-bottom:20px;" id="loginModalSubtitle">Login to access your agriculture learning portal</p>
-    <div class="modal-tabs">
-      <button id="loginTab" class="active" onclick="switchAuthTab('login')">Login</button>
-      <button id="registerTab" onclick="switchAuthTab('register')">Sign Up</button>
-        
-    </div>
-    <div id="loginForm" class="login-form">
-      <div><label class="lbl">Email</label><input id="authEmail" class="inp" type="email" placeholder="Enter your email"></div>
-      <div><label class="lbl">Password</label><input id="authPass" class="inp" type="password" placeholder="Enter password"></div>
-      <div id="authErr" style="color:#E53935;font-size:13px;"></div>
-      <button class="btn btn-primary" onclick="doLogin()">Login</button>
-      <div style="text-align:right; margin-top:8px;">
-        <a href="#" onclick="openForgotPassword(event)" style="font-size:12px;color:#2E7D32;font-weight:600;">Forgot Password?</a>
-      </div>
-      <div style="text-align:center; margin:15px 0; color:#777; font-size:13px;">OR</div>
-      <button class="btn btn-light" style="width:100%; border:1px solid #dadce0; background:#fff; color:#3c4043; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:10px; padding:10px 16px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.12); font-size:14px;" onclick="doGoogleLogin()">
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
-        Continue with Google
-      </button>
-    </div>
-    <div id="registerForm" class="login-form hidden">
-      <div><label class="lbl">Full Name *</label><input id="regName" class="inp" type="text" placeholder="Enter your name"></div>
-      <div><label class="lbl">Email *</label><input id="regEmail" class="inp" type="email" placeholder="Enter your email"></div>
-      <div><label class="lbl">Password * (min 6 chars)</label><input id="regPass" class="inp" type="password" placeholder="Create password"></div>
-      <div id="regErr" style="color:#E53935;font-size:13px;"></div>
-      <button class="btn btn-primary" onclick="doRegister()">Create Account</button>
-      <div style="text-align:center; margin:15px 0; color:#777; font-size:13px;">OR</div>
-      <button class="btn btn-light" style="width:100%; border:1px solid #dadce0; background:#fff; color:#3c4043; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px; margin-top:10px; padding:10px 16px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.12); font-size:14px;" onclick="doGoogleLogin()">
-        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
-        Sign up with Google
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Forgot Password Modal ── -->
-<div id="forgotModal" class="modal hidden" onclick="if(event.target===this)closeForgotPassword()">
-  <div class="modal-card" style="max-width:420px;">
-    <button class="close-modal" onclick="closeForgotPassword()">&times;</button>
-    <h2 style="font-size:22px;margin-bottom:8px;">Reset Password 🔑</h2>
-    <p style="color:#777;font-size:13px;margin-bottom:20px;">Enter your email and we'll send you a reset link. Or use Google to recover your account instantly.</p>
-    <div>
-      <label class="lbl">Your Email</label>
-      <input id="forgotEmail" class="inp" type="email" placeholder="Enter your registered email">
-    </div>
-    <div id="forgotMsg" style="font-size:13px;margin-top:6px;"></div>
-    <button class="btn btn-primary" style="margin-top:14px;" onclick="doForgotPassword()">📧 Send Reset Link</button>
-    <div style="text-align:center; margin:15px 0; color:#777; font-size:13px;">OR recover using</div>
-    <button class="btn btn-light" style="width:100%; border:1px solid #dadce0; background:#fff; color:#3c4043; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 16px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.12); font-size:14px;" onclick="closeForgotPassword(); doGoogleLogin();">
-      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
-      Sign in with Google instead
-    </button>
-    <div style="text-align:center;margin-top:14px;">
-      <a href="#" onclick="closeForgotPassword(); openLogin(); return false;" style="font-size:12px;color:#2E7D32;font-weight:600;">← Back to Login</a>
-    </div>
-  </div>
-</div>
-
-<!-- ── Google Drive / Link Preview Modal ── -->
-<div id="driveModal" class="modal hidden" onclick="if(event.target===this)closeDriveModal()">
-  <div style="background:#fff;border-radius:20px;width:100%;max-width:860px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden;">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e0e7e0;flex-shrink:0;">
-      <div>
-        <div id="driveModalTitle" style="font-weight:700;font-size:15px;color:#0F3D23;max-width:620px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-        <div style="font-size:11px;color:#777;margin-top:2px;">🔒 Preview only — your Drive files are not visible to users</div>
-      </div>
-      <button onclick="closeDriveModal()" style="border:none;background:#F2F5F2;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;color:#444;flex-shrink:0;">✕</button>
-    </div>
-    <div style="flex:1;min-height:0;position:relative;">
-      <div id="driveModalSpinner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#F9FBF9;z-index:1;">
-        <div style="text-align:center;">
-          <div style="width:36px;height:36px;border:3px solid #c8e6c9;border-top-color:#00B050;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
-          <div style="font-size:13px;color:#555;">Loading preview…</div>
-        </div>
-      </div>
-      <iframe id="driveModalFrame"
-        src=""
-        style="width:100%;height:100%;min-height:520px;border:none;display:block;"
-        allow="autoplay"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-        onload="document.getElementById('driveModalSpinner').style.display='none'">
-      </iframe>
-    </div>
-  </div>
-</div>
-
-<div id="payModal" class="modal hidden">
-  <div class="modal-card">
-    <button class="close-modal" onclick="document.getElementById('payModal').classList.add('hidden')">&times;</button>
-    <div style="text-align:center;margin-bottom:22px;">
-      <div style="font-size:42px;margin-bottom:8px;">⭐</div>
-      <h2 style="font-size:22px;font-weight:800;margin-bottom:6px;">Unlock Premium</h2>
-      <p style="color:#777;font-size:13px;">Access all PDFs, videos, PYQ papers & full quiz banks</p>
-    </div>
-    <div style="display:grid;gap:12px;margin-bottom:20px;">
-      <div onclick="doPay('trial')" class="card hov-card" style="padding:18px;cursor:pointer;border:2px solid #E0EAE0;position:relative;">
-        <div style="position:absolute;top:-10px;right:14px;background:#1565C0;color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:50px;">TRY IT OUT</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div><div style="font-weight:700;font-size:16px;">7-Day Trial</div><div style="font-size:13px;color:#777;margin-top:2px;">Full premium access for 7 days</div></div>
-          <div style="font-size:22px;font-weight:800;color:#1565C0;">₹9</div>
-        </div>
-      </div>
-      <div onclick="doPay('monthly')" class="card hov-card" style="padding:18px;cursor:pointer;border:2px solid #E0EAE0;position:relative;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div><div style="font-weight:700;font-size:16px;">Monthly Plan</div><div style="font-size:13px;color:#777;margin-top:2px;">Premium access, billed monthly</div></div>
-          <div style="font-size:22px;font-weight:800;color:#00B050;">₹49<span style="font-size:12px;font-weight:600;color:#777;">/mo</span></div>
-        </div>
-      </div>
-      <div onclick="doPay('yearly')" class="card hov-card" style="padding:18px;cursor:pointer;border:2px solid #00B050;position:relative;">
-        <div style="position:absolute;top:-10px;right:14px;background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:10px;font-weight:700;padding:3px 10px;border-radius:50px;">BEST VALUE</div>
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div><div style="font-weight:700;font-size:16px;">Yearly Plan</div><div style="font-size:13px;color:#777;margin-top:2px;">Full year of premium access</div></div>
-          <div style="font-size:22px;font-weight:800;color:#00B050;">₹449</div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
-      <span style="font-size:12px;color:#777;">✓ Premium PDFs</span>
-      <span style="font-size:12px;color:#777;">✓ Video Lectures</span>
-      <span style="font-size:12px;color:#777;">✓ PYQ Papers</span>
-      <span style="font-size:12px;color:#777;">✓ Full Quiz Banks</span>
-    </div>
-  </div>
-</div>
-
-
-
-<!-- REPRESENTATIVE APPLICATION MODAL -->
-<div id="representativeModal" class="modal hidden">
-  <div class="modal-card" style="max-width:600px;">
-    <button class="close-modal" onclick="document.getElementById('representativeModal').classList.add('hidden')">&times;</button>
-    <h2 style="font-size:24px;margin-bottom:8px;">ðŸŒ± Become a Representative</h2>
-    <p style="color:#777;font-size:13px;margin-bottom:20px;">Join our community of educators and contribute to KrishiGyan</p>
-    
-    <form id="repForm" onsubmit="submitRepresentativeApplication(event)" style="display:flex;flex-direction:column;gap:14px;">
-      <div>
-        <label class="lbl">Full Name *</label>
-        <input id="repName" class="inp" type="text" placeholder="Your full name" required>
-      </div>
-      <div>
-        <label class="lbl">College / Institute *</label>
-        <input id="repCollege" class="inp" type="text" placeholder="Your college name" required>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <div>
-          <label class="lbl">Course *</label>
-          <input id="repCourse" class="inp" type="text" placeholder="e.g., B.Sc Agriculture" required>
-        </div>
-        <div>
-          <label class="lbl">Year *</label>
-          <select id="repYear" class="inp" required>
-            <option value="">Select Year</option>
-            <option value="1">1st Year</option>
-            <option value="2">2nd Year</option>
-            <option value="3">3rd Year</option>
-            <option value="4">4th Year</option>
-          </select>
-        </div>
-      </div>
-      <div>
-        <label class="lbl">City / State *</label>
-        <input id="repCity" class="inp" type="text" placeholder="Your location" required>
-      </div>
-      <div>
-        <label class="lbl">Phone (optional)</label>
-        <input id="repPhone" class="inp" type="tel" placeholder="Your contact number">
-      </div>
-      <div>
-        <label class="lbl">Why do you want to be a representative? *</label>
-        <textarea id="repReason" class="rep-form-group" placeholder="Share your motivation..." required></textarea>
-      </div>
-      <div>
-        <label class="lbl">How will you contribute? *</label>
-        <textarea id="repContribution" class="rep-form-group" placeholder="Your ideas for contribution..." required></textarea>
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button type="submit" class="btn btn-primary" style="flex:1;">ðŸ“ Submit Application</button>
-        <button type="button" class="btn btn-light" onclick="document.getElementById('representativeModal').classList.add('hidden')" style="flex:1;">Cancel</button>
-      </div>
-    </form>
-    
-    <div id="repApplicationStatus" style="margin-top:20px;"></div>
-  </div>
-</div>
-
-<div id="drawerOverlay" onclick="closeMobileDrawer()"></div>
-
-
-<script>
 function openForgotPassword(e) {
   if(e) e.preventDefault();
   closeLogin();
