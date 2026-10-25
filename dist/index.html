@@ -1694,6 +1694,12 @@ window._fbConfigured = false;
             ⛶ Pop-up Full Screen View
           </button>
         </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;" id="studyHubExamStatusTabs">
+          <button class="btn btn-sm btn-primary" data-st="all" onclick="setStudyHubExamStatusFilter('all')">All Opportunities</button>
+          <button class="btn btn-sm btn-light" data-st="active" onclick="setStudyHubExamStatusFilter('active')">🟢 Active</button>
+          <button class="btn btn-sm btn-light" data-st="upcoming" onclick="setStudyHubExamStatusFilter('upcoming')">⏳ Upcoming</button>
+          <button class="btn btn-sm btn-light" data-st="historical" onclick="setStudyHubExamStatusFilter('historical')">🏛️ Historical / Archived</button>
+        </div>
         <div class="search-box" style="margin-bottom:14px;">
           <span style="font-size:14px;color:#777;">🔍</span>
           <input id="studyHubExamSearch" type="text" placeholder="Search by exam name, authority, or eligibility..." oninput="filterStudyHubExams(this.value)" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;width:100%;">
@@ -3310,6 +3316,17 @@ function setSubjectsTab(tab){
   if(tab==="examdir") renderStudyHubExams();
 }
 
+let _studyHubExamStatusFilter = "all";
+
+function setStudyHubExamStatusFilter(st) {
+  _studyHubExamStatusFilter = st;
+  const btns = document.querySelectorAll("#studyHubExamStatusTabs button");
+  btns.forEach(b => {
+    b.className = b.dataset.st === st ? "btn btn-sm btn-primary" : "btn btn-sm btn-light";
+  });
+  renderStudyHubExams();
+}
+
 function renderStudyHubExams(){
   const container = document.getElementById("studyHubExamList");
   if (!container) return;
@@ -3323,15 +3340,25 @@ function renderStudyHubExams(){
     state_psc: '🏛️ State PSC', upsc: '⚖️ UPSC / Central Service', fellowship: '🔬 Fellowship & Research', teaching: '📖 Teaching & Academics'
   };
 
-  container.innerHTML = exams.map(e => `
+  const statusBadges = {
+    active: '<span style="background:#E8F5E9;color:#2E7D32;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">🟢 Active Notification</span>',
+    upcoming: '<span style="background:#FFF8E1;color:#F57C00;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">⏳ Upcoming Opportunity</span>',
+    historical: '<span style="background:#EEEEEE;color:#666;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">🏛️ Historical / Archived</span>',
+    discontinued: '<span style="background:#FFEBEE;color:#C62828;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">⚪ Discontinued</span>'
+  };
+
+  const filtered = exams.filter(e => {
+    if (_studyHubExamStatusFilter !== "all" && e.status !== _studyHubExamStatusFilter) return false;
+    return true;
+  });
+
+  container.innerHTML = filtered.map(e => `
     <div class="card hov-card studyhub-exam-item" style="padding:16px;border:1px solid #EBEBEB;border-radius:12px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-          <span style="background:#E8F5E9;color:#2E7D32;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">
+          ${statusBadges[e.status] || ''}
+          <span style="background:#F0F4F8;color:#334E68;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">
             ${typeLabels[e.type] || e.type}
-          </span>
-          <span style="background:#EDE7F6;color:#512DA8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">
-            ${escapeHTML(e.level || 'National')}
           </span>
           <span style="font-size:11px;color:#777;">Authority: ${escapeHTML(e.authority)}</span>
         </div>
@@ -3349,6 +3376,9 @@ function renderStudyHubExams(){
         ${e.official_url ? `<a href="javascript:void(0)" onclick="openExternalLink('${e.official_url}')" class="btn btn-primary" style="font-size:11px;padding:6px 14px;text-decoration:none;border-radius:6px;">Official Portal ↗</a>` : ''}
         ${e.syllabus_url ? `<a href="javascript:void(0)" onclick="openExternalLink('${e.syllabus_url}')" class="btn btn-light" style="font-size:11px;padding:6px 14px;text-decoration:none;border:1px solid #00B050;color:#00B050;border-radius:6px;">Syllabus ↗</a>` : ''}
         ${e.notification_url ? `<a href="javascript:void(0)" onclick="openExternalLink('${e.notification_url}')" class="btn btn-light" style="font-size:11px;padding:6px 14px;text-decoration:none;border-radius:6px;">Notification ↗</a>` : ''}
+        <button class="btn btn-light" style="font-size:11px;padding:6px 14px;border:1px solid #1565C0;color:#1565C0;border-radius:6px;" onclick="showUnifiedSearch('${escapeHTML(e.shortName)}')">
+          📚 View Materials &amp; PYQs
+        </button>
       </div>
     </div>
   `).join("");
@@ -4326,8 +4356,9 @@ function renderExamDirectoryAdmin() {
             <div style="font-size:11px;color:#777;margin-top:3px;">Next Expected: ${escapeHTML(e.nextExpected || 'TBA')}</div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">
-            ${e.official_url ? `<a href="${e.official_url}" target="_blank" rel="noopener" class="btn btn-light" style="font-size:11px;padding:5px 10px;">Official ↗</a>` : ''}
-            ${e.syllabus_url ? `<a href="${e.syllabus_url}" target="_blank" rel="noopener" class="btn btn-primary" style="font-size:11px;padding:5px 10px;">Syllabus ↗</a>` : ''}
+            ${e.official_url ? `<a href="javascript:void(0)" onclick="openExternalLink('${e.official_url}')" class="btn btn-light" style="font-size:11px;padding:5px 10px;">Official ↗</a>` : ''}
+            ${e.syllabus_url ? `<a href="javascript:void(0)" onclick="openExternalLink('${e.syllabus_url}')" class="btn btn-primary" style="font-size:11px;padding:5px 10px;">Syllabus ↗</a>` : ''}
+            <button class="btn btn-light" style="font-size:11px;padding:5px 10px;border:1px solid #1565C0;color:#1565C0;" onclick="showUnifiedSearch('${escapeHTML(e.shortName)}')">📚 Search Resources</button>
           </div>
         </div>
         <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">
