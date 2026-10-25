@@ -3172,7 +3172,8 @@ window.addEventListener("DOMContentLoaded", async () => {
   await handleGoogleRedirectResult();
 
   if(sess){ currentUser=sess; }
-  else if (!currentUser) { setTimeout(openLogin, 1500); }
+  // Do not auto-force login popup over Home page on startup
+  // Users can browse Home & Study Hub freely; Login triggers on protected actions or header tap.
 
   await loadPYQPdfs();
 

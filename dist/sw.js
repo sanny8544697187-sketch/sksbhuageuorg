@@ -7,8 +7,8 @@
 //   • Images / CDN scripts           → Stale-while-revalidate
 // ═══════════════════════════════════════════════════════════
 
-const CACHE_NAME    = 'KRISHI-GYAN-v4.0';
-const DYNAMIC_CACHE = 'KRISHI-GYAN-v4.0-dynamic';
+const CACHE_NAME    = 'KRISHI-GYAN-v4.1';
+const DYNAMIC_CACHE = 'KRISHI-GYAN-v4.1-dynamic';
 
 // Resources pre-cached on install (app shell)
 const PRECACHE_URLS = [
