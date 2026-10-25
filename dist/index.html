@@ -1031,11 +1031,15 @@ window._fbConfigured = false;
 <div id="driveModal" class="modal hidden" onclick="if(event.target===this)closeDriveModal()">
   <div style="background:#fff;border-radius:20px;width:100%;max-width:860px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #e0e7e0;flex-shrink:0;">
-      <div>
-        <div id="driveModalTitle" style="font-weight:700;font-size:15px;color:#0F3D23;max-width:620px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-        <div style="font-size:11px;color:#777;margin-top:2px;">🔒 Preview only — your Drive files are not visible to users</div>
+      <div style="flex:1;min-width:0;margin-right:12px;">
+        <div id="driveModalTitle" style="font-weight:700;font-size:15px;color:#0F3D23;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+        <div style="font-size:11px;color:#777;margin-top:2px;">📖 PDF Reader &amp; Document Preview</div>
       </div>
-      <button onclick="closeDriveModal()" style="border:none;background:#F2F5F2;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;color:#444;flex-shrink:0;">✕</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="driveModalDownloadBtn" class="btn btn-primary" style="font-size:12px;padding:6px 14px;border-radius:8px;" onclick="downloadEbookPdf(_currentDriveModalLink, _currentDriveModalTitle)">
+          📥 Download PDF
+        </button>
+        <button onclick="closeDriveModal()" style="border:none;background:#F2F5F2;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;color:#444;flex-shrink:0;">✕</button>
     </div>
     <div style="flex:1;min-height:0;position:relative;">
       <div id="driveModalSpinner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#F9FBF9;z-index:1;">
@@ -1512,6 +1516,7 @@ window._fbConfigured = false;
       <button class="sub-tab-btn" id="stab_resources" onclick="setSubjectsTab('resources')">📁 Resources</button>
       <button class="sub-tab-btn" id="stab_planner" onclick="setSubjectsTab('planner')">🗓️ Planner</button>
       <button class="sub-tab-btn" id="stab_ebooks" onclick="setSubjectsTab('ebooks')">📖 E-Books</button>
+      <button class="sub-tab-btn" id="stab_examdir" onclick="setSubjectsTab('examdir')">🎓 Exam Directory</button>
     </div>
 
     <!-- ── SUBJECTS TAB ── -->
@@ -1676,6 +1681,27 @@ window._fbConfigured = false;
     <div id="stab_ebooks_content" style="display:none;">
       <div id="ebooksLibraryRoot"></div>
     </div>
+
+    <!-- ── EXAM DIRECTORY TAB (IN STUDY HUB) ── -->
+    <div id="stab_examdir_content" style="display:none;">
+      <div style="background:#fff;border-radius:14px;padding:18px;border:1px solid #E0EAE0;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+          <div>
+            <h3 style="margin:0 0 4px 0;font-size:16px;color:#0F3D23;font-weight:800;">🎓 Agriculture Exam &amp; Opportunity Directory</h3>
+            <div style="font-size:12px;color:#666;">Official directory of 20+ competitive agriculture exams, authorities, eligibility &amp; syllabi</div>
+          </div>
+          <button class="btn btn-primary" onclick="showExamDirectory()" style="font-size:12px;padding:7px 16px;">
+            ⛶ Pop-up Full Screen View
+          </button>
+        </div>
+        <div class="search-box" style="margin-bottom:14px;">
+          <span style="font-size:14px;color:#777;">🔍</span>
+          <input id="studyHubExamSearch" type="text" placeholder="Search by exam name, authority, or eligibility..." oninput="filterStudyHubExams(this.value)" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;width:100%;">
+        </div>
+        <div id="studyHubExamList"></div>
+      </div>
+    </div>
+
   </section>
 
   <!-- RESOURCES (merged into subjects; this redirect is a fallback) -->
@@ -1689,9 +1715,17 @@ window._fbConfigured = false;
     <h2 class="section-title">📢 Latest Notices</h2>
     <p class="section-subtitle">Stay updated with the latest announcements, exams, and news.</p>
 
-    <div class="search-box" style="max-width:400px; margin-bottom:20px;">
-      <span style="opacity:0.5;">🔍</span>
-      <input type="text" class="inp" placeholder="Search Notices..." style="border:none; padding:0; background:transparent;">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
+      <div class="search-box" style="flex:1;min-width:200px;max-width:440px;">
+        <span style="opacity:0.5;">🔍</span>
+        <input id="noticeSearchInput" type="text" class="inp" placeholder="Search notices, exams, schedules..." oninput="noticeSearchQuery=this.value;renderNotices();" style="border:none; padding:0; background:transparent;">
+      </div>
+      <div id="noticeCategoryTabs" style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-sm btn-primary" data-cat="ALL" onclick="setNoticeCategory('ALL')">All</button>
+        <button class="btn btn-sm btn-light" data-cat="EXAM" onclick="setNoticeCategory('EXAM')">🎓 Exams</button>
+        <button class="btn btn-sm btn-light" data-cat="SCHEDULE" onclick="setNoticeCategory('SCHEDULE')">🗓️ Schedules</button>
+        <button class="btn btn-sm btn-light" data-cat="NEWS" onclick="setNoticeCategory('NEWS')">📰 News</button>
+      </div>
     </div>
 
     <!-- PROMOTIONAL CAROUSEL -->
@@ -2116,10 +2150,7 @@ window._fbConfigured = false;
 
       <!-- Filters -->
       <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
-        <div style="margin-bottom:16px;display:flex;justify-content:flex-end;">
-      <button class="btn btn-primary" style="font-size:13px;padding:8px 18px;" onclick="showExamDirectory()">🎓 Browse Exam Directory</button>
-    </div>
-    <div class="search-box" style="flex:1;min-width:180px;">
+        <div class="search-box" style="flex:1;min-width:180px;">
           <span style="font-size:14px;color:#777;">🔍</span>
           <input id="qSearch" type="text" placeholder="Search doubts…" oninput="renderDoubts()" style="background:none;border:none;font-family:inherit;font-size:14px;color:#111;flex:1;">
         </div>
@@ -3236,21 +3267,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         const pb=document.getElementById("pendingBadge");
         if(pb){ pb.textContent=pending.length; pb.classList.toggle("hidden",pending.length===0); }
         const _editingSomething = !!editingUploadId || !!editingCustomQ || !!_editingPYQId;
-        if(adminTab==="examdir"){
-    el.innerHTML = renderExamDirectoryAdmin();
-    return;
-  }
-
-  if(adminTab==="harvester"){
-    if(window.AgriHarvester && typeof window.AgriHarvester.renderAdminView === "function"){
-      el.innerHTML = window.AgriHarvester.renderAdminView();
-    } else {
-      el.innerHTML = "<div style='padding:20px; text-align:center;'>Loading Harvester Dashboard...</div>";
-    }
-    return;
-  }
-
-  if(adminTab==="uploads"){
+        if(adminTab==="uploads"){
           if(!editingUploadId) renderAdmin(); // don't wipe an open "All Uploads" edit form
         } else if(adminTab==="quiz"){
           const isTypingQuizBulk = document.getElementById("bulkPasteText")?.value.trim().length > 0;
@@ -3280,7 +3297,7 @@ let activeLbTabQ="all";
 
 function setSubjectsTab(tab){
   activeSubjectsTab=tab;
-  ["subjects","resources","planner","ebooks"].forEach(t=>{
+  ["subjects","resources","planner","ebooks","examdir"].forEach(t=>{
     const btn=document.getElementById("stab_"+t);
     const content=document.getElementById("stab_"+t+"_content");
     if(btn) btn.classList.toggle("active",t===tab);
@@ -3290,6 +3307,59 @@ function setSubjectsTab(tab){
   if(tab==="subjects") renderSubjects();
   if(tab==="planner") syncPlannerToTab();
   if(tab==="ebooks") renderEbooksLibrary();
+  if(tab==="examdir") renderStudyHubExams();
+}
+
+function renderStudyHubExams(){
+  const container = document.getElementById("studyHubExamList");
+  if (!container) return;
+  const exams = window.AGRI_EXAMS_DB || [];
+  if (!exams.length) {
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:#777;">Loading Exam Directory...</div>';
+    return;
+  }
+  const typeLabels = {
+    entrance: '🎓 Entrance Exam', recruitment: '💼 Recruitment Exam', banking: '🏦 Banking & Finance',
+    state_psc: '🏛️ State PSC', upsc: '⚖️ UPSC / Central Service', fellowship: '🔬 Fellowship & Research', teaching: '📖 Teaching & Academics'
+  };
+
+  container.innerHTML = exams.map(e => `
+    <div class="card hov-card studyhub-exam-item" style="padding:16px;border:1px solid #EBEBEB;border-radius:12px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+          <span style="background:#E8F5E9;color:#2E7D32;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">
+            ${typeLabels[e.type] || e.type}
+          </span>
+          <span style="background:#EDE7F6;color:#512DA8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">
+            ${escapeHTML(e.level || 'National')}
+          </span>
+          <span style="font-size:11px;color:#777;">Authority: ${escapeHTML(e.authority)}</span>
+        </div>
+        <div style="font-size:11px;color:#0F3D23;font-weight:700;">
+          Next Expected: ${escapeHTML(e.nextExpected || 'TBA')}
+        </div>
+      </div>
+      <div style="font-weight:800;font-size:15px;color:#111;">
+        ${escapeHTML(e.name)} (${escapeHTML(e.shortName)})
+      </div>
+      <div style="font-size:12px;color:#555;">
+        <strong>Eligibility:</strong> ${escapeHTML(e.eligibility || 'See notification')}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;">
+        ${e.official_url ? `<a href="javascript:void(0)" onclick="openExternalLink('${e.official_url}')" class="btn btn-primary" style="font-size:11px;padding:6px 14px;text-decoration:none;border-radius:6px;">Official Portal ↗</a>` : ''}
+        ${e.syllabus_url ? `<a href="javascript:void(0)" onclick="openExternalLink('${e.syllabus_url}')" class="btn btn-light" style="font-size:11px;padding:6px 14px;text-decoration:none;border:1px solid #00B050;color:#00B050;border-radius:6px;">Syllabus ↗</a>` : ''}
+        ${e.notification_url ? `<a href="javascript:void(0)" onclick="openExternalLink('${e.notification_url}')" class="btn btn-light" style="font-size:11px;padding:6px 14px;text-decoration:none;border-radius:6px;">Notification ↗</a>` : ''}
+      </div>
+    </div>
+  `).join("");
+}
+
+function filterStudyHubExams(q){
+  const term = (q||'').toLowerCase().trim();
+  document.querySelectorAll('.studyhub-exam-item').forEach(el => {
+    const text = el.textContent.toLowerCase();
+    el.style.display = !term || text.includes(term) ? '' : 'none';
+  });
 }
 
 function setQuizTab(tab){
@@ -3752,8 +3822,73 @@ function gdriveSafeEmbed(url){
   return url;
 }
 
+let _currentDriveModalLink = "";
+let _currentDriveModalTitle = "";
+
+function openExternalLink(url) {
+  if (!url) return;
+  url = String(url).trim();
+  if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('mailto:') && !url.startsWith('tel:')) {
+    url = 'https://' + url;
+  }
+  try {
+    if (window.Capacitor && typeof window.Capacitor.isNativePlatform === 'function' && window.Capacitor.isNativePlatform()) {
+      if (window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+        window.Capacitor.Plugins.Browser.open({ url });
+        return;
+      }
+    }
+  } catch (_) {}
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!win || win.closed || typeof win.closed === 'undefined') {
+    window.location.href = url;
+  }
+}
+window.openExternalLink = openExternalLink;
+
+function getDirectDownloadUrl(url) {
+  if (!url) return '';
+  url = url.trim();
+  const gdMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (gdMatch && gdMatch[1]) {
+    return `https://drive.google.com/uc?export=download&id=${gdMatch[1]}`;
+  }
+  return url;
+}
+
+function downloadEbookPdf(link, title) {
+  if (!currentUser) { openLogin(); return; }
+  const isPrem = currentUser.isAdmin || isSubActive(currentUser) || isProActive(currentUser);
+  if (!isPrem) {
+    toast("⭐ E-Book downloads require a Premium subscription. Upgrade to unlock all books!", "e");
+    openPay();
+    return;
+  }
+  if (!link) {
+    toast("Download link unavailable for this title.", "e");
+    return;
+  }
+  const dlUrl = getDirectDownloadUrl(link);
+  toast(`📥 Starting download: ${title || 'E-Book'}...`);
+  try {
+    const a = document.createElement('a');
+    a.href = dlUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.download = (title ? title.replace(/[^a-zA-Z0-9_-]/g, '_') : 'ebook') + '.pdf';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => a.remove(), 1000);
+  } catch (_) {
+    openExternalLink(dlUrl);
+  }
+}
+window.downloadEbookPdf = downloadEbookPdf;
+
 function openDrivePreview(link, title){
   if(!currentUser){openLogin();return;}
+  _currentDriveModalLink = link;
+  _currentDriveModalTitle = title;
   const embedUrl=gdriveSafeEmbed(link);
   document.getElementById("driveModalTitle").textContent=title||"Preview";
   document.getElementById("driveModalSpinner").style.display="flex";
@@ -4243,9 +4378,9 @@ function showExamDirectory() {
           <div style="font-weight:700;font-size:13px;color:#111;">${escapeHTML(e.shortName)}</div>
           <div style="font-size:11px;color:#666;margin-top:3px;">Authority: ${escapeHTML(e.authority)} &bull; Next: ${escapeHTML(e.nextExpected||'TBA')}</div>
           <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">
-            ${e.official_url ? `<a href="${e.official_url}" target="_blank" rel="noopener" style="font-size:11px;background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:4px;text-decoration:none;font-weight:600;">Official Site ↗</a>` : ''}
-            ${e.syllabus_url ? `<a href="${e.syllabus_url}" target="_blank" rel="noopener" style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:3px 10px;border-radius:4px;text-decoration:none;font-weight:600;">Syllabus ↗</a>` : ''}
-            ${e.notification_url ? `<a href="${e.notification_url}" target="_blank" rel="noopener" style="font-size:11px;background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:4px;text-decoration:none;font-weight:600;">Notification ↗</a>` : ''}
+            ${e.official_url ? `<a href="javascript:void(0)" onclick="openExternalLink(\'${e.official_url}\')" style="font-size:11px;background:#E8F5E9;color:#2E7D32;padding:3px 10px;border-radius:4px;text-decoration:none;font-weight:600;">Official Site ↗</a>` : ''}
+            ${e.syllabus_url ? `<a href="javascript:void(0)" onclick="openExternalLink(\'${e.syllabus_url}\')" style="font-size:11px;background:#E3F2FD;color:#1565C0;padding:3px 10px;border-radius:4px;text-decoration:none;font-weight:600;">Syllabus ↗</a>` : ''}
+            ${e.notification_url ? `<a href="javascript:void(0)" onclick="openExternalLink(\'${e.notification_url}\')" style="font-size:11px;background:#FFF8E1;color:#F57C00;padding:3px 10px;border-radius:4px;text-decoration:none;font-weight:600;">Notification ↗</a>` : ''}
           </div>
         </div>
       `).join('')}
@@ -5186,6 +5321,18 @@ async function renderAdmin(){
       </div>
     `;
     if (typeof loadAdminDashboard === 'function') loadAdminDashboard();
+  } else if(adminTab==="harvester"){
+    if(window.AgriHarvester && typeof window.AgriHarvester.renderAdminView === "function"){
+      el.innerHTML = window.AgriHarvester.renderAdminView();
+    } else {
+      el.innerHTML = "<div style='padding:20px; text-align:center;'>Loading Harvester Dashboard...</div>";
+    }
+  } else if(adminTab==="examdir"){
+    if(typeof renderExamDirectoryAdmin === "function") {
+      el.innerHTML = renderExamDirectoryAdmin();
+    } else {
+      el.innerHTML = "<div style='padding:20px; text-align:center;'>Loading Exam Directory...</div>";
+    }
   } else if(adminTab==="settings"){
 
     el.innerHTML=`
@@ -6342,7 +6489,7 @@ function renderPYQPdfLibrary(){
     "OTHER": "🌾"
   };
 
-  const isPro = isProActive(currentUser);
+  const isPremUser = currentUser && (currentUser.isAdmin || isSubActive(currentUser) || isProActive(currentUser));
   let bannerHtml = '';
   if(!isPro) {
     bannerHtml = `
@@ -8402,8 +8549,8 @@ function execUnifiedSearch(query) {
           <div style="font-size:11px;color:#666;margin-top:2px;">Authority: ${escapeHTML(e.authority)} &bull; ${escapeHTML(e.eligibility || '')}</div>
         </div>
         <div style="display:flex;gap:6px;">
-          ${e.official_url ? `<a href="${e.official_url}" target="_blank" rel="noopener" class="btn btn-sm btn-primary" style="font-size:11px;text-decoration:none;padding:5px 10px;">Official Site ↗</a>` : ''}
-          ${e.syllabus_url ? `<a href="${e.syllabus_url}" target="_blank" rel="noopener" class="btn btn-sm btn-light" style="font-size:11px;text-decoration:none;padding:5px 10px;">Syllabus ↗</a>` : ''}
+          ${e.official_url ? `<a href="javascript:void(0)" onclick="openExternalLink(\'${e.official_url}\')" class="btn btn-sm btn-primary" style="font-size:11px;text-decoration:none;padding:5px 10px;">Official Site ↗</a>` : ''}
+          ${e.syllabus_url ? `<a href="javascript:void(0)" onclick="openExternalLink(\'${e.syllabus_url}\')" class="btn btn-sm btn-light" style="font-size:11px;text-decoration:none;padding:5px 10px;">Syllabus ↗</a>` : ''}
         </div>
       </div>
     `).join("");
@@ -8461,7 +8608,7 @@ function execUnifiedSearch(query) {
           <div style="font-size:11px;color:#666;margin-top:2px;">${escapeHTML(u.source || '')} &bull; ${escapeHTML(u.examTag || u.exam || '')}</div>
         </div>
         <div>
-          ${u.link ? `<a href="${u.link}" target="_blank" rel="noopener" class="btn btn-sm btn-light" style="font-size:11px;text-decoration:none;padding:5px 10px;">Notice Link ↗</a>` : ''}
+          ${u.link ? `<a href="javascript:void(0)" onclick="openExternalLink(\'${u.link}\')" class="btn btn-sm btn-light" style="font-size:11px;text-decoration:none;padding:5px 10px;">Notice Link ↗</a>` : ''}
         </div>
       </div>
     `).join("");
@@ -9713,25 +9860,25 @@ function renderEbooksLibrary(){
         Direct access to official university course notes, degree syllabi, video lectures, and open-access publications without copyright restrictions.
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-        <a href="https://ecourses.icar.gov.in/" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
-          <div style="font-weight:700;font-size:13px;color:#0F3D23;">🌾 ICAR e-Courses</div>
-          <div style="font-size:11px;color:#666;margin:2px 0 6px;">BSc (Agri) 14 disciplines complete course notes</div>
-          <span style="font-size:10px;color:#00B050;font-weight:700;">Visit Portal ↗</span>
+        <a href="javascript:void(0)" onclick="openExternalLink('https://krishikosh.egranth.ac.in/')" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
+          <div style="font-weight:700;font-size:13px;color:#0F3D23;">🌾 Krishikosh (ICAR Repository)</div>
+          <div style="font-size:11px;color:#666;margin:2px 0 6px;">200,000+ agricultural theses, books &amp; research</div>
+          <span style="font-size:10px;color:#00B050;font-weight:700;">Open Portal ↗</span>
         </a>
-        <a href="https://ekrishishiksha.icar.gov.in/" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
-          <div style="font-weight:700;font-size:13px;color:#0F3D23;">📖 e-Krishi Shiksha</div>
-          <div style="font-size:11px;color:#666;margin:2px 0 6px;">ICAR national e-learning portal for agriculture</div>
-          <span style="font-size:10px;color:#00B050;font-weight:700;">Visit Portal ↗</span>
+        <a href="javascript:void(0)" onclick="openExternalLink('https://ebook.icar.org.in/')" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
+          <div style="font-weight:700;font-size:13px;color:#0F3D23;">📖 ICAR e-Books Platform</div>
+          <div style="font-size:11px;color:#666;margin:2px 0 6px;">Official digital textbooks, ICAR monographs &amp; syllabi</div>
+          <span style="font-size:10px;color:#00B050;font-weight:700;">Open Portal ↗</span>
         </a>
-        <a href="https://nptel.ac.in/courses/agriculture" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
-          <div style="font-weight:700;font-size:13px;color:#0F3D23;">🎥 NPTEL Agriculture</div>
-          <div style="font-size:11px;color:#666;margin:2px 0 6px;">IIT / ICAR video lecture courses &amp; certifications</div>
-          <span style="font-size:10px;color:#00B050;font-weight:700;">Visit Portal ↗</span>
-        </a>
-        <a href="https://agritech.tnau.ac.in/" target="_blank" rel="noopener" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
+        <a href="javascript:void(0)" onclick="openExternalLink('https://agritech.tnau.ac.in/')" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
           <div style="font-weight:700;font-size:13px;color:#0F3D23;">🌱 TNAU Agritech Portal</div>
-          <div style="font-size:11px;color:#666;margin:2px 0 6px;">Crop production, protection &amp; farm technology bank</div>
-          <span style="font-size:10px;color:#00B050;font-weight:700;">Visit Portal ↗</span>
+          <div style="font-size:11px;color:#666;margin:2px 0 6px;">Comprehensive crop production &amp; farm technology</div>
+          <span style="font-size:10px;color:#00B050;font-weight:700;">Open Portal ↗</span>
+        </a>
+        <a href="javascript:void(0)" onclick="openExternalLink('https://www.agmoocs.in/')" style="background:#fff;border:1px solid #D0EBD0;border-radius:8px;padding:10px;text-decoration:none;display:block;">
+          <div style="font-weight:700;font-size:13px;color:#0F3D23;">🎥 AgMOOCs (IITK / COL)</div>
+          <div style="font-size:11px;color:#666;margin:2px 0 6px;">Free online agricultural courses &amp; certifications</div>
+          <span style="font-size:10px;color:#00B050;font-weight:700;">Open Portal ↗</span>
         </a>
       </div>
     </div>
@@ -9778,10 +9925,20 @@ function renderEbooksGrid(){
       <div style="font-weight:700;font-size:13px;line-height:1.35;margin-bottom:4px;flex:1;">${escapeHTML(b.title)}</div>
       <div style="font-size:11px;color:#777;margin-bottom:4px;line-height:1.4;">${escapeHTML(b.author)}</div>
       ${b.subject?`<span style="align-self:flex-start;background:#E8F5E9;color:#0F3D23;font-size:9px;padding:2px 8px;border-radius:50px;font-weight:600;margin-bottom:8px;">${escapeHTML(b.subject)}</span>`:""}
-      <button class="btn ${isPro ? 'btn-primary' : 'btn-gold'}" style="font-size:12px;padding:7px;width:100%;margin-top:auto;"
-        onclick="${isPro ? `openDrivePreview('${b.link.replace(/'/g,"\\'")}','${b.title.replace(/'/g,"\\'")}')` : `toast('E-Books are available on Monthly and Yearly plans.','e'); openPay();`}">
-        ${isPro ? "📥 View / Download" : "🔒 Pro Only"}
-      </button>
+      <div style="display:flex;gap:6px;margin-top:auto;">
+        ${isPremUser ? `
+          <button class="btn btn-light" style="flex:1;font-size:11px;padding:7px;border:1px solid #00B050;color:#00B050;" onclick="openDrivePreview('${b.link.replace(/'/g,"\\\'")}','${b.title.replace(/'/g,"\\\'")}')">
+            👁 Preview
+          </button>
+          <button class="btn btn-primary" style="flex:1;font-size:11px;padding:7px;" onclick="downloadEbookPdf('${b.link.replace(/'/g,"\\\'")}','${b.title.replace(/'/g,"\\\'")}')">
+            📥 Download
+          </button>
+        ` : `
+          <button class="btn btn-gold" style="width:100%;font-size:11px;padding:7px;" onclick="toast('⭐ E-Books require a Premium subscription. Upgrade to read & download!','e'); openPay();">
+            🔒 Premium Only
+          </button>
+        `}
+      </div>
     </div>`).join("");
 }
 
@@ -9896,6 +10053,111 @@ async function fetchLiveExamNotices() {
     console.warn("fetchLiveExamNotices:", e);
   }
 }
+
+let noticeCategoryFilter = "ALL";
+let noticeSearchQuery = "";
+
+function setNoticeCategory(cat) {
+  noticeCategoryFilter = cat;
+  const btns = document.querySelectorAll("#noticeCategoryTabs button");
+  btns.forEach(b => {
+    b.className = b.dataset.cat === cat ? "btn btn-sm btn-primary" : "btn btn-sm btn-light";
+  });
+  renderNotices();
+}
+
+function renderNotices() {
+  const container = document.getElementById("noticeList");
+  if (!container) return;
+
+  if (typeof fetchLiveExamNotices === "function") {
+    fetchLiveExamNotices();
+  }
+
+  let items = Array.isArray(noticesList) ? [...noticesList] : [];
+  if (window.AgriHarvester && typeof window.AgriHarvester.getHarvestedItems === "function") {
+    const harv = window.AgriHarvester.getHarvestedItems().filter(i => i.status === 'published');
+    const existingKeys = new Set(items.map(n => n.id || n.link || n.title));
+    harv.forEach(h => {
+      const key = h.id || h.link || h.title;
+      if (!existingKeys.has(key)) {
+        existingKeys.add(key);
+        items.push({
+          id: h.id,
+          title: h.title,
+          category: h.category || "EXAM",
+          examTag: h.exam || "GENERAL",
+          desc: h.desc || "",
+          date: h.pubDate ? new Date(h.pubDate).toLocaleDateString('en-IN') : "Recent",
+          link: h.link,
+          source: h.source || "Official Alert",
+          timestamp: h.timestamp || Date.now()
+        });
+      }
+    });
+  }
+
+  items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+  const cat = (noticeCategoryFilter || "ALL").toUpperCase();
+  const q = (noticeSearchQuery || "").toLowerCase();
+
+  const filtered = items.filter(n => {
+    if (cat !== "ALL" && (n.category || "").toUpperCase() !== cat) return false;
+    if (q) {
+      const text = ((n.title || "") + " " + (n.desc || "") + " " + (n.category || "") + " " + (n.examTag || "")).toLowerCase();
+      if (!text.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (!filtered.length) {
+    container.innerHTML = `
+      <div class="card" style="padding:40px 20px;text-align:center;color:#888;">
+        <div style="font-size:36px;margin-bottom:8px;">📢</div>
+        <div style="font-weight:700;font-size:14px;color:#333;margin-bottom:4px;">No notices match your filter</div>
+        <div style="font-size:12px;">Try selecting 'All' or clearing your search.</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(n => {
+    const isExam = (n.category || "").toUpperCase() === "EXAM";
+    const badgeColor = isExam ? "#2E7D32" : ((n.category || "").toUpperCase() === "SCHEDULE" ? "#E65100" : "#1565C0");
+    const badgeBg = isExam ? "#E8F5E9" : ((n.category || "").toUpperCase() === "SCHEDULE" ? "#FFF3E0" : "#E3F2FD");
+
+    return `
+      <div class="card hov-card" style="padding:16px;margin-bottom:12px;border:1px solid #EAEAEA;border-radius:12px;display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span style="background:${badgeBg};color:${badgeColor};font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;">
+              ${escapeHTML(n.category || "NOTICE")}
+            </span>
+            ${n.examTag ? `<span style="background:#F0F4F8;color:#334E68;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">${escapeHTML(n.examTag)}</span>` : ''}
+            ${n.source ? `<span style="font-size:11px;color:#888;">&bull; ${escapeHTML(n.source)}</span>` : ''}
+          </div>
+          <span style="font-size:11px;color:#888;font-weight:500;">📅 ${escapeHTML(n.date || "Recent")}</span>
+        </div>
+
+        <div style="font-weight:800;font-size:15px;color:#0F3D23;line-height:1.4;">
+          ${escapeHTML(n.title)}
+        </div>
+
+        ${n.desc ? `<div style="font-size:13px;color:#555;line-height:1.5;">${escapeHTML(n.desc)}</div>` : ''}
+
+        ${n.link ? `
+          <div style="margin-top:4px;">
+            <a href="javascript:void(0)" onclick="openExternalLink('${escapeHTML(n.link)}')" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:6px 14px;text-decoration:none;border-radius:8px;">
+              <span>Visit Official Notice / Link</span> <span>↗</span>
+            </a>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join("");
+}
+window.renderNotices = renderNotices;
 
 function renderAdminNotices() {
   const el = document.getElementById('adminNoticeList');

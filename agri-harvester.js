@@ -356,24 +356,24 @@ window.AgriHarvester = (function() {
           <summary style="font-weight:700; color:#0F3D23; cursor:pointer;">🌐 Official Open-Access Repositories &amp; Portals</summary>
           <div style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
             <div style="background:#fff; border:1px solid #D0EBD0; border-radius:8px; padding:10px;">
-              <div style="font-weight:700; font-size:13px; color:#0F3D23;">🌾 ICAR e-Courses Portal</div>
-              <div style="font-size:11px; color:#666; margin:3px 0 6px;">BSc Agriculture degree notes (14 disciplines)</div>
-              <a href="https://ecourses.icar.gov.in/" target="_blank" rel="noopener" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
+              <div style="font-weight:700; font-size:13px; color:#0F3D23;">🌾 Krishikosh (ICAR Repository)</div>
+              <div style="font-size:11px; color:#666; margin:3px 0 6px;">200,000+ agricultural theses, books &amp; reports</div>
+              <a href="javascript:void(0)" onclick="openExternalLink('https://krishikosh.egranth.ac.in/')" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
             </div>
             <div style="background:#fff; border:1px solid #D0EBD0; border-radius:8px; padding:10px;">
-              <div style="font-weight:700; font-size:13px; color:#0F3D23;">📖 e-Krishi Shiksha (ICAR)</div>
-              <div style="font-size:11px; color:#666; margin:3px 0 6px;">National agriculture e-learning resources</div>
-              <a href="https://ekrishishiksha.icar.gov.in/" target="_blank" rel="noopener" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
-            </div>
-            <div style="background:#fff; border:1px solid #D0EBD0; border-radius:8px; padding:10px;">
-              <div style="font-weight:700; font-size:13px; color:#0F3D23;">🎥 NPTEL Agriculture</div>
-              <div style="font-size:11px; color:#666; margin:3px 0 6px;">Video lecture series &amp; certifications</div>
-              <a href="https://nptel.ac.in/courses/agriculture" target="_blank" rel="noopener" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
+              <div style="font-weight:700; font-size:13px; color:#0F3D23;">📖 ICAR e-Books Platform</div>
+              <div style="font-size:11px; color:#666; margin:3px 0 6px;">Official ICAR digital books &amp; publications</div>
+              <a href="javascript:void(0)" onclick="openExternalLink('https://ebook.icar.org.in/')" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
             </div>
             <div style="background:#fff; border:1px solid #D0EBD0; border-radius:8px; padding:10px;">
               <div style="font-weight:700; font-size:13px; color:#0F3D23;">🌱 TNAU Agritech Portal</div>
-              <div style="font-size:11px; color:#666; margin:3px 0 6px;">Comprehensive crop production &amp; tech bank</div>
-              <a href="https://agritech.tnau.ac.in/" target="_blank" rel="noopener" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
+              <div style="font-size:11px; color:#666; margin:3px 0 6px;">Crop production, protection &amp; farm technology</div>
+              <a href="javascript:void(0)" onclick="openExternalLink('https://agritech.tnau.ac.in/')" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
+            </div>
+            <div style="background:#fff; border:1px solid #D0EBD0; border-radius:8px; padding:10px;">
+              <div style="font-weight:700; font-size:13px; color:#0F3D23;">🎥 AgMOOCs (IITK / COL)</div>
+              <div style="font-size:11px; color:#666; margin:3px 0 6px;">Free online courses for agriculture students</div>
+              <a href="javascript:void(0)" onclick="openExternalLink('https://www.agmoocs.in/')" style="font-size:11px; color:#00B050; font-weight:700; text-decoration:none;">Open Portal ↗</a>
             </div>
           </div>
         </details>
@@ -438,7 +438,7 @@ window.AgriHarvester = (function() {
             ${item.linkStatus === 'dead' ? '<span style="background:#FFEBEE; color:#C62828; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px;">🔴 Dead / Broken</span>' : ''}
           </div>
           <div style="font-weight:700; font-size:13px; color:#111; margin-bottom:4px;">
-            <a href="${item.link}" target="_blank" rel="noopener" style="color:inherit; text-decoration:none;">
+            <a href="javascript:void(0)" onclick="if(typeof openExternalLink==='function'){openExternalLink('${item.link}')}else{window.open('${item.link}','_blank')}" style="color:inherit; text-decoration:none;">
               ${item.title} ↗
             </a>
           </div>
