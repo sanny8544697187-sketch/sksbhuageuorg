@@ -1041,6 +1041,7 @@ window._fbConfigured = false;
           📥 Download PDF
         </button>
         <button onclick="closeDriveModal()" style="border:none;background:#F2F5F2;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer;color:#444;flex-shrink:0;">✕</button>
+      </div>
     </div>
     <div style="flex:1;min-height:0;position:relative;">
       <div id="driveModalSpinner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#F9FBF9;z-index:1;">
@@ -3150,101 +3151,153 @@ function subCount(name){ return getApproved().filter(n=>n.subject===name).length
 // ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
+// Helper: wrap a promise with a timeout so Firebase never hangs startup
+function _withTimeout(promise, ms) {
+  const timeout = new Promise(resolve => setTimeout(() => resolve(null), ms));
+  return Promise.race([promise, timeout]);
+}
+
 window.addEventListener("DOMContentLoaded", async () => {
-  const [n,p,u,sess,saved_ap,theme,q,pyq,subjData,ntc,ra] = await Promise.all([
-    sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),
-    sGet("bhu:session"),sGet("bhu:adminpass"),sGet("bhu:theme"),sGet("bhu:questions"),sGet("bhu:pyqdata"),sGet("bhu:subjects"),sGet("bhu:notices"),sGet("bhu:repapps")
-  ]);
-  if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q; if(pyq) { pyqData=pyq; updateQuizCount(); } // update counter after PYQ loads 
-  if(ra) repApps=ra;
-  if(ntc && ntc.length) { noticesList=ntc; } else {
-    noticesList = [
-      { id: "mock1", title: "ICAR AIEEA (UG) 2026 Notification Released", category: "EXAM", desc: "The National Testing Agency (NTA) has released the official notification for ICAR AIEEA (UG). Registration begins next week.", link: "https://icar.nta.nic.in", date: fmtDate(), timestamp: Date.now() },
-      { id: "mock2", title: "IBPS AFO Mains 2026 Interview Schedule", category: "SCHEDULE", desc: "Interview dates and center allocations have been announced. Check your registered email for details.", link: "https://ibps.in", date: fmtDate(), timestamp: Date.now()-86400000 },
-      { id: "mock3", title: "Agriculture Dept Job Vacancies (UPPSC)", category: "NEWS", desc: "UPPSC has announced 250+ vacancies for the post of Senior Agriculture Development Officer. Apply before 30th of this month.", link: "https://uppsc.up.nic.in", date: fmtDate(), timestamp: Date.now()-172800000 }
-    ];
-  }
-  if(subjData && subjData.length) activeSubjects=subjData;
-  if(saved_ap) adminPass=saved_ap;
-  if(theme==="dark"){ dark=true; document.body.classList.add("dark"); }
-  
-  // Attempt to process Google redirect result if returning from mobile sign-in flow
-  await handleGoogleRedirectResult();
+  // ── PHASE 0: Hard fail-safe — always hide splash after 2.5s ──
+  const _splashFailsafe = setTimeout(() => {
+    const sp = document.getElementById("splash");
+    if (sp && sp.style.display !== "none") {
+      sp.style.display = "none";
+      try { renderAll(); initAndroidDashboard(); } catch(e) {}
+    }
+  }, 2500);
 
-  if(sess){ currentUser=sess; }
-  // Do not auto-force login popup over Home page on startup
-  // Users can browse Home & Study Hub freely; Login triggers on protected actions or header tap.
+  try {
+    // ── PHASE 1: Instant local reads (no Firebase, no network) ──
+    const sess     = localStorage.getItem("bhu:session")   ? JSON.parse(localStorage.getItem("bhu:session"))   : null;
+    const saved_ap = localStorage.getItem("bhu:adminpass") ? JSON.parse(localStorage.getItem("bhu:adminpass")) : null;
+    const theme    = localStorage.getItem("bhu:theme")     ? JSON.parse(localStorage.getItem("bhu:theme"))     : null;
+    if(sess){ currentUser = sess; }
+    if(saved_ap) adminPass = saved_ap;
+    if(theme === "dark"){ dark = true; document.body.classList.add("dark"); }
 
-  await loadPYQPdfs();
+    // ── PHASE 2: Hide splash & render home immediately with cached data ──
+    rebuildQuizBank();
+    updateQuizCount();
+    clearTimeout(_splashFailsafe);
+    const splashEl = document.getElementById("splash");
+    if(splashEl) splashEl.style.display = "none";
 
-  const cqb = await loadCustomQuizBank();
-  if(cqb){ customQuizBank=cqb; }
+    initAndroidDashboard();
+    rebuildSubjectDropdowns();
+    rebuildInstitutionList();
 
-  // Load admin-uploaded ebooks from Firebase (must run AFTER Firebase init)
-  const _startupEbooks = await sGet(`bhu:adminebooks`);
-  if(_startupEbooks && _startupEbooks.length) adminEbooks = _startupEbooks;
-
-  // Check for app updates via SW
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            let updateBanner = document.getElementById('updateBanner');
-            if(!updateBanner) {
-              updateBanner = document.createElement('div');
-              updateBanner.id = 'updateBanner';
-              updateBanner.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1565C0;color:white;padding:12px 24px;border-radius:50px;box-shadow:0 10px 24px rgba(0,0,0,0.3);z-index:9999;display:flex;align-items:center;gap:12px;font-weight:700;font-size:14px;cursor:pointer;";
-              updateBanner.innerHTML = "✨ New Update Available! <span style='background:white;color:#1565C0;padding:4px 10px;border-radius:20px;font-size:12px;'>RELOAD</span>";
-              updateBanner.onclick = () => {
-                newWorker.postMessage({ type: 'SKIP_WAITING' });
-                window.location.reload();
-              };
-              document.body.appendChild(updateBanner);
-            }
-          }
-        });
-      });
+    const qql = document.getElementById("quickQList");
+    if(qql) QUICK_QS.forEach(q => {
+      qql.innerHTML += `<button class="btn" onclick="setAiInput('${escapeHTML(q)}')" style="display:block;width:100%;text-align:left;background:#F8FBF8;border:1px solid #E0EAE0;border-radius:9px;padding:7px 10px;font-size:12px;color:#333;cursor:pointer;font-family:inherit;margin-bottom:5px;font-weight:500;">💬 ${escapeHTML(q)}</button>`;
     });
+    const cf = document.getElementById("catFilters");
+    if(cf) CATS.forEach(c => {
+      cf.innerHTML += `<button class="btn hchip ${c==="All"?"btn-primary":"btn-light"}" onclick="setCatFilter('${c}')" id="cat_${c}" style="white-space:nowrap;padding:7px 14px;font-size:12px;">${c}</button>`;
+    });
+    const tf = document.getElementById("typeFilters");
+    if(tf) RES_TYPES.forEach(t => {
+      tf.innerHTML += `<button class="btn hchip ${t==="All"?"btn-primary":"btn-light"}" onclick="setResType('${t}')" id="rt_${t}" style="white-space:nowrap;padding:5px 12px;font-size:12px;">${t}</button>`;
+    });
+
+    renderAll();
+    renderQuizStart();
+    initAndroidDashboard();
+    if(typeof refreshEngUI === "function") { refreshEngUI(); renderExamCountdown && renderExamCountdown(); renderReferralCard && renderReferralCard(); }
+    renderChat();
+    renderDoubts();
+
+    // ── PHASE 3: Load Firebase data in background (non-blocking) ──
+    (async () => {
+      try {
+        const [n,p,u,q,pyq,subjData,ntc,ra] = await Promise.all([
+          _withTimeout(sGet("bhu:notes"), 5000),
+          _withTimeout(sGet("bhu:pending"), 5000),
+          _withTimeout(sGet("bhu:users"), 5000),
+          _withTimeout(sGet("bhu:questions"), 5000),
+          _withTimeout(sGet("bhu:pyqdata"), 5000),
+          _withTimeout(sGet("bhu:subjects"), 5000),
+          _withTimeout(sGet("bhu:notices"), 5000),
+          _withTimeout(sGet("bhu:repapps"), 5000)
+        ]);
+        if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q;
+        if(pyq){ pyqData=pyq; updateQuizCount(); }
+        if(ra) repApps=ra;
+        if(ntc && ntc.length) { noticesList=ntc; } else {
+          noticesList = [
+            { id:"mock1", title:"ICAR AIEEA (UG) 2026 Notification Released", category:"EXAM", desc:"The National Testing Agency (NTA) has released the official notification for ICAR AIEEA (UG). Registration begins next week.", link:"https://icar.nta.nic.in", date:fmtDate(), timestamp:Date.now() },
+            { id:"mock2", title:"IBPS AFO Mains 2026 Interview Schedule", category:"SCHEDULE", desc:"Interview dates and center allocations have been announced. Check your registered email for details.", link:"https://ibps.in", date:fmtDate(), timestamp:Date.now()-86400000 },
+            { id:"mock3", title:"Agriculture Dept Job Vacancies (UPPSC)", category:"NEWS", desc:"UPPSC has announced 250+ vacancies for the post of Senior Agriculture Development Officer. Apply before 30th of this month.", link:"https://uppsc.up.nic.in", date:fmtDate(), timestamp:Date.now()-172800000 }
+          ];
+        }
+        if(subjData && subjData.length) activeSubjects=subjData;
+        // Re-render with fresh Firebase data
+        renderAll(); initAndroidDashboard();
+      } catch(e) { console.warn("[KG] Background Firebase load error:", e); }
+
+      try { await handleGoogleRedirectResult(); } catch(e) {}
+      try {
+        const _sess2 = await _withTimeout(sGet("bhu:session"), 3000);
+        if(_sess2 && !currentUser){ currentUser=_sess2; renderHeader(); }
+      } catch(e) {}
+
+      try { await loadPYQPdfs(); } catch(e) {}
+
+      try {
+        const cqb = await loadCustomQuizBank();
+        if(cqb){ customQuizBank=cqb; rebuildQuizBank(); updateQuizCount(); renderQuizStart(); }
+      } catch(e) {}
+
+      try {
+        const _se = await _withTimeout(sGet("bhu:adminebooks"), 3000);
+        if(_se && _se.length){ adminEbooks=_se; renderHome(); }
+      } catch(e) {}
+
+      try {
+        const mv = await _withTimeout(sGet("bhu:mcqvotes"), 3000);
+        if(mv) mcqVotes=mv;
+      } catch(e) {}
+
+      try {
+        const offer = await _withTimeout(sGet("bhu:offer"), 3000);
+        const ob = document.getElementById("adminOfferBanner");
+        if(offer && ob){ ob.textContent=offer; ob.style.display="block"; }
+      } catch(e) {}
+
+      // Service Worker registration
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                let updateBanner = document.getElementById('updateBanner');
+                if(!updateBanner) {
+                  updateBanner = document.createElement('div');
+                  updateBanner.id = 'updateBanner';
+                  updateBanner.style.cssText = "position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1565C0;color:white;padding:12px 24px;border-radius:50px;box-shadow:0 10px 24px rgba(0,0,0,0.3);z-index:9999;display:flex;align-items:center;gap:12px;font-weight:700;font-size:14px;cursor:pointer;";
+                  updateBanner.innerHTML = "✨ New Update Available! <span style='background:white;color:#1565C0;padding:4px 10px;border-radius:20px;font-size:12px;'>RELOAD</span>";
+                  updateBanner.onclick = () => { newWorker.postMessage({ type: 'SKIP_WAITING' }); window.location.reload(); };
+                  document.body.appendChild(updateBanner);
+                }
+              }
+            });
+          });
+        }).catch(()=>{});
+      }
+    })();
+
+  } catch(e) {
+    // Final safety net — always show home if something crashes
+    console.error("[KG] Init error:", e);
+    clearTimeout(_splashFailsafe);
+    const sp = document.getElementById("splash");
+    if(sp) sp.style.display = "none";
+    try { renderAll(); } catch(_){}
   }
-  rebuildQuizBank();
-  updateQuizCount(); // update counter after Firebase quiz bank loads
 
-  const mv = await sGet("bhu:mcqvotes");
-  if(mv) mcqVotes=mv;
 
-  // Admin offer display
-  const offer = await sGet("bhu:offer");
-  const ob = document.getElementById("adminOfferBanner");
-  if(offer && ob){ ob.textContent=offer; ob.style.display="block"; }
-
-  document.getElementById("splash").style.display="none";
-  initAndroidDashboard();
-  rebuildSubjectDropdowns();
-  rebuildInstitutionList();
-
-  const qql=document.getElementById("quickQList");
-  if(qql) QUICK_QS.forEach(q=>{
-    qql.innerHTML+=`<button class="btn" onclick="setAiInput('${escapeHTML(q)}')" style="display:block;width:100%;text-align:left;background:#F8FBF8;border:1px solid #E0EAE0;border-radius:9px;padding:7px 10px;font-size:12px;color:#333;cursor:pointer;font-family:inherit;margin-bottom:5px;font-weight:500;">💬 ${escapeHTML(q)}</button>`;
-  });
-
-  const cf=document.getElementById("catFilters");
-  if(cf) CATS.forEach(c=>{
-    cf.innerHTML+=`<button class="btn hchip ${c==="All"?"btn-primary":"btn-light"}" onclick="setCatFilter('${c}')" id="cat_${c}" style="white-space:nowrap;padding:7px 14px;font-size:12px;">${c}</button>`;
-  });
-
-  const tf=document.getElementById("typeFilters");
-  if(tf) RES_TYPES.forEach(t=>{
-    tf.innerHTML+=`<button class="btn hchip ${t==="All"?"btn-primary":"btn-light"}" onclick="setResType('${t}')" id="rt_${t}" style="white-space:nowrap;padding:5px 12px;font-size:12px;">${t}</button>`;
-  });
-
-  renderAll();
-  renderQuizStart(); // re-render after customQuizBank is fully loaded
-  initAndroidDashboard();
-  if(typeof refreshEngUI === "function") { refreshEngUI(); renderExamCountdown && renderExamCountdown(); renderReferralCard && renderReferralCard(); }
-  renderChat();
-  renderDoubts();
+  // ── Section redirect observers ──
   document.querySelectorAll(".section[data-redirect]").forEach(sec=>{
     const [targetSection, targetTab]=sec.dataset.redirect.split(":");
     const observer=new MutationObserver(()=>{
