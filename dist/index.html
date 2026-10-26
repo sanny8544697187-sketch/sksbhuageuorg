@@ -9807,6 +9807,7 @@ function renderEbooksGrid(){
     return;
   }
   emptyEl.style.display = "none";
+  const isPremUser = currentUser && (currentUser.isAdmin || isSubActive(currentUser) || isProActive(currentUser));
   const isPro = isProActive(currentUser);
   grid.innerHTML = filtered.map(b => `
     <div class="card hov-card" style="padding:12px;display:flex;flex-direction:column;">
