@@ -3172,6 +3172,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     const sess     = localStorage.getItem("bhu:session")   ? JSON.parse(localStorage.getItem("bhu:session"))   : null;
     const saved_ap = localStorage.getItem("bhu:adminpass") ? JSON.parse(localStorage.getItem("bhu:adminpass")) : null;
     const theme    = localStorage.getItem("bhu:theme")     ? JSON.parse(localStorage.getItem("bhu:theme"))     : null;
+    const cached_eb = localStorage.getItem("bhu:adminebooks") ? JSON.parse(localStorage.getItem("bhu:adminebooks")) : (localStorage.getItem("bhu:adminebooks__backup") ? JSON.parse(localStorage.getItem("bhu:adminebooks__backup")) : null);
+    if(cached_eb && cached_eb.length){ adminEbooks = cached_eb; }
     if(sess){ currentUser = sess; }
     if(saved_ap) adminPass = saved_ap;
     if(theme === "dark"){ dark = true; document.body.classList.add("dark"); }
@@ -3210,7 +3212,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     // ── PHASE 3: Load Firebase data in background (non-blocking) ──
     (async () => {
       try {
-        const [n,p,u,q,pyq,subjData,ntc,ra] = await Promise.all([
+        const [n,p,u,q,pyq,subjData,ntc,ra,eb] = await Promise.all([
           _withTimeout(sGet("bhu:notes"), 5000),
           _withTimeout(sGet("bhu:pending"), 5000),
           _withTimeout(sGet("bhu:users"), 5000),
@@ -3218,11 +3220,13 @@ window.addEventListener("DOMContentLoaded", async () => {
           _withTimeout(sGet("bhu:pyqdata"), 5000),
           _withTimeout(sGet("bhu:subjects"), 5000),
           _withTimeout(sGet("bhu:notices"), 5000),
-          _withTimeout(sGet("bhu:repapps"), 5000)
+          _withTimeout(sGet("bhu:repapps"), 5000),
+          _withTimeout(sGet("bhu:adminebooks"), 5000)
         ]);
         if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q;
         if(pyq){ pyqData=pyq; updateQuizCount(); }
         if(ra) repApps=ra;
+        if(eb && eb.length){ adminEbooks=eb; try{ localStorage.setItem("bhu:adminebooks", JSON.stringify(eb)); }catch(_){} renderHome(); if(typeof renderEbooksLibrary==="function") renderEbooksLibrary(); }
         if(ntc && ntc.length) { noticesList=ntc; } else {
           noticesList = [
             { id:"mock1", title:"ICAR AIEEA (UG) 2026 Notification Released", category:"EXAM", desc:"The National Testing Agency (NTA) has released the official notification for ICAR AIEEA (UG). Registration begins next week.", link:"https://icar.nta.nic.in", date:fmtDate(), timestamp:Date.now() },
