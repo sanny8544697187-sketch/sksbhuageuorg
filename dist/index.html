@@ -228,7 +228,7 @@
     .section.active{display:block;}
 
     /* ── SPLASH ── */
-    #splash{position:fixed;inset:0;background:#F2F5F2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:99999;font-family:inherit;}
+    #splash{position:fixed;inset:0;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:99999;font-family:inherit;}
     .splash-bar{width:180px;height:4px;background:#c8e6c9;border-radius:2px;overflow:hidden;}
     .splash-bar div{height:100%;width:50%;background:#00B050;border-radius:2px;animation:barSlide 1.2s ease-in-out infinite alternate;}
 
@@ -3174,6 +3174,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const theme    = localStorage.getItem("bhu:theme")     ? JSON.parse(localStorage.getItem("bhu:theme"))     : null;
     const cached_eb = localStorage.getItem("bhu:adminebooks") ? JSON.parse(localStorage.getItem("bhu:adminebooks")) : (localStorage.getItem("bhu:adminebooks__backup") ? JSON.parse(localStorage.getItem("bhu:adminebooks__backup")) : null);
     if(cached_eb && cached_eb.length){ adminEbooks = cached_eb; }
+    try { const cp=localStorage.getItem("bhu:pyqdata"); if(cp) pyqData=JSON.parse(cp); const cpdf=localStorage.getItem("bhu:pyqpdfs"); if(cpdf) pyqPdfs=JSON.parse(cpdf); const cqs=localStorage.getItem("bhu:cqb_subjects"); if(cqs){ JSON.parse(cqs).forEach(s=>{ const raw=localStorage.getItem("bhu:cqb_subj_"+s); if(raw) customQuizBank[s]=JSON.parse(raw); }); } }catch(_){}
     if(sess){ currentUser = sess; }
     if(saved_ap) adminPass = saved_ap;
     if(theme === "dark"){ dark = true; document.body.classList.add("dark"); }
@@ -3224,7 +3225,7 @@ window.addEventListener("DOMContentLoaded", async () => {
           _withTimeout(sGet("bhu:adminebooks"), 5000)
         ]);
         if(n) notes=n; if(p) pending=p; if(u) usersDB=u; if(q) questions=q;
-        if(pyq){ pyqData=pyq; updateQuizCount(); }
+        if(pyq){ pyqData=pyq; try{ localStorage.setItem("bhu:pyqdata", JSON.stringify(pyq)); }catch(_){} updateQuizCount(); if(typeof renderPYQHierarchy==="function") renderPYQHierarchy(); }
         if(ra) repApps=ra;
         if(eb && eb.length){ adminEbooks=eb; try{ localStorage.setItem("bhu:adminebooks", JSON.stringify(eb)); }catch(_){} renderHome(); if(typeof renderEbooksLibrary==="function") renderEbooksLibrary(); }
         if(ntc && ntc.length) { noticesList=ntc; } else {
@@ -6507,7 +6508,7 @@ function togglePYQPdfYear(y){ pyqPdfOpenYear=pyqPdfOpenYear===y?null:y; pyqPdfOp
 function togglePYQPdfSubject(s){ pyqPdfOpenSubject=pyqPdfOpenSubject===s?null:s; renderPYQPdfLibrary(); }
 
 async function loadPYQPdfs(){
-  const data=await sGet('bhu:pyqpdfs'); if(data) pyqPdfs=data;
+  const data=await sGet('bhu:pyqpdfs'); if(data){ pyqPdfs=data; try{ localStorage.setItem("bhu:pyqpdfs", JSON.stringify(data)); }catch(_){} if(typeof renderPYQPdfLibrary==="function") renderPYQPdfLibrary(); }
 }
 
 function renderPYQPdfLibrary(){

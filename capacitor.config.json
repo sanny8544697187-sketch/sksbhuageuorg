@@ -7,11 +7,11 @@
     "SplashScreen": {
       "launchShowDuration": 1500,
       "launchAutoHide": false,
-      "backgroundColor": "#0F3D23",
+      "backgroundColor": "#FFFFFF",
       "androidSplashResourceName": "splash",
       "androidScaleType": "CENTER_CROP",
       "showSpinner": true,
-      "spinnerColor": "#FFFFFF"
+      "spinnerColor": "#00B050"
     },
     "FirebaseAuthentication": {
       "skipNativeAuth": false,
