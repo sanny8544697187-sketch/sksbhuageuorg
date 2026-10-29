@@ -2722,7 +2722,9 @@ window._fbConfigured = false;
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════
-const ADMIN_EMAIL        = "admin@bhu.ac.in";
+const ADMIN_EMAIL        = "adminbhu@ac.in";
+const ADMIN_EMAILS       = ["adminbhu@ac.in", "admin@bhu.ac.in"];
+const isAdminEmail       = (email) => !!email && ADMIN_EMAILS.includes(email.toLowerCase().trim());
 const ADMIN_PASS_DEFAULT = "admin2025";
 const RAZORPAY_KEY       = "rzp_live_SxOPLwrDUzQWx9";
 
@@ -7343,7 +7345,7 @@ async function doLogin(){
   const pass=document.getElementById("authPass").value;
   const errEl=document.getElementById("authErr");
   if(!em||!pass){errEl.textContent="Enter email & password.";return;}
-  if(em===ADMIN_EMAIL.toLowerCase()){
+  if(isAdminEmail(em)){
     if(pass!==adminPass){errEl.textContent="Wrong admin password.";return;}
     const u={email:em,name:"Admin",isAdmin:true,year:"Administrator",roll:""};
     currentUser=u; await sSet("bhu:session",u);
@@ -7382,7 +7384,7 @@ async function doRegister(){
   const errEl=document.getElementById("regErr");
   if(!name||!em||!pass){errEl.textContent="Fill all required fields.";return;}
   if(pass.length<6){errEl.textContent="Password min 6 characters.";return;}
-  if(em===ADMIN_EMAIL.toLowerCase()){errEl.textContent="Email reserved.";return;}
+  if(isAdminEmail(em)){errEl.textContent="Email reserved.";return;}
   if(usersDB.find(u=>u.email.toLowerCase()===em)){errEl.textContent="Email already registered. Login instead.";return;}
   try {
     const cred = await firebase.auth().createUserWithEmailAndPassword(em, pass);
@@ -7485,7 +7487,7 @@ async function processGoogleUser(fbUser, customName="", customRoll="", customYea
   console.log("processGoogleUser ✓ email:", em, "firebaseUid:", firebaseUid, "googleUid:", googleUid);
 
   // ── 3. Admin check ──────────────────────────────────────────────
-  if(em === ADMIN_EMAIL.toLowerCase()) {
+  if(isAdminEmail(em)) {
     const u = { email: em, name: "Admin", isAdmin: true, year: "Administrator", roll: "" };
     currentUser = u; await sSet("bhu:session", u);
     closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll();
