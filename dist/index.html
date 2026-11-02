@@ -1181,8 +1181,8 @@ window._fbConfigured = false;
     <button class="drawer-item" id="di-notices" onclick="setSection('notices');closeMobileDrawer()">
       <span class="drawer-item-icon">📢</span> Notices
     </button>
-    <button class="drawer-item" id="di-test-series" onclick="setSection('test-series');closeMobileDrawer()">
-      <span class="drawer-item-icon">📝</span> Test Series
+    <button class="drawer-item" id="di-pyq" onclick="setSection('pyq');closeMobileDrawer()">
+      <span class="drawer-item-icon">📋</span> Mock Tests
     </button>
     <button class="drawer-item" id="di-quiz" onclick="setSection('quiz');closeMobileDrawer()">
       <span class="drawer-item-icon">🧠</span> Quiz
@@ -1270,10 +1270,9 @@ window._fbConfigured = false;
     <div class="sb-nav">
       <button class="sb-item active" onclick="setSection('home')" id="sb-home">🏠 Home</button>
       <button class="sb-item" onclick="setSection('notices')" id="sb-notices">📢 Notices</button>
-      <button class="sb-item" onclick="setSection('test-series')" id="sb-test-series">📝 Test Series</button>
+      <button class="sb-item" onclick="setSection('pyq')" id="sb-pyq">📋 Mock Tests</button>
       <button class="sb-item" onclick="setSection('subjects')" id="sb-subjects">📚 Subjects</button>
       <button class="sb-item" onclick="setSection('quiz')" id="sb-quiz">🧠 Quiz</button>
-      <button class="sb-item" onclick="setSection('pyq')" id="sb-pyq" style="display:none;">📋 PYQ</button> <!-- Hidden, merged into test-series -->
       <button class="sb-item" onclick="setSection('games')" id="sb-games">🎮 Games</button>
       <button class="sb-item" onclick="setSection('chat')" id="sb-chat">💬 Doubts</button>
       <button class="sb-item" onclick="setSection('profile')" id="sb-profile">👤 Profile</button>
@@ -1304,10 +1303,9 @@ window._fbConfigured = false;
   <div class="nav-chips chips-row">
     <button id="navHome"       class="btn btn-ghost active" onclick="setSection('home')">🏠 Home</button>
     <button id="navNotices"    class="btn btn-ghost" onclick="setSection('notices')">📢 Notices</button>
-    <button id="navTestSeries" class="btn btn-ghost" onclick="setSection('test-series')">📝 Test Series</button>
-    <button id="navSubjects"   class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
-    <button id="navQuiz"       class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
-    <button id="navPyq"        class="btn btn-ghost" style="display:none;" onclick="setSection('pyq')">📋 PYQ</button>
+    <button id="navPyq" class="btn btn-ghost" onclick="setSection('pyq')">📋 Mock Tests</button>
+    <button id="navSubjects" class="btn btn-ghost" onclick="setSection('subjects')">📚 Subjects</button>
+    <button id="navQuiz" class="btn btn-ghost" onclick="setSection('quiz')">🧠 Quiz</button>
     <button id="navGames"      class="btn btn-ghost" onclick="setSection('games')">🎮 Games</button>
     <button id="navChat"       class="btn btn-ghost" onclick="setSection('chat')">💬 Doubts</button>
     <button id="navProfile"    class="btn btn-ghost" onclick="setSection('profile')">👤 Profile</button>
@@ -2632,7 +2630,7 @@ window._fbConfigured = false;
 
   <!-- ── PREVIOUS PAPERS ───────────────────────────────────── -->
   <section id="pyq" class="section fu">
-    <div class="section-title">Previous Papers 📋</div>
+    <div class="section-title">Mock Tests &amp; Previous Papers 📋</div>
     <div class="section-subtitle">Browse by Exam → Year → Subject. Tap an option to answer!</div>
     <!-- KG: PYQ Analyzer -->
     <div class="card" style="padding:16px;margin-bottom:18px;">
@@ -2644,7 +2642,7 @@ window._fbConfigured = false;
     <!-- Previous Papers Sub-tabs -->
     <div class="sub-tabs">
       <button class="sub-tab-btn active" id="ptab_mcq" onclick="setPYQTab('mcq')">📋 MCQ Bank</button>
-      <button class="sub-tab-btn" id="ptab_pdf" onclick="setPYQTab('pdf')">📄 PDF Files</button>
+      <button class="sub-tab-btn" id="ptab_pdf" onclick="setPYQTab('pdf')">📑 Previous Papers (PDFs)</button>
       <button class="sub-tab-btn" id="ptab_saved" onclick="setPYQTab('saved')">📌 Saved</button>
     </div>
 
@@ -3540,6 +3538,7 @@ function setSection(s){
   if(s==="leaderboard"){ setSection("quiz");   setTimeout(()=>setQuizTab("leaderboard"),50); return; }
   if(s==="analytics"){ setSection("quiz");     setTimeout(()=>setQuizTab("analytics"),50); return; }
   if(s==="flashcards"){ setSection("quiz"); return; }
+  if(s==="test-series"){ setSection("pyq"); return; }
   if(s==="notices"){ renderNotices(); }
 
   section=s;
@@ -6578,30 +6577,51 @@ function renderPYQPdfLibrary(){
   const u=currentUser;
   const isAdmin=u?.isAdmin;
 
-  // Admin quick-upload panel (inline in student tab)
+    // Admin quick-upload panel (inline in student tab)
   let adminUploadHtml='';
   if(isAdmin){
     adminUploadHtml=`
-      <div class="card" style="padding:20px;margin-bottom:16px;border:2px dashed #00B050;">
-        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:#0F3D23;">📤 Upload PYQ PDF Paper (Admin)</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-          <div><label class="lbl">Title *</label><input id="qpPdfTitle" class="inp" placeholder="e.g. ICAR JRF 2024 Full Paper"></div>
-          <div><label class="lbl">Exam</label>
-            <select id="qpPdfExam" class="inp"><option>ICAR JRF</option><option>IARI PG PAPER</option><option>NABARD</option><option>IBPS AFO</option><option>BHU ENTRANCE</option><option>OTHER</option></select>
+      <div class="card" style="padding:22px;margin-bottom:20px;border:2px solid #00B050;background:#F9FCF9;border-radius:14px;box-shadow:0 4px 16px rgba(0,176,80,0.08);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-weight:800;font-size:15px;color:#0F3D23;display:flex;align-items:center;gap:8px;">
+            <span>📑</span> Upload Previous Year Paper / PDF (Admin)
+          </div>
+          <span style="background:#E8F5E9;color:#0F3D23;font-size:11px;font-weight:700;padding:3px 10px;border-radius:50px;">Admin Access</span>
+        </div>
+        <p style="font-size:12px;color:#666;margin-bottom:14px;line-height:1.5;">
+          Upload question papers or solutions as direct PDF files or Google Drive links. They will immediately appear under the chosen Exam &amp; Year hierarchy.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px;margin-bottom:12px;">
+          <div><label class="lbl">Paper Title *</label><input id="qpPdfTitle" class="inp" placeholder="e.g. ICAR JRF 2024 Agronomy Solved Paper"></div>
+          <div><label class="lbl">Target Exam</label>
+            <select id="qpPdfExam" class="inp">
+              <option>ICAR JRF</option>
+              <option>IARI PG PAPER</option>
+              <option>IBPS AFO</option>
+              <option>BHU ENTRANCE</option>
+              <option>NABARD</option>
+              <option>OTHER</option>
+            </select>
           </div>
           <div><label class="lbl">Year</label>
-            <select id="qpPdfYear" class="inp">${[2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015].map(y=>`<option>${y}</option>`).join('')}</select>
+            <select id="qpPdfYear" class="inp">
+              ${[2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015].map(y=>`<option>${y}</option>`).join('')}
+            </select>
           </div>
-          <div><label class="lbl">Subject</label><input id="qpPdfSubject" class="inp" placeholder="e.g. Agronomy"></div>
-          <div style="grid-column:1 / span 2;"><label class="lbl">Drive / Direct Link</label><input id="qpPdfLink" class="inp" type="url" placeholder="https://drive.google.com/…"></div>
+          <div><label class="lbl">Subject / Specialization</label><input id="qpPdfSubject" class="inp" placeholder="e.g. Agronomy, Entomology, General"></div>
+          <div style="grid-column:1 / -1;"><label class="lbl">Google Drive / Cloud Direct PDF Link (Recommended)</label><input id="qpPdfLink" class="inp" type="url" placeholder="https://drive.google.com/file/d/..."></div>
         </div>
-        <div class="drop-zone" style="padding:14px;margin-bottom:10px;" onclick="document.getElementById('qpPdfFileInput').click()">
+        <div class="drop-zone" style="padding:16px;margin-bottom:12px;border:2px dashed #00B050;border-radius:10px;cursor:pointer;background:white;text-align:center;" onclick="document.getElementById('qpPdfFileInput').click()">
           <input id="qpPdfFileInput" type="file" accept=".pdf,.doc,.docx" style="display:none;" onchange="handleQPPdfFile(this)">
-          <div style="font-size:22px;margin-bottom:4px;">📄</div>
-          <div id="qpPdfFileLabel" style="font-size:13px;color:#333;">Click to upload PDF (max 10 MB) — or use a link above</div>
+          <div style="font-size:26px;margin-bottom:4px;">📎</div>
+          <div id="qpPdfFileLabel" style="font-size:13px;color:#333;font-weight:600;">Click to attach PDF file directly (Max 10 MB)</div>
+          <div style="font-size:11px;color:#777;margin-top:2px;">Files upload directly to app storage and are instantly available for download</div>
         </div>
-        <div><label class="lbl">Description</label><input id="qpPdfDesc" class="inp" placeholder="Optional brief description"></div>
-        <button class="btn btn-primary" style="margin-top:10px;" onclick="uploadQPPdfFile()">📤 Publish PDF Paper</button>
+        <div style="margin-bottom:12px;"><label class="lbl">Paper Description / Notes (Optional)</label><input id="qpPdfDesc" class="inp" placeholder="e.g. Contains 120 questions with verified answer keys"></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" id="qpPdfSubmitBtn" style="padding:10px 22px;font-weight:700;font-size:13px;" onclick="uploadQPPdfFile()">📤 Publish PDF Paper</button>
+          <button class="btn btn-light" id="qpPdfCancelBtn" style="display:none;padding:10px 16px;font-size:13px;" onclick="cancelEditQPPdf()">Cancel</button>
+        </div>
       </div>`;
   }
 
@@ -6737,6 +6757,15 @@ function handleQPPdfFile(input){
   const lbl=document.getElementById('qpPdfFileLabel');
   if(lbl) lbl.textContent='📄 '+f.name+' ('+(f.size/1024).toFixed(0)+' KB)';
 }
+
+function cancelEditQPPdf(){
+  _qpPdfFileData=''; _qpPdfFile=null;
+  ['qpPdfTitle','qpPdfLink','qpPdfDesc','qpPdfSubject'].forEach(eid=>{ const e=document.getElementById(eid); if(e) e.value=''; });
+  const lbl=document.getElementById('qpPdfFileLabel'); if(lbl) lbl.textContent='Click to attach PDF file directly (Max 10 MB)';
+  const btn=document.getElementById('qpPdfSubmitBtn'); if(btn) btn.textContent='📤 Publish PDF Paper';
+  const cb=document.getElementById('qpPdfCancelBtn'); if(cb) cb.style.display='none';
+}
+
 async function uploadQPPdfFile(){
   if(!currentUser?.isAdmin) return;
   const title=document.getElementById('qpPdfTitle')?.value?.trim();
