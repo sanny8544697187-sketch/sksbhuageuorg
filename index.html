@@ -3987,15 +3987,6 @@ function downloadEbookPdf(link, title) {
     openPay();
     return;
   }
-  openDrivePreview(link, title || "E-Book");
-  return;
-  if (!currentUser) { openLogin(); return; }
-  const isPrem = currentUser.isAdmin || isSubActive(currentUser) || isProActive(currentUser);
-  if (!isPrem) {
-    toast("⭐ E-Books require a Premium subscription. Upgrade to read!", "e");
-    openPay();
-    return;
-  }
   if (!link) {
     toast("View link unavailable for this title.", "e");
     return;
