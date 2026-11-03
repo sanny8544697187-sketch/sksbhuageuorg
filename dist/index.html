@@ -1388,47 +1388,19 @@ window._fbConfigured = false;
       </div>
     </div>
 
-        <!-- KG: Today's Agriculture Study -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🌱 Today's Agriculture Study</div>
-      <div id="kgTodayStudy"></div>
-    </div>
-
-    <!-- KG: Continue Learning -->
-    <div id="kgContinueLearning" style="display:none;background:white;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);"></div>
-
-    <!-- KG: Study Recommendations -->
-    <div id="kgRecommendations" style="display:none;background:white;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px rgba(0,0,0,.07);"></div>
-
-
-
-    
-
-    
-
-    
-
-    <!-- ENG: Daily Result Panel (hidden until quiz done) -->
-    <div id="engDailyResultPanel" style="display:none;"></div>
-
-    
-
-    <!-- ENG: Invite Friends -->
-    <div class="card" style="padding:16px;margin-bottom:14px;">
-      <div style="font-weight:800;font-size:14px;color:#0F3D23;margin-bottom:10px;">🎁 Invite Friends &amp; Earn XP</div>
-      <div id="engReferralCard"></div>
-    </div>
-
-    
+        <!-- KG features containers hidden from home layout -->
+    <div id="kgTodayStudy" style="display:none !important;"></div>
+    <div id="kgContinueLearning" style="display:none !important;"></div>
+    <div id="kgRecommendations" style="display:none !important;"></div>
+    <div id="engDailyResultPanel" style="display:none !important;"></div>
+    <div id="engReferralCard" style="display:none !important;"></div>
   </div>
 
-  
+  <div id="userBar" style="display:none !important;"></div>
 
-    <div id="userBar"></div>
+  <div id="premBannerHome"></div>
 
-    <div id="premBannerHome"></div>
-
-    <div class="quick-grid" id="quickFeatureGrid">
+  <div class="quick-grid" id="quickFeatureGrid">
       <div class="card quick-card hov-card" onclick="setSection('quiz');setTimeout(()=>setQuizTab('daily'),60)">
         <div class="quick-icon" style="background:#FFF8E1;">🔥</div>
         <div style="font-weight:700;font-size:13px;">Daily Quiz</div>
@@ -3735,7 +3707,8 @@ function renderHome(){
 
   const u=currentUser; const isPrem=isSubActive(u);
   const ubEl=document.getElementById("userBar");
-  if(u){
+  if(ubEl) ubEl.style.display="none";
+  if(false && u){
     ubEl.innerHTML=`
       <div class="card" style="padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
         <div style="width:44px;height:44px;border-radius:14px;background:${u.isAdmin?'linear-gradient(135deg,#FF7B00,#FFB347)':'linear-gradient(135deg,#1565C0,#42A5F5)'};display:flex;align-items:center;justify-content:center;font-size:18px;color:white;font-weight:800;flex-shrink:0;">${u.name[0].toUpperCase()}</div>
@@ -4032,7 +4005,11 @@ function downloadEbookPdf(link, title) {
 window.downloadEbookPdf = downloadEbookPdf;
 
 function openDrivePreview(link, title){
-  if(!currentUser){openLogin();return;}
+  if(!currentUser){
+    window._pendingAction = () => openDrivePreview(link, title);
+    openLogin();
+    return;
+  }
   _currentDriveModalLink = link;
   _currentDriveModalTitle = title;
   const embedUrl=gdriveSafeEmbed(link);
@@ -4049,7 +4026,11 @@ function closeDriveModal(){
 }
 
 async function downloadNote(id){
-  if(!currentUser){openLogin();return;}
+  if(!currentUser){
+    window._pendingAction = () => downloadNote(id);
+    openLogin();
+    return;
+  }
   const n=notes.find(x=>x.id===id); if(!n) return;
   // Admin always gets full access — skip premium check
   if(n.isPremium && !currentUser.isAdmin && !isSubActive(currentUser)){openPay();return;}
@@ -4362,57 +4343,81 @@ function renderQuizQuestion(){
   const el=document.getElementById("quizQuestion"); el.style.display="block";
   const answered=quizAns[quizIdx]!==-1;
   const showFeedback=quizMode==="practice"&&answered;
-  const diffBadge=q.difficulty?`<span style="background:#F3E5F5;color:#7B1FA2;font-size:9px;padding:2px 8px;border-radius:50px;font-weight:700;text-transform:capitalize;margin-left:6px;">${escapeHTML(q.difficulty)}</span>`:'';
+  const diffBadge=q.difficulty?`<span style="background:#F3E5F5;color:#7B1FA2;font-size:10px;padding:3px 10px;border-radius:50px;font-weight:700;text-transform:capitalize;margin-left:8px;">${escapeHTML(q.difficulty)}</span>`:'';
   const isMixed=quizSubj.startsWith("Mixed");
+  const progressPercent=Math.round(((quizIdx + 1) / quizQs.length) * 100);
 
   el.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-      <div style="font-size:13px;font-weight:600;color:#777;">${escapeHTML(quizSubj)}${isMixed&&q.subj?` · <span style="color:#0F3D23;">${escapeHTML(q.subj)}</span>`:''} · Q${quizIdx+1} of ${quizQs.length}${diffBadge}</div>
-      ${quizTimerEnabled?`<div id="quizTimerDisplay" style="font-weight:800;font-size:14px;color:${quizTimeLeft<30?"#E53935":"#0F3D23"};background:#F2F5F2;padding:4px 12px;border-radius:50px;">${fmtTimer(quizTimeLeft)}</div>`:''}
+    <!-- Clean Breadcrumb & Counter Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:#0F3D23;">
+          ${escapeHTML(quizSubj)}${isMixed&&q.subj? ` · <span style="color:#00B050;">${escapeHTML(q.subj)}</span>` : ''}
+        </div>
+        <div style="font-size:12px;color:#666;font-weight:600;margin-top:2px;">
+          Question ${quizIdx + 1} of ${quizQs.length} ${diffBadge}
+        </div>
+      </div>
+      ${quizTimerEnabled? `<div id="quizTimerDisplay" style="font-weight:800;font-size:14px;color:${quizTimeLeft<30?"#E53935":"#0F3D23"};background:#F2F5F2;padding:6px 14px;border-radius:50px;display:flex;align-items:center;gap:6px;">⏱️ ${fmtTimer(quizTimeLeft)}</div>` : ''}
     </div>
-    <div style="background:#E8F5E9;border-radius:50px;overflow:hidden;height:8px;margin-bottom:14px;"><div style="height:100%;background:#00B050;width:${((quizIdx)/quizQs.length)*100}%;transition:width .3s;"></div></div>
-    <div id="quizNav" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;"></div>
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:20px;">
-      <div style="font-weight:700;font-size:16px;line-height:1.55;">${escapeHTML(q.q)}</div>
-      <div style="display:flex;gap:4px;flex-shrink:0;">
-        <button onclick="toggleSaveQuizQ('${escapeHTML(q.subj||quizSubj)}',quizQs[${quizIdx}])" title="Save question" style="background:${isQuizQSaved(q.subj||quizSubj,q)?"#00B050":"#F2F5F2"};color:${isQuizQSaved(q.subj||quizSubj,q)?"white":"#777"};border:none;cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">📌</button>
-        <button onclick="toggleFlag()" title="Flag for review" style="background:${quizFlagged[quizIdx]?"#FFF3E0":"#F2F5F2"};color:${quizFlagged[quizIdx]?"#f59e0b":"#777"};border:none;cursor:pointer;font-size:16px;width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">🚩</button>
+
+    <!-- Clean Modern Progress Bar -->
+    <div style="background:#E8F5E9;border-radius:50px;overflow:hidden;height:8px;margin-bottom:20px;">
+      <div style="height:100%;background:linear-gradient(90deg, #00B050, #1B6B3A);width:${progressPercent}%;border-radius:50px;transition:width .3s ease;"></div>
+    </div>
+
+    <!-- Question Text & Actions -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:22px;background:#fff;padding:16px 18px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,0.04);border:1px solid #EAEAEA;">
+      <div style="font-weight:700;font-size:16px;line-height:1.6;color:#111;">${escapeHTML(q.q)}</div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button onclick="toggleSaveQuizQ('${escapeHTML(q.subj||quizSubj)}',quizQs[${quizIdx}])" title="Save question" style="background:${isQuizQSaved(q.subj||quizSubj,q)?"#00B050":"#F2F5F2"};color:${isQuizQSaved(q.subj||quizSubj,q)?"white":"#777"};border:none;cursor:pointer;font-size:16px;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">📌</button>
+        <button onclick="toggleFlag()" title="Flag for review" style="background:${quizFlagged[quizIdx]?"#FFF3E0":"#F2F5F2"};color:${quizFlagged[quizIdx]?"#f59e0b":"#777"};border:none;cursor:pointer;font-size:16px;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;">🚩</button>
       </div>
     </div>
-    <div class="quiz-options">
+
+    <!-- 4 Option Cards -->
+    <div class="quiz-options" style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
       ${q.opts.map((o,i)=>{
-        let extraStyle="",icon="";
+        let extraStyle="", icon="";
         if(showFeedback){
-          if(i===q.ans){ extraStyle="border-color:#00B050;background:#E8F5E9;"; icon=" ✅"; }
-          else if(i===quizAns[quizIdx]){ extraStyle="border-color:#E53935;background:#FFEBEE;"; icon=" ❌"; }
+          if(i===q.ans){ extraStyle="border:2px solid #00B050;background:#E8F5E9;color:#0F3D23;font-weight:600;"; icon=" ✅"; }
+          else if(i===quizAns[quizIdx]){ extraStyle="border:2px solid #E53935;background:#FFEBEE;color:#C62828;"; icon=" ❌"; }
+        } else if(quizAns[quizIdx]===i){
+          extraStyle="border:2px solid #00B050;background:#F0FDF4;font-weight:600;";
         }
-        return `<button class="quiz-option ${quizAns[quizIdx]===i?"selected":""}" style="${extraStyle}" onclick="selectOpt(${i})" ${showFeedback?"disabled":""}>
-          <div class="circle"></div>${escapeHTML(o)}${icon}
+        return `<button class="quiz-option ${quizAns[quizIdx]===i?"selected":""}" style="min-height:48px;padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.4;${extraStyle}" onclick="selectOpt(${i})" ${showFeedback?"disabled":""}>
+          <div class="circle" style="font-weight:700;font-size:12px;">${['A','B','C','D'][i]||''}</div>
+          <span style="flex:1;">${escapeHTML(o)}</span>
+          ${icon?`<span>${icon}</span>`:''}
         </button>`;
       }).join("")}
     </div>
-    ${showFeedback?`<div style="background:#F8FBF8;border:1px solid #E0EAE0;border-radius:10px;padding:12px 14px;margin-bottom:18px;font-size:13px;color:#555;line-height:1.6;">💡 ${escapeHTML(q.exp)}</div>`:''}
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      ${quizIdx>0?`<button class="btn btn-light" onclick="prevQ()">← Back</button>`:''}
-      <button class="btn btn-primary" onclick="${quizIdx<quizQs.length-1?"nextQ()":"finishQuiz()"}" ${quizAns[quizIdx]===-1?"disabled":""}>
-        ${quizIdx<quizQs.length-1?"Next →":"Finish Quiz 🎉"}
+
+    <!-- Feedback / Explanation -->
+    ${showFeedback? `<div style="background:#F0F9F0;border:1px solid #C8E6C9;border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:#2E7D32;line-height:1.6;display:flex;gap:10px;align-items:flex-start;">
+      <span style="font-size:18px;">💡</span>
+      <div>${escapeHTML(q.exp || "Correct Answer: " + (q.opts[q.ans] || ''))}</div>
+    </div>` : ''}
+
+    <!-- Modern Bottom Navigation: Previous, Next / Finish, and Exit -->
+    <div style="display:flex;align-items:center;gap:10px;justify-content:space-between;padding-top:8px;">
+      <button class="btn btn-light" style="padding:10px 18px;border-radius:50px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;" onclick="prevQ()" ${quizIdx===0?"disabled":""}>
+        ← Previous
       </button>
-      <button class="btn btn-light" style="margin-left:auto;" onclick="exitQuiz()">✕ Exit</button>
+
+      <button class="btn btn-primary" style="padding:10px 24px;border-radius:50px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;" onclick="${quizIdx<quizQs.length-1?"nextQ()":"finishQuiz()"}" ${quizAns[quizIdx]===-1?"disabled":""}>
+        ${quizIdx<quizQs.length-1 ? "Next →" : "Finish Quiz 🎉"}
+      </button>
+
+      <button class="btn btn-light" style="padding:10px 16px;border-radius:50px;font-size:13px;color:#777;" onclick="exitQuiz()">✕ Exit</button>
     </div>`;
-  renderQuizNav();
 }
 
 function renderQuizNav(){
-  const nav=document.getElementById("quizNav"); if(!nav) return;
-  nav.innerHTML=quizQs.map((q,i)=>{
-    const isCur=i===quizIdx, isAns=quizAns[i]!==-1, isFlag=quizFlagged[i];
-    let bg="#F2F5F2",color="#777",border="2px solid transparent";
-    if(isAns){ bg="#E8F5E9"; color="#00B050"; }
-    if(isFlag) border="2px solid #f59e0b";
-    if(isCur){ bg="#00B050"; color="#fff"; }
-    return `<button onclick="quizIdx=${i};renderQuizQuestion();" style="width:28px;height:28px;border-radius:8px;background:${bg};color:${color};border:${border};font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">${i+1}</button>`;
-  }).join("");
+  // Numbered grid palette intentionally removed for clean focused test experience
+  const nav=document.getElementById("quizNav"); if(nav) nav.innerHTML="";
 }
+
 
 function toggleFlag(){ quizFlagged[quizIdx]=!quizFlagged[quizIdx]; renderQuizQuestion(); }
 function selectOpt(i){ quizAns[quizIdx]=i; renderQuizQuestion(); }
@@ -6789,7 +6794,11 @@ async function uploadQPPdfFile(){
 }
 
 async function downloadPYQPdf(id){
-  if(!currentUser){openLogin();return;}
+  if(!currentUser){
+    window._pendingAction = () => downloadPYQPdf(id);
+    openLogin();
+    return;
+  }
   const p=pyqPdfs.find(x=>x.id===id); if(!p) return;
   // Admin has full access to all files always
   const u=currentUser;
@@ -7436,7 +7445,7 @@ async function doLogin(){
     currentUser=u;
     try { localStorage.setItem("bhu:session", JSON.stringify(u)); } catch(_){}
     await sSet("bhu:session",u);
-        closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll();
+        closeLogin(); toast("Welcome, Admin! 🛡️"); renderAll(); if(window._pendingAction){ const pa=window._pendingAction; window._pendingAction=null; try{ pa(); }catch(_){} }
     return;
   }
   // Try legacy usersDB login first
@@ -7445,7 +7454,7 @@ async function doLogin(){
     if(found.password!==pass){errEl.textContent="Wrong password.";return;}
     const u={...found,isAdmin:false};
     currentUser=u; await sSet("bhu:session",u);
-    closeLogin(); if(typeof engInit === "function") setTimeout(engInit, 300); toast(`Welcome back, ${found.name}! 🎓`); renderAll();
+    closeLogin(); if(typeof engInit === "function") setTimeout(engInit, 300); toast(`Welcome back, ${found.name}! 🎓`); renderAll(); if(window._pendingAction){ const pa=window._pendingAction; window._pendingAction=null; try{ pa(); }catch(_){} }
     return;
   }
   
@@ -8966,9 +8975,9 @@ function syncPlannerToTab(){}
   setOnlineStatus();
 
   // Install prompt
-  if (!localStorage.getItem('bhu:pwaDeclined')) setTimeout(showInstallBanner, 4000);
+  // pwa install banner disabled
 
-  function showInstallBanner() {
+  function showInstallBanner() { return; // disabled
     if (document.getElementById('pwaInstallBanner')) return;
     if (window.matchMedia('(display-mode: standalone)').matches) return;
     const container = document.getElementById('homeInstallBannerContainer');
@@ -10188,13 +10197,7 @@ async function deleteNotice(id) {
   <script src="./pwa-install.js"></script>
 
 <!-- Play Store Banner -->
-<div id="pwaInstallBanner" style="display:flex; position:fixed; bottom:0; left:0; width:100%; background:#fff; color:#111; z-index:10000; padding:12px 16px; box-shadow:0 -4px 16px rgba(0,0,0,0.18); align-items:center; justify-content:space-between; flex-wrap:nowrap; gap:12px; border-top:1px solid #e0e0e0;">
-  <img src="/icons/playstore.png" alt="Play Store" style="width:44px; height:44px; border-radius:10px; flex-shrink:0;">
-  <a href="https://play.google.com/store/apps/details?id=online.sannykumar.krishigyan_v1" target="_blank" rel="noopener" style="flex:1; display:flex; align-items:center; justify-content:center; background:#00B050; color:white; border:none; border-radius:8px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; box-shadow:0 2px 8px rgba(0,176,80,0.3); text-decoration:none;">
-    KrishiGyan ON Google Play
-  </a>
-  <button onclick="document.getElementById('pwaInstallBanner').style.display='none'" style="background:transparent; border:none; color:#777; font-size:22px; padding:4px 8px; cursor:pointer; line-height:1; flex-shrink:0;">✕</button>
-</div>
+<!-- Play Store Banner Removed -->
   <script src="./agri-exams-db.js"></script>
   <script src="./agri-harvester.js"></script>
 </body>
