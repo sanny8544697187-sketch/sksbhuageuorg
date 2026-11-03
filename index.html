@@ -2369,6 +2369,7 @@ window._fbConfigured = false;
       <button id="atOffers"   class="btn btn-light"   onclick="setAdminTab('offers')">📢 Offers</button>
       <button id="atQuiz"     class="btn btn-light"   onclick="setAdminTab('quiz')">🧠 Quiz Bank</button>
       <button id="atPyq"      class="btn btn-light"   onclick="setAdminTab('pyq')">📋 PYQ Bank</button>
+      <button id="atPyqPdfs"  class="btn btn-light"   onclick="setAdminTab('pyqpdfs')">📑 Previous Papers (PDFs)</button>
       <button id="atEbooks"   class="btn btn-light"   onclick="setAdminTab('ebooks')">📚 Ebooks</button>
       <button id="atReps" class="btn btn-light" onclick="setAdminTab('reps')">ðŸŒ± Reps</button>
       <button id="atHarvester" class="btn btn-light" onclick="setAdminTab('harvester')">🤖 Auto Harvester</button>
@@ -4993,7 +4994,7 @@ function renderDoubts(){
 // ═══════════════════════════════════════════════════════════════
 function setAdminTab(t){
   adminTab=t;
-  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","ebooks","settings","reps","harvester","examdir"].forEach(k=>{
+  ["uploads","pending","rejected","users","subs","offers","quiz","pyq","pyqpdfs","ebooks","settings","reps","harvester","examdir"].forEach(k=>{
     const b=document.getElementById("at"+k.charAt(0).toUpperCase()+k.slice(1));
     if(b){ b.className="btn "+(k===t?"btn-primary":"btn-light"); }
   });
@@ -5445,6 +5446,53 @@ async function renderAdmin(){
       <div class="card" style="padding:20px;margin-top:16px;" id="adminPYQPdfSection"></div>`;
     renderAdminPYQList();
     renderAdminPYQPdfSection();
+  } else if(adminTab==="pyqpdfs"){
+    el.innerHTML=`
+      <div class="card" style="padding:22px;margin-bottom:20px;border:2px solid #00B050;background:#F9FCF9;border-radius:14px;box-shadow:0 4px 16px rgba(0,176,80,0.08);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+          <div style="font-weight:800;font-size:16px;color:#0F3D23;display:flex;align-items:center;gap:8px;">
+            <span>📑</span> Upload Previous Year Question Paper (PDF / Drive)
+          </div>
+          <span style="background:#E8F5E9;color:#0F3D23;font-size:11px;font-weight:700;padding:4px 12px;border-radius:50px;">Admin Access</span>
+        </div>
+        <p style="font-size:13px;color:#666;margin-bottom:16px;line-height:1.5;">
+          Upload complete PYQ papers or answer solutions as direct PDF files or Google Drive links. Uploaded papers appear instantly under <strong>Mock Tests → Previous Papers (PDFs)</strong> for all students.
+        </p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:12px;margin-bottom:14px;">
+          <div><label class="lbl">Paper Title *</label><input id="pyqPdfTitle" class="inp" placeholder="e.g. ICAR JRF Agronomy 2024 Solved Paper"></div>
+          <div><label class="lbl">Target Exam</label>
+            <select id="pyqPdfExam" class="inp">
+              <option>ICAR JRF</option>
+              <option>IARI PG PAPER</option>
+              <option>IBPS AFO</option>
+              <option>BHU ENTRANCE</option>
+              <option>NABARD</option>
+              <option>OTHER</option>
+            </select>
+          </div>
+          <div><label class="lbl">Year</label>
+            <select id="pyqPdfYear" class="inp">
+              ${[2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016,2015].map(y=>`<option>${y}</option>`).join('')}
+            </select>
+          </div>
+          <div><label class="lbl">Subject / Specialization</label><input id="pyqPdfSubject" class="inp" placeholder="e.g. Agronomy, Entomology, General"></div>
+          <div style="grid-column:1 / -1;"><label class="lbl">Google Drive / Cloud Direct PDF Link</label><input id="pyqPdfLink" class="inp" type="url" placeholder="https://drive.google.com/file/d/..."></div>
+        </div>
+        <div class="drop-zone" style="padding:16px;margin-bottom:14px;border:2px dashed #00B050;border-radius:12px;cursor:pointer;background:white;text-align:center;" onclick="document.getElementById('pyqPdfFileInput').click()">
+          <input id="pyqPdfFileInput" type="file" accept=".pdf,.doc,.docx" style="display:none;" onchange="handlePYQPdfFile(this)">
+          <div style="font-size:26px;margin-bottom:4px;">📎</div>
+          <div id="pyqPdfFileLabel" style="font-size:13px;color:#333;font-weight:600;">Click to attach PDF file directly (Max 10 MB)</div>
+          <div style="font-size:11px;color:#777;margin-top:2px;">Files upload directly to app storage and are instantly available for viewing</div>
+        </div>
+        <div style="margin-bottom:14px;"><label class="lbl">Paper Description / Notes (Optional)</label><input id="pyqPdfDesc" class="inp" placeholder="e.g. Contains 120 questions with verified answer keys"></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" id="pyqPdfSubmitBtn" style="padding:10px 22px;font-weight:700;font-size:13px;" onclick="uploadPYQPdfFile()">📤 Publish PDF Paper</button>
+          <button class="btn btn-light" id="pyqPdfCancelBtn" style="display:none;padding:10px 16px;font-size:13px;" onclick="cancelEditPYQPdf()">Cancel</button>
+        </div>
+      </div>
+      <div id="adminPYQPdfSection"></div>`;
+    renderAdminPYQPdfSection();
+  
   } else if(adminTab==="ebooks"){
     el.innerHTML=`
       <div class="card" style="padding:20px;margin-bottom:16px;">
