@@ -3918,7 +3918,7 @@ function resCardHTML(n){
         <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;">
           ${locked?
             `<button class="btn btn-gold" style="padding:5px 14px;font-size:11px;" onclick="openPay()">🔒 Upgrade to Access</button>`:
-            `${n.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="downloadNote('${n.id}')">📥 Download</button>`:''}
+            `${n.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="downloadNote('${n.id}')">👁 View PDF</button>`:''}
              ${n.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="openDrivePreview('${escapeHTML(n.link)}','${escapeHTML(n.title)}')">👁 Preview</button>`:''}`
           }
           ${isManager(u)?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 10px;font-size:11px;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('uploads');setTimeout(()=>editUpload('${n.id}','approved'),100);},80);">✏️ Edit</button>`:''}
@@ -3929,15 +3929,19 @@ function resCardHTML(n){
 }
 
 function gdriveSafeEmbed(url){
-  if(!url) return null;
-  const fileMatch=url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if(fileMatch) return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
+  if(!url) return "";
+  url = String(url).trim();
+  const fileMatch=url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if(fileMatch && fileMatch[1]) return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
   const folderMatch=url.match(/\/folders\/([a-zA-Z0-9_-]+)/);
-  if(folderMatch) return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#list`;
+  if(folderMatch && folderMatch[1]) return `https://drive.google.com/embeddedfolderview?id=${folderMatch[1]}#list`;
   const docsMatch=url.match(/\/(document|spreadsheets|presentation|forms)\/d\/([a-zA-Z0-9_-]+)/);
   if(docsMatch) return url.replace(/\/edit.*$|\/view.*$|\/pub.*$/,'')+'/preview';
   const ytMatch=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([a-zA-Z0-9_-]{11})/);
   if(ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  if(url.endsWith('.pdf') || url.includes('.pdf?') || url.includes('alt=media')) {
+    return `https://docs.google.com/viewer?embedded=true&url=${encodeURIComponent(url)}`;
+  }
   return url;
 }
 
@@ -3979,51 +3983,61 @@ function downloadEbookPdf(link, title) {
   if (!currentUser) { openLogin(); return; }
   const isPrem = currentUser.isAdmin || isSubActive(currentUser) || isProActive(currentUser);
   if (!isPrem) {
-    toast("⭐ E-Book downloads require a Premium subscription. Upgrade to unlock all books!", "e");
+    toast("⭐ E-Books require a Premium subscription. Upgrade to read!", "e");
     openPay();
     return;
   }
   if (!link) {
-    toast("Download link unavailable for this title.", "e");
+    toast("View link unavailable for this title.", "e");
     return;
   }
-  const dlUrl = getDirectDownloadUrl(link);
-  toast(`📥 Starting download: ${title || 'E-Book'}...`);
-  try {
-    const a = document.createElement('a');
-    a.href = dlUrl;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    a.download = (title ? title.replace(/[^a-zA-Z0-9_-]/g, '_') : 'ebook') + '.pdf';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => a.remove(), 1000);
-  } catch (_) {
-    openExternalLink(dlUrl);
-  }
+  // Smoothly open in browser / drive preview directly
+  openDrivePreview(link, title || 'E-Book');
 }
 window.downloadEbookPdf = downloadEbookPdf;
 
-function openDrivePreview(link, title){
+function openDrivePreview(link, title, directExternal=false){
   if(!currentUser){
-    window._pendingAction = () => openDrivePreview(link, title);
+    window._pendingAction = () => openDrivePreview(link, title, directExternal);
     openLogin();
     return;
   }
   _currentDriveModalLink = link;
   _currentDriveModalTitle = title;
-  const embedUrl=gdriveSafeEmbed(link);
-  document.getElementById("driveModalTitle").textContent=title||"Preview";
-  document.getElementById("driveModalSpinner").style.display="flex";
-  document.getElementById("driveModalFrame").src=embedUrl;
+
+  if (directExternal) {
+    openExternalLink(link);
+    return;
+  }
+
+  const embedUrl = gdriveSafeEmbed(link);
+  const titleEl = document.getElementById("driveModalTitle");
+  if(titleEl) titleEl.textContent = title || "Document Viewer";
+  
+  const spinner = document.getElementById("driveModalSpinner");
+  if(spinner) spinner.style.display = "flex";
+  
+  const frame = document.getElementById("driveModalFrame");
+  if(frame) frame.src = embedUrl;
+  
   document.getElementById("driveModal").classList.remove("hidden");
-  document.body.style.overflow="hidden";
+  document.body.style.overflow = "hidden";
 }
+window.openDrivePreview = openDrivePreview;
+
 function closeDriveModal(){
   document.getElementById("driveModal").classList.add("hidden");
-  document.getElementById("driveModalFrame").src="";
-  document.body.style.overflow="";
+  const frame = document.getElementById("driveModalFrame");
+  if(frame) frame.src = "";
+  document.body.style.overflow = "";
 }
+
+function openCurrentDriveInBrowser(){
+  if(_currentDriveModalLink){
+    openExternalLink(_currentDriveModalLink);
+  }
+}
+window.openCurrentDriveInBrowser = openCurrentDriveInBrowser;
 
 async function downloadNote(id){
   if(!currentUser){
@@ -4031,19 +4045,38 @@ async function downloadNote(id){
     openLogin();
     return;
   }
-  const n=notes.find(x=>x.id===id); if(!n) return;
-  // Admin always gets full access — skip premium check
-  if(n.isPremium && !currentUser.isAdmin && !isSubActive(currentUser)){openPay();return;}
+  const n = notes.find(x => x.id === id); if(!n) return;
+  // Admin always gets full access
+  if(n.isPremium && !currentUser.isAdmin && !isSubActive(currentUser)){ openPay(); return; }
+  
   if(n.hasFile){
-    const data=await sGet("bhu:file:"+id);
+    const data = await sGet("bhu:file:" + id);
     if(data){
-      // Firebase Storage URL — open in new tab to bypass CORS
-      if(data.startsWith("http")){ window.open(data,"_blank","noopener,noreferrer"); return; }
-      b64Download(data,n.fileName||"file"); return;
+      if(data.startsWith("http")){
+        openDrivePreview(data, n.title || n.fileName || "Note");
+        return;
+      }
+      // For base64 files, convert to ObjectURL for smooth tab view
+      try {
+        const byteCharacters = atob(data.split(',')[1] || data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank', 'noopener,noreferrer');
+        return;
+      } catch(_) {
+        b64Download(data, n.fileName || "file.pdf");
+        return;
+      }
     }
   }
-  if(n.link){ openDrivePreview(n.link, n.title); return; }
-  toast("No file found.","e");
+  if(n.link){
+    openDrivePreview(n.link, n.title || "Note");
+    return;
+  }
+  toast("No document link found.", "e");
 }
 async function deleteNote(id){
   if(!window.confirm("Delete permanently?")) return;
@@ -6732,7 +6765,7 @@ function renderPYQPdfLibrary(){
                     ${p.desc?`<div class="res-desc">${escapeHTML(p.desc)}</div>`:''}
                     <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;">
                       ${p.link?`<button class="btn ${isPro ? 'btn-light' : 'btn-gold'}" style="background:${isPro ? '#E3F2FD' : '#FFF3E0'};color:${isPro ? '#1565C0' : '#E65100'};padding:5px 12px;font-size:11px;font-weight:700;" onclick="event.stopPropagation();${isPro ? `openDrivePreview('${escapeHTML(p.link)}','${escapeHTML(p.title)}')` : `toast('Previous Papers are available on Monthly and Yearly plans.','e'); openPay();`}">${isPro ? '👁 View PDF' : '🔒 Pro Only'}</button>`:''}
-                      ${p.hasFile?`<button class="btn ${isPro ? 'btn-primary' : 'btn-gold'}" style="padding:5px 12px;font-size:11px;" onclick="event.stopPropagation();${isPro ? `downloadPYQPdf('${p.id}')` : `toast('Previous Papers are available on Monthly and Yearly plans.','e'); openPay();`}">${isPro ? '📥 Download' : '🔒 Pro Only'}</button>`:''}
+                      ${p.hasFile?`<button class="btn ${isPro ? 'btn-primary' : 'btn-gold'}" style="padding:5px 12px;font-size:11px;" onclick="event.stopPropagation();${isPro ? `downloadPYQPdf('${p.id}')` : `toast('Previous Papers are available on Monthly and Yearly plans.','e'); openPay();`}">${isPro ? '👁 View Paper' : '🔒 Pro Only'}</button>`:''}
                       ${isAdmin?`<button class="btn" style="background:#FFF3E0;color:#E65100;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="event.stopPropagation();setSection('admin');setTimeout(()=>editPYQPdfEntry('${p.id}'),300)">✏️ Edit</button>`:''}
                       ${isAdmin?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;${!isAdmin?'margin-left:auto;':''}" onclick="event.stopPropagation();deletePYQPdf('${p.id}')">🗑</button>`:''}
                     </div>
@@ -6799,22 +6832,38 @@ async function downloadPYQPdf(id){
     openLogin();
     return;
   }
-  const p=pyqPdfs.find(x=>x.id===id); if(!p) return;
-  // Admin has full access to all files always
-  const u=currentUser;
-  if(!isProActive(u) && !u.isAdmin){ toast('Previous Papers require a Premium plan.','e'); openPay(); return; }
+  const p = pyqPdfs.find(x => x.id === id); if(!p) return;
+  const u = currentUser;
+  if(!isProActive(u) && !u.isAdmin){ toast('Previous Papers require a Pro subscription.','e'); openPay(); return; }
+  
   if(p.hasFile){
-    const data=await sGet('bhu:file:pyqpdf_'+id);
+    const data = await sGet('bhu:file:pyqpdf_' + id);
     if(data){
-      // If it's a URL (Firebase Storage), open in new tab to bypass CORS
-      if(data.startsWith('http')){ window.open(data,'_blank','noopener,noreferrer'); return; }
-      b64Download(data,p.fileName||'paper.pdf'); return;
+      if(data.startsWith('http')){
+        openDrivePreview(data, p.title || 'Previous Paper');
+        return;
+      }
+      try {
+        const byteCharacters = atob(data.split(',')[1] || data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/pdf' });
+        const blobUrl = URL.createObjectURL(blob);
+        window.open(blobUrl, '_blank', 'noopener,noreferrer');
+        return;
+      } catch(_) {
+        b64Download(data, p.fileName || 'paper.pdf');
+        return;
+      }
     }
   }
-  if(p.link){ openDrivePreview(p.link,p.title); return; }
-  toast('No file found for this paper.','e');
+  if(p.link){
+    openDrivePreview(p.link, p.title || 'Previous Paper');
+    return;
+  }
+  toast('No file found for this paper.', 'e');
 }
-
 async function deletePYQPdf(id){
   if(!confirm('Delete this PDF paper?')) return;
   pyqPdfs=pyqPdfs.filter(x=>x.id!==id);
@@ -9930,8 +9979,8 @@ function renderEbooksGrid(){
           <button class="btn btn-light" style="flex:1;font-size:11px;padding:7px;border:1px solid #00B050;color:#00B050;" onclick="openDrivePreview('${b.link.replace(/'/g,"\\\'")}','${b.title.replace(/'/g,"\\\'")}')">
             👁 Preview
           </button>
-          <button class="btn btn-primary" style="flex:1;font-size:11px;padding:7px;" onclick="downloadEbookPdf('${b.link.replace(/'/g,"\\\'")}','${b.title.replace(/'/g,"\\\'")}')">
-            📥 Download
+          <button class="btn btn-primary" style="flex:1;font-size:11px;padding:7px;" onclick="openExternalLink('${b.link.replace(/'/g,"\\\'")}','${b.title.replace(/'/g,"\\\'")}')">
+            🌐 Open in Browser
           </button>
         ` : `
           <button class="btn btn-gold" style="width:100%;font-size:11px;padding:7px;" onclick="toast('⭐ E-Books require a Premium subscription. Upgrade to read & download!','e'); openPay();">
