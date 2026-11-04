@@ -1184,6 +1184,9 @@ window._fbConfigured = false;
     <button class="drawer-item" id="di-pyq" onclick="setSection('pyq');closeMobileDrawer()">
       <span class="drawer-item-icon">📋</span> Mock Tests
     </button>
+    <button class="drawer-item" id="di-pyqpdf" onclick="setSection('pyq');setTimeout(function(){setPYQTab('pdf');},50);closeMobileDrawer()">
+      <span class="drawer-item-icon">📑</span> Previous Papers
+    </button>
     <button class="drawer-item" id="di-quiz" onclick="setSection('quiz');closeMobileDrawer()">
       <span class="drawer-item-icon">🧠</span> Quiz
     </button>
@@ -1271,6 +1274,7 @@ window._fbConfigured = false;
       <button class="sb-item active" onclick="setSection('home')" id="sb-home">🏠 Home</button>
       <button class="sb-item" onclick="setSection('notices')" id="sb-notices">📢 Notices</button>
       <button class="sb-item" onclick="setSection('pyq')" id="sb-pyq">📋 Mock Tests</button>
+      <button class="sb-item" onclick="setSection('pyq');setTimeout(()=>setPYQTab('pdf'),50)" id="sb-pyqpdf">📑 Previous Papers</button>
       <button class="sb-item" onclick="setSection('subjects')" id="sb-subjects">📚 Subjects</button>
       <button class="sb-item" onclick="setSection('quiz')" id="sb-quiz">🧠 Quiz</button>
       <button class="sb-item" onclick="setSection('games')" id="sb-games">🎮 Games</button>
@@ -1748,9 +1752,9 @@ window._fbConfigured = false;
     <p class="section-subtitle">Premium mock tests, PYQs, and study PDFs all in one place.</p>
     
     <div class="sub-tabs" style="max-width:500px;">
-      <button class="sub-tab-btn active" onclick="alert('Mock Tests filtering (Coming soon)')">Mock Tests</button>
-      <button class="sub-tab-btn" onclick="alert('PYQ filtering (Coming soon)')">Previous Papers</button>
-      <button class="sub-tab-btn" onclick="alert('PDF filtering (Coming soon)')">PDF Notes</button>
+      <button class="sub-tab-btn active" onclick="setSection('pyq');setPYQTab('mcq')">Mock Tests</button>
+      <button class="sub-tab-btn" onclick="setSection('pyq');setTimeout(()=>setPYQTab('pdf'),50)">Previous Papers (PDFs)</button>
+      <button class="sub-tab-btn" onclick="setSection('subjects');setTimeout(()=>setSubjectsTab('ebooks'),50)">PDF Notes / E-Books</button>
     </div>
 
     <div class="test-grid" id="testGridList">
@@ -1768,7 +1772,7 @@ window._fbConfigured = false;
             <span>All Exams</span>
           </div>
           <div style="margin-top:auto; padding-top:16px;">
-            <button class="btn btn-primary" style="width:100%; box-shadow:0 4px 14px rgba(0,176,80,.2);" onclick="setSection('pyq')">Attempt Mock Tests →</button>
+            <button class="btn btn-primary" style="width:100%; box-shadow:0 4px 14px rgba(0,176,80,.2);" onclick="setSection('pyq');setPYQTab('mcq')">Attempt Mock Tests →</button>
           </div>
         </div>
       </div>
@@ -3183,6 +3187,18 @@ window.addEventListener("DOMContentLoaded", async () => {
         notes = [...BUILTIN_NOTES];
       }
 
+      const cntc = localStorage.getItem("bhu:notices");
+      if(cntc){ try{ const _pntc = JSON.parse(cntc); if(Array.isArray(_pntc)&&_pntc.length) noticesList=_pntc; }catch(_){} }
+      if(!noticesList || !noticesList.length){
+        noticesList=[
+          {id:"bn1",title:"ICAR AIEEA (UG) 2026 Notification Released",category:"EXAM",desc:"NTA has released the official notification for ICAR AIEEA UG. Register now at the official portal.",link:"https://icar.nta.nic.in",date:new Date().toLocaleDateString('en-IN'),timestamp:Date.now()},
+          {id:"bn2",title:"IBPS AFO Mains 2026 Interview Schedule",category:"SCHEDULE",desc:"Interview dates and centre allocations announced. Check your registered email for admit card details.",link:"https://ibps.in",date:new Date().toLocaleDateString('en-IN'),timestamp:Date.now()-86400000},
+          {id:"bn3",title:"CUET PG Agriculture 2026 — Registration Open",category:"EXAM",desc:"Registration for CUET PG Agriculture (COQP30) is now open. Last date to apply is approaching fast.",link:"https://cuet.nta.nic.in",date:new Date().toLocaleDateString('en-IN'),timestamp:Date.now()-172800000},
+          {id:"bn4",title:"NABARD Grade A 2026 Notification",category:"EXAM",desc:"NABARD has released Grade A recruitment notification. Agriculture graduates are eligible to apply.",link:"https://nabard.org",date:new Date().toLocaleDateString('en-IN'),timestamp:Date.now()-259200000},
+          {id:"bn5",title:"UPPSC Agriculture Officer Vacancies 2026",category:"NEWS",desc:"UPPSC announced 250+ vacancies for Senior Agriculture Development Officer posts. Apply before the deadline.",link:"https://uppsc.up.nic.in",date:new Date().toLocaleDateString('en-IN'),timestamp:Date.now()-345600000}
+        ];
+      }
+
       const cqs = localStorage.getItem("bhu:cqb_subjects");
       if(cqs){
         JSON.parse(cqs).forEach(s => {
@@ -3255,7 +3271,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         if(pyq && Array.isArray(pyq)){ const _seen=new Set(); pyqData=pyq.filter(q=>{ const k=q.q||q.id; if(_seen.has(k)) return false; _seen.add(k); return true; }); try{ localStorage.setItem("bhu:pyqdata", JSON.stringify(pyqData)); }catch(_){} updateQuizCount(); if(typeof renderPYQHierarchy==="function") renderPYQHierarchy(); }
         if(ra) repApps=ra;
         if(eb && eb.length){ adminEbooks=eb; try{ localStorage.setItem("bhu:adminebooks", JSON.stringify(eb)); }catch(_){} renderHome(); if(typeof renderEbooksLibrary==="function") renderEbooksLibrary(); }
-        if(ntc && ntc.length) { noticesList=ntc; } else {
+        if(ntc && ntc.length) { noticesList=ntc; try{ localStorage.setItem("bhu:notices", JSON.stringify(ntc)); }catch(_){} } else {
           noticesList = [
             { id:"mock1", title:"ICAR AIEEA (UG) 2026 Notification Released", category:"EXAM", desc:"The National Testing Agency (NTA) has released the official notification for ICAR AIEEA (UG). Registration begins next week.", link:"https://icar.nta.nic.in", date:fmtDate(), timestamp:Date.now() },
             { id:"mock2", title:"IBPS AFO Mains 2026 Interview Schedule", category:"SCHEDULE", desc:"Interview dates and center allocations have been announced. Check your registered email for details.", link:"https://ibps.in", date:fmtDate(), timestamp:Date.now()-86400000 },
@@ -3350,9 +3366,12 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   if(fbOK){
     syncInterval=setInterval(async()=>{
-      const [nn,np,nu,nq,nae]=await Promise.all([sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),sGet("bhu:questions"),sGet("bhu:adminebooks")]);
+      const [nn,np,nu,nq,nae,_ntc,_pdfs,_pyq]=await Promise.all([sGet("bhu:notes"),sGet("bhu:pending"),sGet("bhu:users"),sGet("bhu:questions"),sGet("bhu:adminebooks"),sGet("bhu:notices"),sGet("bhu:pyqpdfs"),sGet("bhu:pyqdata")]);
       if(nn) notes=nn; if(np) pending=np; if(nu) usersDB=nu; if(nq) questions=nq;
       if(nae) adminEbooks=nae;
+      if(_ntc&&_ntc.length){noticesList=_ntc;try{localStorage.setItem("bhu:notices",JSON.stringify(_ntc));}catch(_){}  if(section==="notices"&&typeof renderNotices==="function") renderNotices();}
+      if(_pdfs&&_pdfs.length){pyqPdfs=_pdfs;try{localStorage.setItem("bhu:pyqpdfs",JSON.stringify(_pdfs));}catch(_){}  if(section==="pyq"&&pyqTab==="pdf"&&typeof renderPYQPdfLibrary==="function") renderPYQPdfLibrary();}
+      if(_pyq&&_pyq.length){const _s=new Set();pyqData=_pyq.filter(q=>{const k=q.q||q.id;if(_s.has(k))return false;_s.add(k);return true;});try{localStorage.setItem("bhu:pyqdata",JSON.stringify(pyqData));}catch(_){} updateQuizCount&&updateQuizCount(); if(section==="pyq"&&pyqTab==="mcq"&&typeof renderPYQHierarchy==="function") renderPYQHierarchy();}
       // Refresh custom quiz bank so users see admin-added quizzes without reloading
       const _cqbSync = await loadCustomQuizBank();
       if(_cqbSync && Object.keys(_cqbSync).length > 0){ customQuizBank=_cqbSync; rebuildQuizBank(); }
@@ -6777,6 +6796,7 @@ function renderPYQPdfLibrary(){
   };
 
   const isPremUser = currentUser && (currentUser.isAdmin || isSubActive(currentUser) || isProActive(currentUser));
+  const isPro = isPremUser;
   let bannerHtml = '';
   if(!isPro) {
     bannerHtml = `
