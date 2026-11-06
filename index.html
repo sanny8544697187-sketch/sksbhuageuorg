@@ -1497,6 +1497,11 @@ window._fbConfigured = false;
 
     <!-- ── SUBJECTS TAB ── -->
     <div id="stab_subjects_content">
+      <!-- Subject Detail Page Container (Dedicated Subject View) -->
+      <div id="subjectDetailView" style="display:none;margin-bottom:20px;"></div>
+
+      <!-- Subject Library Listing View -->
+      <div id="subjectListView">
       <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
         <div class="search-box" style="flex:1;min-width:180px;">
           <span style="font-size:14px;color:#777;">🔍</span>
@@ -1506,6 +1511,7 @@ window._fbConfigured = false;
       </div>
       <div id="subjectGrid" class="subject-grid"></div>
       <div id="noSubjects" style="text-align:center;color:#777;padding:40px 20px;font-size:14px;display:none;">No subjects found.</div>
+      </div>
     </div>
 
     <!-- ── RESOURCES TAB ── -->
@@ -3982,164 +3988,558 @@ function setCatFilter(cat){
   renderSubjects();
 }
 
-function renderSubjects(){
-  const search=(document.getElementById("subSearch")||{}).value?.toLowerCase()||"";
-  const filtered=getSubjects().filter(s=>{
-    if(catFilter!=="All"&&s.cat.toLowerCase()!==catFilter.toLowerCase()) return false;
-    if(!search) return true;
-    return s.name.toLowerCase().includes(search)||s.desc.toLowerCase().includes(search)||s.tags.some(t=>t.includes(search));
-  });
-  const grid=document.getElementById("subjectGrid");
-  const noEl=document.getElementById("noSubjects");
-  if(filtered.length===0){ grid.innerHTML=""; noEl.style.display="block"; return; }
-  noEl.style.display="none";
-  const badgeColors={"Popular":"background:#E8F5E9;color:#0F3D23","New":"background:#E3F2FD;color:#1565C0","Hot":"background:#FFF3E0;color:#E65100"};
-  grid.innerHTML=filtered.map(s=>`
-    <div class="subject-card hov-card" onclick="setResSubAndNav('${escapeHTML(s.name)}')">
-      ${s.badge?`<span class="badge" style="${badgeColors[s.badge]||'background:#E8F5E9;color:#0F3D23'}">${s.badge}</span>`:''}
-      <div style="font-size:32px;margin-bottom:10px;">${s.icon}</div>
-      <div style="font-weight:700;font-size:14px;margin-bottom:4px;">${escapeHTML(s.name)}</div>
-      <div style="font-size:11px;color:#777;text-transform:capitalize;margin-bottom:8px;">${s.cat}</div>
-      <div style="font-size:12px;color:#777;line-height:1.5;margin-bottom:10px;">${escapeHTML(s.desc)}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">
-        ${s.topics.map(t=>`<span style="background:#E8F5E9;color:#0F3D23;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:600;">${escapeHTML(t)}</span>`).join("")}
-      </div>
-      <div style="font-size:12px;color:#777;margin-bottom:10px;">📄 ${subCount(s.name)} resources</div>
-      <button class="btn btn-light" style="font-size:12px;padding:6px 14px;width:100%;" onclick="event.stopPropagation();setResSubAndNav('${escapeHTML(s.name)}')">View Resources →</button>
-    </div>`).join("");
+// ═══════════════════════════════════════════════════════════════
+// AGRICULTURE SUBJECT & RESOURCES LIBRARY (AGRIGYAN STYLE)
+// ═══════════════════════════════════════════════════════════════
+
+let activeSubjectDetail = null; // Stores subject name when viewing subject detail page
+let resSelectedCategory = "All"; // Agrigyan resource category filter
+let resSelectedExam = "All";
+let resSortOrder = "newest";
+let resVisibleCount = 15; // Pagination limit
+
+// Bookmark helpers for study resources
+function getSavedResourceIds() {
+  try { return JSON.parse(localStorage.getItem('bhu:saved_resources') || '[]'); } catch(_) { return []; }
 }
 
-function setResType(t){
-  resType=t;
-  RES_TYPES.forEach(k=>{ const b=document.getElementById("rt_"+k); if(b){ b.className=`btn hchip ${k===t?"btn-primary":"btn-light"}`; b.style.cssText="white-space:nowrap;padding:5px 12px;font-size:12px;"; }});
-  renderResources();
-}
-function setResSub(s){
-  resSubject=s;
-  const allBtns=["All",...getSubjects().map(sub=>sub.id)];
-  getSubjects().forEach(sub=>{ const b=document.getElementById("rsub_"+sub.id); if(b){ b.className=`btn hchip ${sub.name===s?"btn-primary":"btn-light"}`; b.style.cssText="white-space:nowrap;padding:5px 12px;font-size:12px;"; }});
-  const allB=document.getElementById("rsub_All"); if(allB){ allB.className=`btn hchip ${s==="All"?"btn-primary":"btn-light"}`; allB.style.cssText="white-space:nowrap;padding:5px 12px;font-size:12px;"; }
-  renderResources();
+function isResourceSaved(id) {
+  return getSavedResourceIds().includes(id);
 }
 
-function renderResources(){
-  const approved=getApproved();
-  const search=(document.getElementById("resSearch")||{}).value?.toLowerCase()||"";
-  const filtered=approved.filter(n=>{
-    if(resType!=="All"&&n.type!==resType) return false;
-    if(resSubject!=="All"&&n.subject!==resSubject) return false;
-    if(search&&!n.title.toLowerCase().includes(search)&&!n.subject.toLowerCase().includes(search)) return false;
-    return true;
-  });
-  const countEl=document.getElementById("resCount");
-  if(countEl) countEl.textContent=`${approved.length} resources available`;
-  const listEl=document.getElementById("resourceList");
-  const noEl=document.getElementById("noResourceResults");
-  const noTextEl=document.getElementById("noResText");
-  if(filtered.length===0){
-    listEl.innerHTML=""; noEl.style.display="block";
-    if(noTextEl) noTextEl.textContent=approved.length===0?"No resources uploaded yet — check back soon!":"No results found for your filters.";
+function toggleSaveResource(id) {
+  if (!currentUser) { openLogin(); return; }
+  let list = getSavedResourceIds();
+  const idx = list.indexOf(id);
+  if (idx !== -1) {
+    list.splice(idx, 1);
+    toast('Removed from saved resources.');
   } else {
-    noEl.style.display="none";
-    listEl.innerHTML=filtered.map(n=>resCardHTML(n)).join("");
+    list.push(id);
+    toast('📌 Resource saved to Bookmarks!');
+  }
+  localStorage.setItem('bhu:saved_resources', JSON.stringify(list));
+  if (activeSubjectDetail) {
+    renderSubjectDetailPage(activeSubjectDetail);
+  } else {
+    renderResourcesHierarchy();
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// RESOURCES — Subject → Institution → Semester drill-down
-// ═══════════════════════════════════════════════════════════════
-let resOpenInst=null, resOpenSubjH=null;
-function toggleResInst(i){ resOpenInst=resOpenInst===i?null:i; resOpenSubjH=null; renderResourcesHierarchy(); }
-function toggleResSubjH(k){ resOpenSubjH=resOpenSubjH===k?null:k; renderResourcesHierarchy(); }
-
-function renderResourcesHierarchy(){
-  const approved=getApproved();
-  const search=(document.getElementById("resHierSearch")||{}).value?.toLowerCase()||"";
-  const countEl=document.getElementById("resCount");
-  if(countEl) countEl.textContent=`${approved.length} resources available`;
-  const el=document.getElementById("resourceHierarchy"); if(!el) return;
-
-  const filtered=approved.filter(n=>{
-    if(!search) return true;
-    return (n.title||"").toLowerCase().includes(search)
-      || (n.institution||"").toLowerCase().includes(search)
-      || (n.subject||"").toLowerCase().includes(search);
-  });
-
-  if(!filtered.length){
-    el.innerHTML=`<div class="card" style="padding:40px;text-align:center;">
-      <div style="font-size:40px;margin-bottom:10px;">📭</div>
-      <div style="font-weight:700;font-size:15px;">${approved.length===0?"No resources uploaded yet — check back soon!":"No results found."}</div>
-    </div>`; return;
+// ── SUBJECTS LIBRARY ──
+function renderSubjects(){
+  // If user is currently inside a subject detail page, keep showing it
+  if (activeSubjectDetail) {
+    renderSubjectDetailPage(activeSubjectDetail);
+    return;
   }
 
-  // Group by Subject first, then Institution
-  const bySubj={};
-  filtered.forEach(n=>{
-    const subj=n.subject||"General";
-    const inst=n.institution||"General";
-    if(!bySubj[subj]) bySubj[subj]={};
-    if(!bySubj[subj][inst]) bySubj[subj][inst]=[];
-    bySubj[subj][inst].push(n);
+  const listView = document.getElementById("subjectListView");
+  const detailView = document.getElementById("subjectDetailView");
+  if (listView) listView.style.display = "block";
+  if (detailView) detailView.style.display = "none";
+
+  const search = (document.getElementById("subSearch")||{}).value?.toLowerCase()||"";
+  const subjectsList = getSubjects();
+
+  const filtered = subjectsList.filter(s => {
+    if(catFilter !== "All" && s.cat.toLowerCase() !== catFilter.toLowerCase()) return false;
+    if(!search) return true;
+    return s.name.toLowerCase().includes(search) ||
+           (s.desc || "").toLowerCase().includes(search) ||
+           (s.tags && s.tags.some(t => t.includes(search)));
   });
 
-  el.innerHTML=Object.entries(bySubj).sort(([a],[b])=>a.localeCompare(b)).map(([subj,insts])=>{
-    const subjOpen=resOpenInst===subj;
-    const subjCount=Object.values(insts).reduce((s,arr)=>s+arr.length,0);
-    return `<div class="card" style="margin-bottom:10px;overflow:hidden;padding:0;">
-      <div onclick="toggleResInst('${escapeHTML(subj)}')" style="padding:16px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${subjOpen?"#0F3D23":"#fff"};color:${subjOpen?"#fff":"#111"};transition:.15s;">
-        <div style="font-weight:800;font-size:15px;display:flex;align-items:center;gap:8px;">
-          <span style="background:${subjOpen?"rgba(255,255,255,.18)":"#00B050"};color:#fff;padding:3px 10px;border-radius:50px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">📚 ${escapeHTML(subj)}</span>
+  const grid = document.getElementById("subjectGrid");
+  const noEl = document.getElementById("noSubjects");
+  if(!grid) return;
+
+  if(filtered.length === 0){
+    grid.innerHTML = "";
+    if (noEl) noEl.style.display = "block";
+    return;
+  }
+  if (noEl) noEl.style.display = "none";
+
+  const badgeColors = {
+    "Popular": "background:#E8F5E9;color:#0F3D23;",
+    "New": "background:#E3F2FD;color:#1565C0;",
+    "Hot": "background:#FFF3E0;color:#E65100;"
+  };
+
+  grid.innerHTML = filtered.map(s => {
+    const totalFiles = subCount(s.name);
+    return `
+    <div class="subject-card hov-card" onclick="openSubjectDetailPage('${escapeHTML(s.name)}')" style="cursor:pointer;border-radius:16px;padding:18px;display:flex;flex-direction:column;position:relative;background:#FFFFFF;border:1px solid #EAEAEA;">
+      ${s.badge ? `<span class="badge" style="${badgeColors[s.badge] || 'background:#E8F5E9;color:#0F3D23'}">${s.badge}</span>` : ''}
+      <div style="font-size:36px;margin-bottom:12px;">${s.icon || '📚'}</div>
+      <div style="font-weight:800;font-size:15px;color:#0F3D23;margin-bottom:4px;">${escapeHTML(s.name)}</div>
+      <div style="font-size:11px;color:#777;text-transform:capitalize;margin-bottom:8px;font-weight:600;">${s.cat || 'Core'}</div>
+      <div style="font-size:12px;color:#555;line-height:1.5;margin-bottom:12px;flex:1;">${escapeHTML(s.desc || '')}</div>
+      
+      ${s.topics && s.topics.length ? `
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;">
+          ${s.topics.slice(0, 4).map(t => `<span style="background:#F0F4F8;color:#334E68;font-size:10px;padding:3px 8px;border-radius:6px;font-weight:600;">${escapeHTML(t)}</span>`).join("")}
         </div>
-        <div style="font-size:12px;opacity:.85;">${subjCount} files &nbsp;${subjOpen?"▲":"▼"}</div>
+      ` : ''}
+
+      <div style="margin-top:auto;padding-top:10px;border-top:1px solid #F0F0F0;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:12px;color:#00B050;font-weight:700;">📄 ${totalFiles} Resources</span>
+        <button class="btn btn-primary btn-sm" style="font-size:11px;padding:5px 12px;border-radius:20px;font-weight:700;" onclick="event.stopPropagation();openSubjectDetailPage('${escapeHTML(s.name)}')">
+          Explore →
+        </button>
       </div>
-      ${subjOpen?`<div style="padding:12px 14px;background:#F8FBF8;">
-        ${Object.entries(insts).sort(([a],[b])=>a.localeCompare(b)).map(([inst,items])=>{
-          const instKey=subj+"__"+inst;
-          const instOpen=resOpenSubjH===instKey;
-          return `<div style="margin-bottom:8px;border:1px solid #E0EAE0;border-radius:12px;overflow:hidden;background:#fff;">
-            <div onclick="toggleResSubjH('${escapeHTML(instKey)}')" style="padding:11px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:${instOpen?"#E3F2FD":"#fff"};">
-              <div style="font-weight:700;font-size:13px;color:#1565C0;">🏫 ${escapeHTML(inst)}</div>
-              <div style="font-size:11px;color:#777;">${items.length} files &nbsp;${instOpen?"▲":"▼"}</div>
-            </div>
-            ${instOpen?`<div style="padding:10px;background:#FAFCFA;">${items.map(n=>resCardHTML(n)).join("")}</div>`:""}
-          </div>`;
-        }).join("")}
-      </div>`:""}
     </div>`;
   }).join("");
 }
 
-function resCardHTML(n){
-  const u=currentUser; const isPrem=isSubActive(u);
-  const locked=n.isPremium&&!isPrem;
-  const typeColors={"PDF":"#FFEBEE","Video":"#E3F2FD","Link":"#E8F5E9","Notes":"#FFF3E0","PYQ":"#F3E5F5","PPT":"#FFF8E1","Image":"#E0F7FA"};
-  const typeIcons={"PDF":"📄","Video":"🎬","Link":"🔗","Notes":"📝","PYQ":"📋","PPT":"📊","Image":"🖼️"};
-  return `
-    <div class="res-card hov-card">
-      <div class="res-icon" style="background:${typeColors[n.type]||"#F8FBF8"};">${typeIcons[n.type]||"📄"}</div>
-      <div class="res-info">
-        <div class="res-title">${escapeHTML(n.title)}</div>
-        <div class="res-meta">
-          ${n.institution?`<span style="background:#1565C0;color:#fff;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-right:5px;display:inline-flex;align-items:center;gap:3px;">🏫 ${escapeHTML(n.institution)}</span>`:''}
-          ${n.semester?`<span style="background:#F3E5F5;color:#7B1FA2;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;margin-right:5px;">🗓️ ${escapeHTML(n.semester)}</span>`:''}
-          <span style="background:#E8F5E9;color:#0F3D23;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:600;margin-right:5px;">${escapeHTML(n.subject)}</span>
-          ${escapeHTML(n.type)} · ${escapeHTML(n.date)} · by ${escapeHTML(n.uploader)}
-          ${n.isPremium?'<span style="background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:9px;padding:1px 7px;border-radius:10px;font-weight:700;margin-left:5px;">⭐ PREMIUM</span>':''}
+// Open Dedicated Subject Detail Page
+function openSubjectDetailPage(subjectName) {
+  activeSubjectDetail = subjectName;
+  renderSubjectDetailPage(subjectName);
+  const detailView = document.getElementById("subjectDetailView");
+  if (detailView) {
+    detailView.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// Back to all subjects list
+function closeSubjectDetailPage() {
+  activeSubjectDetail = null;
+  const detailView = document.getElementById("subjectDetailView");
+  const listView = document.getElementById("subjectListView");
+  if (detailView) { detailView.style.display = "none"; detailView.innerHTML = ""; }
+  if (listView) listView.style.display = "block";
+  renderSubjects();
+}
+
+// Render the dedicated Subject Page
+function renderSubjectDetailPage(subjectName) {
+  const detailView = document.getElementById("subjectDetailView");
+  const listView = document.getElementById("subjectListView");
+  if (!detailView) return;
+
+  if (listView) listView.style.display = "none";
+  detailView.style.display = "block";
+
+  const sObj = getSubjects().find(s => s.name.toLowerCase() === subjectName.toLowerCase()) || {
+    name: subjectName, icon: '🌾', desc: 'Comprehensive study materials, notes, question papers and practice sets.'
+  };
+
+  // 1. Gather all approved study notes/PDFs for this subject
+  const subjectNotes = getApproved().filter(n => {
+    return (n.subject || '').toLowerCase().trim() === subjectName.toLowerCase().trim() ||
+           (n.title || '').toLowerCase().includes(subjectName.toLowerCase());
+  });
+
+  // 2. Gather matching PYQ question papers (PDFs) for this subject
+  const allPyqPdfs = Array.isArray(pyqPdfs) && pyqPdfs.length > 0 ? pyqPdfs : (typeof BUILTIN_PYQ_PDFS !== 'undefined' ? BUILTIN_PYQ_PDFS : []);
+  const subjectPyqPdfs = allPyqPdfs.filter(p => {
+    return (p.subject || '').toLowerCase().includes(subjectName.toLowerCase()) ||
+           (p.title || '').toLowerCase().includes(subjectName.toLowerCase());
+  });
+
+  // 3. Gather matching MCQs for practice
+  const subjectMCQs = (Array.isArray(pyqData) ? pyqData : []).filter(q => {
+    return (q.subject || '').toLowerCase().includes(subjectName.toLowerCase());
+  });
+
+  // 4. Gather matching Curated E-Books
+  const allEbooks = Array.isArray(adminEbooks) ? adminEbooks : [];
+  const subjectEbooks = allEbooks.filter(eb => {
+    return (eb.subject || '').toLowerCase().includes(subjectName.toLowerCase()) ||
+           (eb.title || '').toLowerCase().includes(subjectName.toLowerCase());
+  });
+
+  const totalSubjectContent = subjectNotes.length + subjectPyqPdfs.length + (subjectMCQs.length > 0 ? 1 : 0) + subjectEbooks.length;
+
+  let html = `
+    <div style="background:#FFFFFF;border-radius:16px;border:1px solid #EAEAEA;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+      
+      <!-- Breadcrumb navigation -->
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#777;margin-bottom:14px;flex-wrap:wrap;">
+        <span onclick="closeSubjectDetailPage()" style="cursor:pointer;color:#0F3D23;font-weight:700;">📚 Subjects Library</span>
+        <span>›</span>
+        <span style="color:#00B050;font-weight:700;">${escapeHTML(sObj.name)}</span>
+      </div>
+
+      <!-- Subject Header Card -->
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;border-bottom:1px solid #F0F0F0;padding-bottom:16px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:44px;background:#F8FBF8;padding:8px 14px;border-radius:14px;border:1px solid #E0EAE0;">
+            ${sObj.icon || '🌾'}
+          </div>
+          <div>
+            <h2 style="font-size:20px;font-weight:800;color:#0F3D23;margin:0 0 4px;">${escapeHTML(sObj.name)}</h2>
+            <div style="font-size:12px;color:#666;line-height:1.5;max-width:560px;">${escapeHTML(sObj.desc || '')}</div>
+          </div>
         </div>
-        ${n.desc?`<div class="res-desc">${escapeHTML(n.desc)}</div>`:''}
-        <div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap;">
-          ${locked?
-            `<button class="btn btn-gold" style="padding:5px 14px;font-size:11px;" onclick="openPay()">🔒 Upgrade to Access</button>`:
-            `${n.hasFile?`<button class="btn btn-primary" style="padding:5px 12px;font-size:11px;" onclick="downloadNote('${n.id}')">👁 View PDF</button>`:''}
-             ${n.link?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 12px;font-size:11px;font-weight:700;" onclick="openDrivePreview('${escapeHTML(n.link)}','${escapeHTML(n.title)}')">👁 Preview</button>`:''}`
-          }
-          ${isManager(u)?`<button class="btn" style="background:#E3F2FD;color:#1565C0;padding:5px 10px;font-size:11px;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('uploads');setTimeout(()=>editUpload('${n.id}','approved'),100);},80);">✏️ Edit</button>`:''}
-          ${(u&&(isManager(u)||u.email===n.uploaderEmail))?`<button class="btn" style="background:#FFEBEE;color:#E53935;padding:5px 10px;font-size:11px;margin-left:auto;" onclick="deleteNote('${n.id}')">🗑</button>`:''}
+
+        <button class="btn btn-light" onclick="closeSubjectDetailPage()" style="font-size:12px;font-weight:700;padding:6px 14px;border-radius:50px;">
+          ← Back to All Subjects
+        </button>
+      </div>
+
+      <!-- Quick Action Summary Pills -->
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:20px;scrollbar-width:none;">
+        <span style="background:#E8F5E9;color:#0F3D23;padding:5px 12px;border-radius:50px;font-size:12px;font-weight:700;white-space:nowrap;">
+          📄 ${subjectNotes.length} Study Notes
+        </span>
+        <span style="background:#E3F2FD;color:#1565C0;padding:5px 12px;border-radius:50px;font-size:12px;font-weight:700;white-space:nowrap;">
+          📑 ${subjectPyqPdfs.length} Previous Papers
+        </span>
+        <span style="background:#FFF3E0;color:#E65100;padding:5px 12px;border-radius:50px;font-size:12px;font-weight:700;white-space:nowrap;">
+          🧠 ${subjectMCQs.length} Objective MCQs
+        </span>
+        <span style="background:#F3E5F5;color:#7B1FA2;padding:5px 12px;border-radius:50px;font-size:12px;font-weight:700;white-space:nowrap;">
+          📖 ${subjectEbooks.length} E-Books
+        </span>
+      </div>
+
+      <!-- Content Section 1: Study Materials & PDF Notes -->
+      <div style="margin-bottom:24px;">
+        <div style="font-weight:800;font-size:16px;color:#0F3D23;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span>📄</span> Study Materials &amp; Lecture PDFs (${subjectNotes.length})
+          </div>
+        </div>
+
+        ${subjectNotes.length > 0 ? `
+          <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(310px, 1fr));gap:12px;">
+            ${subjectNotes.map(n => resCardHTML(n)).join('')}
+          </div>
+        ` : `
+          <div style="background:#F8FBF8;border:1px dashed #C8E6C9;border-radius:12px;padding:24px;text-align:center;color:#666;font-size:13px;">
+            No direct notes uploaded for ${escapeHTML(sObj.name)} yet. Check below for digitized previous papers and practice questions.
+          </div>
+        `}
+      </div>
+
+      <!-- Content Section 2: Previous Year Question Papers (PDFs) -->
+      <div style="margin-bottom:24px;">
+        <div style="font-weight:800;font-size:16px;color:#0F3D23;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+          <span>📑</span> Solved Previous Papers &amp; Official Question Papers (${subjectPyqPdfs.length})
+        </div>
+
+        ${subjectPyqPdfs.length > 0 ? `
+          <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(310px, 1fr));gap:12px;">
+            ${subjectPyqPdfs.map(p => `
+              <div class="card" style="padding:14px;border-radius:12px;border:1px solid #EAEAEA;display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                  <span style="background:#E8F5E9;color:#0F3D23;font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;">
+                    ${escapeHTML(p.exam || 'EXAM')} ${escapeHTML(p.year || '')}
+                  </span>
+                  ${p.language ? `<span style="background:#FFF9C4;color:#F57F17;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;">${escapeHTML(p.language)}</span>` : ''}
+                </div>
+                <div style="font-weight:800;font-size:13px;color:#0F3D23;">${escapeHTML(p.title)}</div>
+                <div style="font-size:11px;color:#666;">${escapeHTML(p.institution || 'Official')} • ${escapeHTML(p.date || 'Recent')}</div>
+                <div style="display:flex;gap:6px;margin-top:auto;padding-top:4px;">
+                  <button class="btn btn-primary btn-sm" onclick="viewPaperDirect('${p.id}')" style="font-size:11px;padding:4px 10px;">👁 View</button>
+                  <button class="btn btn-light btn-sm" onclick="downloadPYQPdf('${p.id}')" style="font-size:11px;padding:4px 10px;">⬇ Download</button>
+                  ${p.answerKeyLink ? `<button class="btn btn-light btn-sm" onclick="viewAnswerKey('${p.id}')" style="font-size:11px;padding:4px 10px;background:#FFF3E0;color:#E65100;">🔑 Key</button>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div style="background:#F8FBF8;border:1px dashed #C8E6C9;border-radius:12px;padding:20px;text-align:center;color:#666;font-size:13px;">
+            General and multi-subject competitive papers can be accessed in the dedicated <strong>Previous Papers</strong> tab.
+          </div>
+        `}
+      </div>
+
+      <!-- Content Section 3: MCQ Online Practice -->
+      ${subjectMCQs.length > 0 ? `
+        <div style="margin-bottom:20px;background:#F9FCF9;border:1.5px solid #00B050;border-radius:14px;padding:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#0F3D23;display:flex;align-items:center;gap:6px;">
+              <span>🧠</span> ${escapeHTML(sObj.name)} Objective Question Bank (${subjectMCQs.length} Qs)
+            </div>
+            <div style="font-size:12px;color:#555;margin-top:3px;">
+              Test your preparation with timed practice, instant answer evaluation and in-depth explanations.
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="practiceSubjectMCQs('${escapeHTML(sObj.name)}')" style="font-weight:700;font-size:13px;padding:8px 18px;">
+            Launch Practice →
+          </button>
+        </div>
+      ` : ''}
+
+    </div>
+  `;
+
+  detailView.innerHTML = html;
+}
+
+// Practice questions for a single subject
+function practiceSubjectMCQs(subjectName) {
+  const qs = (Array.isArray(pyqData) ? pyqData : []).filter(q => {
+    return (q.subject || '').toLowerCase().includes(subjectName.toLowerCase());
+  });
+  if (qs.length > 0 && typeof practiceQs === 'function') {
+    practiceQs(qs);
+  } else {
+    toast('No objective questions available for this subject yet.', 'e');
+  }
+}
+
+function setResSubAndNav(name){
+  openSubjectDetailPage(name);
+}
+
+function setCatFilter(cat){
+  catFilter = cat;
+  CATS.forEach(c => {
+    const b = document.getElementById("cat_" + c);
+    if(b) b.className = "btn hchip " + (c === cat ? "btn-primary" : "btn-light");
+  });
+  renderSubjects();
+}
+
+function setResType(t){
+  resType = t;
+  RES_TYPES.forEach(k => {
+    const b = document.getElementById("rt_" + k);
+    if(b) b.className = "btn hchip " + (k === t ? "btn-primary" : "btn-light");
+  });
+  renderResourcesHierarchy();
+}
+
+function setResSub(s){
+  resSubject = s;
+  renderResourcesHierarchy();
+}
+
+function toggleResInst(i){
+  resOpenInst = resOpenInst === i ? null : i;
+  resOpenSubjH = null;
+  renderResourcesHierarchy();
+}
+
+function toggleResSubjH(k){
+  resOpenSubjH = resOpenSubjH === k ? null : k;
+  renderResourcesHierarchy();
+}
+
+// ── CENTRALIZED AGRICULTURE RESOURCES LIBRARY (AGRIGYAN STYLE) ──
+function renderResourcesHierarchy(){
+  const approved = getApproved();
+  const el = document.getElementById("resourceHierarchy");
+  if(!el) return;
+
+  const countEl = document.getElementById("resCount");
+  if(countEl) countEl.textContent = `${approved.length} Agriculture Study Resources Available`;
+
+  const search = (document.getElementById("resHierSearch")||{}).value?.toLowerCase()||"";
+
+  // Filter approved resources
+  let filtered = approved.filter(n => {
+    if(resType !== "All" && n.type !== resType) return false;
+    if(resSubject !== "All" && (n.subject || '').toLowerCase() !== resSubject.toLowerCase()) return false;
+    if(resSelectedCategory !== "All") {
+      const catMatches = (n.category || '').toLowerCase() === resSelectedCategory.toLowerCase() ||
+                         (n.type || '').toLowerCase() === resSelectedCategory.toLowerCase();
+      if(!catMatches) return false;
+    }
+    if(resSelectedExam !== "All" && (n.exam || '').toLowerCase() !== resSelectedExam.toLowerCase()) return false;
+
+    if(!search) return true;
+    return (n.title || "").toLowerCase().includes(search)
+      || (n.institution || "").toLowerCase().includes(search)
+      || (n.subject || "").toLowerCase().includes(search)
+      || (n.desc || "").toLowerCase().includes(search);
+  });
+
+  // Sort
+  if (resSortOrder === "newest") {
+    filtered.sort((a, b) => (new Date(b.date || 0)) - (new Date(a.date || 0)));
+  } else {
+    filtered.sort((a, b) => (new Date(a.date || 0)) - (new Date(b.date || 0)));
+  }
+
+  // Agrigyan Style Central Resource Categories
+  const RES_CATEGORIES = [
+    { id: "All", name: "All Resources", icon: "🌐" },
+    { id: "E-Books", name: "E-Books", icon: "📚" },
+    { id: "Notes", name: "Agriculture Notes", icon: "📝" },
+    { id: "PDF", name: "Study PDFs", icon: "📄" },
+    { id: "Exam Material", name: "Competitive Exam", icon: "🎓" },
+    { id: "Manuals", name: "Practical Manuals", icon: "🔬" },
+    { id: "Reports", name: "Govt Reports & Bulletins", icon: "🏛️" }
+  ];
+
+  let outHtml = `
+    <div style="background:#FFFFFF;border-radius:14px;border:1px solid #EAEAEA;padding:14px;margin-bottom:16px;">
+      
+      <!-- Category Strip -->
+      <div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:none;">
+        ${RES_CATEGORIES.map(c => {
+          const isSel = resSelectedCategory === c.id;
+          return `
+            <button class="btn btn-sm ${isSel ? 'btn-primary' : 'btn-light'}"
+              onclick="resSelectedCategory='${c.id}';renderResourcesHierarchy();"
+              style="white-space:nowrap;border-radius:50px;padding:6px 14px;font-size:12px;font-weight:${isSel ? '700' : '500'};">
+              <span>${c.icon}</span> ${c.name}
+            </button>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- Filters & Sorting Bar -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-top:6px;border-top:1px solid #F0F0F0;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          
+          <!-- Subject Dropdown -->
+          <select class="inp" style="padding:5px 10px;font-size:12px;border-radius:8px;max-width:160px;"
+            onchange="resSubject=this.value;renderResourcesHierarchy();">
+            <option value="All" ${resSubject === 'All' ? 'selected' : ''}>All Subjects</option>
+            ${getSubjects().map(s => `
+              <option value="${escapeHTML(s.name)}" ${resSubject.toLowerCase() === s.name.toLowerCase() ? 'selected' : ''}>${escapeHTML(s.name)}</option>
+            `).join('')}
+          </select>
+
+          <!-- Sort Dropdown -->
+          <select class="inp" style="padding:5px 10px;font-size:12px;border-radius:8px;max-width:140px;"
+            onchange="resSortOrder=this.value;renderResourcesHierarchy();">
+            <option value="newest" ${resSortOrder === 'newest' ? 'selected' : ''}>Latest First</option>
+            <option value="oldest" ${resSortOrder === 'oldest' ? 'selected' : ''}>Oldest First</option>
+          </select>
+
+        </div>
+
+        <div style="font-size:12px;color:#666;font-weight:600;">
+          Showing ${Math.min(resVisibleCount, filtered.length)} of ${filtered.length} files
         </div>
       </div>
+
+    </div>
+  `;
+
+  if(!filtered.length){
+    outHtml += `<div class="card" style="padding:44px 20px;text-align:center;border-radius:14px;">
+      <div style="font-size:44px;margin-bottom:10px;">📭</div>
+      <div style="font-weight:800;font-size:15px;color:#222;margin-bottom:6px;">No resources match your search or filter</div>
+      <div style="color:#777;font-size:13px;margin-bottom:16px;">Try clearing filters or search by a general term like "Agronomy" or "Soil".</div>
+      <button class="btn btn-primary btn-sm" onclick="resSelectedCategory='All';resSubject='All';document.getElementById('resHierSearch').value='';renderResourcesHierarchy();">
+        Reset All Filters
+      </button>
     </div>`;
+    el.innerHTML = outHtml;
+    return;
+  }
+
+  // Display Cards Grid
+  const displayedItems = filtered.slice(0, resVisibleCount);
+  outHtml += `<div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(310px, 1fr));gap:14px;margin-bottom:18px;">
+    ${displayedItems.map(n => resCardHTML(n)).join('')}
+  </div>`;
+
+  // Load More Button
+  if (filtered.length > resVisibleCount) {
+    outHtml += `
+      <div style="text-align:center;margin-top:10px;margin-bottom:20px;">
+        <button class="btn btn-light" onclick="resVisibleCount+=15;renderResourcesHierarchy();" style="padding:10px 24px;font-weight:700;font-size:13px;border-radius:50px;border:1.5px solid #00B050;color:#0F3D23;">
+          📄 Load More Resources (${filtered.length - resVisibleCount} remaining)
+        </button>
+      </div>
+    `;
+  }
+
+  el.innerHTML = outHtml;
 }
+
+// Single Resource Card HTML
+function resCardHTML(n){
+  const u = currentUser;
+  const isPrem = isSubActive(u);
+  const locked = n.isPremium && !isPrem;
+  const saved = isResourceSaved(n.id);
+
+  const typeColors = {
+    "PDF": "#FFEBEE", "Video": "#E3F2FD", "Link": "#E8F5E9",
+    "Notes": "#FFF3E0", "PYQ": "#F3E5F5", "PPT": "#FFF8E1", "Image": "#E0F7FA"
+  };
+  const typeIcons = {
+    "PDF": "📄", "Video": "🎬", "Link": "🔗",
+    "Notes": "📝", "PYQ": "📋", "PPT": "📊", "Image": "🖼️"
+  };
+
+  return `
+    <div class="card hov-card" style="padding:16px;border-radius:14px;border:1px solid #EAEAEA;background:#FFFFFF;display:flex;flex-direction:column;gap:10px;position:relative;">
+      
+      <!-- Top Badges & Bookmark -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span style="background:${typeColors[n.type] || '#E8F5E9'};color:#0F3D23;font-size:10px;font-weight:800;padding:2px 8px;border-radius:4px;text-transform:uppercase;">
+            ${typeIcons[n.type] || '📄'} ${escapeHTML(n.type || 'PDF')}
+          </span>
+          <span style="background:#F0F4F8;color:#334E68;font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;">
+            📚 ${escapeHTML(n.subject || 'General')}
+          </span>
+          ${n.institution ? `<span style="background:#E3F2FD;color:#1565C0;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;">🏫 ${escapeHTML(n.institution)}</span>` : ''}
+        </div>
+
+        <button onclick="toggleSaveResource('${n.id}')"
+          style="background:none;border:none;cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;color:${saved ? '#F57F17' : '#BBB'};"
+          title="${saved ? 'Remove bookmark' : 'Bookmark this resource'}">
+          ${saved ? '⭐' : '☆'}
+        </button>
+      </div>
+
+      <!-- Title -->
+      <div style="font-weight:800;font-size:14px;color:#0F3D23;line-height:1.4;">
+        ${escapeHTML(n.title)}
+      </div>
+
+      <!-- Meta Info -->
+      <div style="font-size:11px;color:#777;display:flex;flex-wrap:wrap;gap:8px;">
+        <span>📅 ${escapeHTML(n.date || 'Recent')}</span>
+        ${n.author || n.uploader ? `<span>• by ${escapeHTML(n.author || n.uploader)}</span>` : ''}
+        ${n.isPremium ? `<span style="background:linear-gradient(90deg,#c9690a,#f59e0b);color:white;font-size:9px;padding:1px 6px;border-radius:4px;font-weight:700;">⭐ PRO</span>` : ''}
+      </div>
+
+      ${n.desc ? `
+        <div style="font-size:12px;color:#555;background:#F9FCF9;padding:8px 10px;border-radius:8px;border-left:3px solid #00B050;line-height:1.4;">
+          ${escapeHTML(n.desc)}
+        </div>
+      ` : ''}
+
+      <!-- Actions -->
+      <div style="margin-top:auto;padding-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+        ${locked ? `
+          <button class="btn btn-gold btn-sm" style="padding:6px 14px;font-size:11px;font-weight:700;" onclick="openPay()">
+            🔒 Upgrade to Access
+          </button>
+        ` : `
+          ${n.hasFile ? `
+            <button class="btn btn-primary btn-sm" style="padding:6px 12px;font-size:11px;font-weight:700;" onclick="downloadNote('${n.id}')">
+              👁 View PDF
+            </button>
+          ` : ''}
+          ${n.link ? `
+            <button class="btn btn-light btn-sm" style="background:#E3F2FD;color:#1565C0;padding:6px 12px;font-size:11px;font-weight:700;border:1px solid #BBDEFB;" onclick="openDrivePreview('${escapeHTML(n.link)}','${escapeHTML(n.title)}')">
+              👁 Preview
+            </button>
+          ` : ''}
+        `}
+
+        ${isManager(u) ? `
+          <button class="btn btn-light btn-sm" style="background:#FFF3E0;color:#E65100;padding:5px 8px;font-size:11px;border:none;" onclick="setSection('admin');setTimeout(()=>{setAdminTab('uploads');setTimeout(()=>editUpload('${n.id}','approved'),100);},80);">
+            ✏️
+          </button>
+        ` : ''}
+
+        ${(u && (isManager(u) || u.email === n.uploaderEmail)) ? `
+          <button class="btn btn-light btn-sm" style="background:#FFEBEE;color:#E53935;padding:5px 8px;font-size:11px;border:none;margin-left:auto;" onclick="deleteNote('${n.id}')">
+            🗑
+          </button>
+        ` : ''}
+      </div>
+
+    </div>
+  `;
+}
+
 
 function gdriveSafeEmbed(url){
   if(!url) return "";
