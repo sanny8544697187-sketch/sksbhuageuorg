@@ -29,7 +29,7 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"/>
   <link rel="shortcut icon" href="./icons/icon-96.png"/>
   <link rel="manifest" href="./manifest.json"/>
-  <title>KrishiGyan — Agriculture e-Learning v10</title>
+  <title>KrishiGyan — Agriculture e-Learning</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
@@ -934,7 +934,7 @@
   <p style="font-size:13px;color:#777">Loading resources…</p>
   <div class="splash-bar"><div></div></div>
 </div>
-<script>setTimeout(function(){var s=document.getElementById("splash");if(s)s.style.display="none";}, 1000);</script>
+<script>setTimeout(function(){var s=document.getElementById("splash");if(s)s.style.display="none";}, 300);</script>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1336,9 +1336,9 @@ window._fbConfigured = false;
       <div id="homeInstallBannerContainer" style="margin-top:16px;"></div>
       <div class="hero-stats">
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
-        <div><strong id="statResources">0</strong><span>Resources</span></div>
-        <div><strong id="statBooks">0</strong><span>Ebooks available</span></div>
-        <div><strong id="statQuizCount">0+</strong><span>Quiz Qs</span></div>
+        <div><strong id="statResources">151</strong><span>Resources</span></div>
+        <div><strong id="statBooks">28</strong><span>Ebooks available</span></div>
+        <div><strong id="statQuizCount">100+</strong><span>Quiz Qs</span></div>
       </div>
     </div>
 
@@ -3174,8 +3174,30 @@ async function saveUserToFirebase(u) {
   try {
     const safeUser = {...u};
     delete safeUser.password; // never store plain-text password in individual doc
-    await db.collection("bhu_users").doc(u.id).set({...safeUser, updatedAt: new Date().toISOString()});
+    await db.collection("bhu_users").doc(u.id).set({...safeUser, updatedAt: new Date().toISOString()}, {merge: true});
+    console.log("[KG] Saved user to bhu_users Firestore collection:", u.id, u.email);
   } catch(e) { console.warn("saveUserToFirebase:", e); }
+}
+
+async function syncAllUsersToFirebase() {
+  if (!fbOK) { toast("Firebase not connected.","e"); return; }
+  try {
+    toast("Syncing all students to Firebase Firestore…");
+    let count = 0;
+    for (const u of usersDB) {
+      if (u && u.id) {
+        await saveUserToFirebase(u);
+        count++;
+      }
+    }
+    // Also ensure the full users array is persisted in bhu_store/bhu_users
+    await sSet("bhu:users", usersDB);
+    toast("✅ Synced " + count + " users to 'bhu_users' collection in Firestore!");
+    renderAdmin();
+  } catch(e) {
+    console.error("syncAllUsersToFirebase error:", e);
+    toast("Error syncing users: " + e.message, "e");
+  }
 }
 
 async function sDel(key) {
@@ -3347,7 +3369,7 @@ window.addEventListener("DOMContentLoaded", async () => {
       sp.style.display = "none";
       try { renderAll(); initAndroidDashboard(); } catch(e) {}
     }
-  }, 2500);
+  }, 600);
 
   try {
     // ── PHASE 1: Instant local reads (no Firebase, no network) ──
@@ -5511,6 +5533,200 @@ function renderChat(){}
 function setAiInput(){}
 async function sendAI(){}
 
+function openAskDoubt(){
+  if(!currentUser){openLogin();return;}
+  const f=document.getElementById("askDoubtForm");
+  f.style.display=f.style.display==="none"||!f.style.display?"block":"none";
+}
+
+function toggleMCQFields(){
+  const checked=document.getElementById("makeMCQ").checked;
+  document.getElementById("mcqFields").style.display=checked?"block":"none";
+}
+
+async function postDoubt(){
+  const u=currentUser; if(!u){openLogin();return;}
+  const title=document.getElementById("qTitle").value.trim();
+  const subj=document.getElementById("qSubject").value;
+  const body=document.getElementById("qBody").value.trim();
+  if(!title){toast("Question title is required.","e");return;}
+
+  const isMCQ=document.getElementById("makeMCQ").checked;
+  let mcq=null;
+  if(isMCQ){
+    const a=document.getElementById("mcqOptA").value.trim();
+    const b=document.getElementById("mcqOptB").value.trim();
+    const c=document.getElementById("mcqOptC").value.trim();
+    const d=document.getElementById("mcqOptD").value.trim();
+    const correct=document.getElementById("mcqCorrect").value;
+    if(!a||!b){toast("MCQ poll needs at least Option A and B.","e");return;}
+    const opts=[a,b]; if(c) opts.push(c); if(d) opts.push(d);
+    mcq={opts,correct:correct===""?-1:parseInt(correct),votes:new Array(opts.length).fill(0)};
+  }
+
+  const d={id:Date.now()+"",title,subject:subj||"General",body,author:u.name,authorEmail:u.email,
+    isAdmin:!!u.isAdmin,time:fmtDate(),createdAt:new Date().toISOString(),replies:[],upvotes:0,solved:false,mcq};
+  questions=[d,...questions]; await sSet("bhu:questions",questions);
+  document.getElementById("qTitle").value=""; document.getElementById("qBody").value="";
+  document.getElementById("makeMCQ").checked=false; toggleMCQFields();
+  ["mcqOptA","mcqOptB","mcqOptC","mcqOptD"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("mcqCorrect").value="";
+  document.getElementById("askDoubtForm").style.display="none";
+  toast(isMCQ?"MCQ poll posted! 🗳️":"Question posted! 💬"); renderDoubts(); renderHome();
+}
+
+// ── MCQ poll voting ──
+async function voteMCQ(qId,optIdx){
+  if(!currentUser){openLogin();return;}
+  const voteKey=qId+"_"+currentUser.email;
+  if(mcqVotes[voteKey]!==undefined){ toast("You've already voted on this poll.","e"); return; }
+  mcqVotes[voteKey]=optIdx;
+  await sSet("bhu:mcqvotes",mcqVotes);
+  questions=questions.map(q=>{
+    if(q.id!==qId||!q.mcq) return q;
+    const votes=[...q.mcq.votes]; votes[optIdx]=(votes[optIdx]||0)+1;
+    return {...q,mcq:{...q.mcq,votes}};
+  });
+  await sSet("bhu:questions",questions);
+  toast("Vote recorded! ✅"); renderDoubts();
+}
+
+// ── AI Professor answer for a specific community doubt ──
+async function askAIForDoubt(qId){
+  const q=questions.find(x=>x.id===qId); if(!q) return;
+  aiDoubtLoading[qId]=true; renderDoubts();
+  const prompt=q.title+(q.body?("\n\nDetails: "+q.body):"");
+  const answer=await callAIProfessor(prompt);
+  aiDoubtLoading[qId]=false;
+  aiDoubtAnswers[qId]=answer||"⚠️ Couldn't get an AI answer right now. Try again in a moment.";
+  renderDoubts();
+}
+
+// ── Shared AI Professor caller (used by both main chat & community) ──
+async function callAIProfessor(userText){
+  if(!isSubActive(currentUser) && !currentUser?.isAdmin) { toast("⭐ AI Professor is a Premium feature! Upgrade to unlock.","e"); openPay(); return null; }
+  let reply = null;
+  try{
+    const headers2 = { "Content-Type": "application/json" };
+    if (_cfg) headers2["X-Gemini-Key"] = _cfg;
+    const r = await fetch(AI_ENDPOINT, {
+      method: "POST",
+      headers: headers2,
+      body: JSON.stringify({ messages: [{ role:"user", content: userText }] })
+    });
+    if(r.ok){
+      const d = await r.json();
+      reply = d.content || null;
+      if(d.error) console.warn("AI Professor err:", d.error);
+    }
+  } catch(e){ console.warn("AI Professor fetch failed:", e.message); }
+  return reply;
+}
+
+// ── Community AI Professor chat box ──
+let communityAIMsgs=[];
+function openCommunityAI(){
+  if(!currentUser){openLogin();return;}
+  const box=document.getElementById("communityAIBox");
+  const show=box.style.display==="none"||!box.style.display;
+  box.style.display=show?"block":"none";
+  if(show&&communityAIMsgs.length===0){
+    communityAIMsgs.push({role:"assistant",content:"Hi! 🌾 Ask me any agriculture question right here in the community section.",time:fmtTime()});
+    renderCommunityAIMessages();
+  }
+}
+function renderCommunityAIMessages(){
+  const el=document.getElementById("communityAIMessages"); if(!el) return;
+  el.innerHTML=communityAIMsgs.map(m=>{
+    const isUser=m.role==="user";
+    if(m.isTyping) return `<div class="message bot msg"><div class="avatar" style="background:linear-gradient(135deg,#0F3D23,#00B050);">🌾</div><div class="bubble"><div class="bubble-text"><div class="typing"><span></span><span></span><span></span></div></div></div></div>`;
+    return `<div class="message ${isUser?"user":"bot"} msg">
+      ${!isUser?'<div class="avatar" style="background:linear-gradient(135deg,#0F3D23,#00B050);">🌾</div>':''}
+      ${isUser?`<div class="avatar" style="background:linear-gradient(135deg,#1565C0,#42A5F5);">${currentUser?currentUser.name[0].toUpperCase():"U"}</div>`:''}
+      <div class="bubble"><div class="bubble-text">${escapeHTML(m.content)}</div><div class="bubble-time">${escapeHTML(m.time||"")}</div></div>
+    </div>`;
+  }).join("");
+  el.scrollTop=el.scrollHeight;
+}
+async function sendCommunityAI(){
+  const inp=document.getElementById("communityAIInput");
+  const text=inp.value.trim(); if(!text) return;
+  inp.value="";
+  communityAIMsgs.push({role:"user",content:text,time:fmtTime()});
+  communityAIMsgs.push({role:"assistant",isTyping:true});
+  renderCommunityAIMessages();
+  const reply=await callAIProfessor(text);
+  communityAIMsgs=communityAIMsgs.filter(m=>!m.isTyping);
+  communityAIMsgs.push({role:"assistant",content:reply||"⚠️ Couldn't get a response right now. Try again.",time:fmtTime()});
+  renderCommunityAIMessages();
+}
+
+async function postReply(qId){
+  const u=currentUser; if(!u){openLogin();return;}
+  const inp=document.getElementById("replyInput_"+qId); if(!inp) return;
+  const text=inp.value.trim(); if(!text){toast("Reply cannot be empty.","e");return;}
+  const r={id:Date.now()+"",text,author:u.name,authorEmail:u.email,isAdmin:!!u.isAdmin,time:fmtDate(),createdAt:new Date().toISOString()};
+  questions=questions.map(q=>q.id===qId?{...q,replies:[...q.replies,r]}:q);
+  await sSet("bhu:questions",questions); toast("Reply posted! ✅"); renderDoubts();
+}
+
+async function toggleUpvote(qId){
+  if(!currentUser){openLogin();return;}
+  upvoted[qId]=!upvoted[qId];
+  questions=questions.map(q=>q.id===qId?{...q,upvotes:(q.upvotes||0)+(upvoted[qId]?1:-1)}:q);
+  await sSet("bhu:questions",questions); renderDoubts();
+}
+
+async function markSolved(qId){
+  questions=questions.map(q=>q.id===qId?{...q,solved:!q.solved}:q);
+  await sSet("bhu:questions",questions); renderDoubts();
+}
+
+async function delQuestion(qId){
+  if(!window.confirm("Delete this question permanently?")) return;
+  questions=questions.filter(q=>q.id!==qId); await sSet("bhu:questions",questions);
+  if(expandedQ===qId) expandedQ=null; renderDoubts(); renderHome();
+}
+
+async function delReply(qId,rId){
+  questions=questions.map(q=>q.id===qId?{...q,replies:q.replies.filter(r=>r.id!==rId)}:q);
+  await sSet("bhu:questions",questions); renderDoubts();
+}
+
+function renderMCQPoll(q){
+  const mcq=q.mcq;
+  const letters=["A","B","C","D"];
+  const voteKey=q.id+"_"+(currentUser?.email||"");
+  const myVote=currentUser?mcqVotes[voteKey]:undefined;
+  const hasVoted=myVote!==undefined;
+  const totalVotes=mcq.votes.reduce((s,v)=>s+v,0);
+  return `
+    <div style="padding:14px 18px;border-bottom:1px solid #E0EAE0;">
+      <div style="font-size:11px;font-weight:700;color:#5E35B1;text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;">🗳️ Poll · ${totalVotes} vote${totalVotes===1?"":"s"}</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${mcq.opts.map((opt,i)=>{
+          const count=mcq.votes[i]||0;
+          const pct=totalVotes?Math.round(count/totalVotes*100):0;
+          const isMine=myVote===i;
+          const isCorrect=mcq.correct===i;
+          const showResult=hasVoted;
+          return `
+          <div onclick="${hasVoted?'':`voteMCQ('${q.id}',${i})`}" style="position:relative;border:2px solid ${isMine?"#5E35B1":"#E0EAE0"};border-radius:10px;padding:10px 14px;cursor:${hasVoted?"default":"pointer"};overflow:hidden;background:#fff;">
+            ${showResult?`<div style="position:absolute;inset:0;background:${isCorrect&&mcq.correct>=0?"#E8F5E9":"#F3F0FA"};width:${pct}%;transition:width .4s;z-index:0;"></div>`:''}
+            <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <span style="font-size:13px;font-weight:${isMine?"700":"500"};color:#111;">${letters[i]}. ${escapeHTML(opt)} ${showResult&&isCorrect&&mcq.correct>=0?"✅":""}</span>
+              ${showResult?`<span style="font-size:12px;font-weight:700;color:#5E35B1;flex-shrink:0;">${pct}% (${count})</span>`:''}
+            </div>
+          </div>`;
+        }).join("")}
+      </div>
+      ${!currentUser?`<div style="font-size:12px;color:#777;margin-top:8px;">🔑 <a href="#" onclick="event.preventDefault();openLogin();" style="color:#00B050;font-weight:600;">Login</a> to vote</div>`:
+        hasVoted?`<div style="font-size:12px;color:#777;margin-top:8px;">✓ You voted for ${letters[myVote]}</div>`:''}
+    </div>`;
+}
+
+
+
 function renderDoubts(){
   const totalQEl=document.getElementById("totalQ"); const totalAEl=document.getElementById("totalA");
   if(totalQEl) totalQEl.textContent=questions.length;
@@ -5728,7 +5944,7 @@ async function renderAdmin(){
             ${fbOK ? '✅ Synced to Firebase → <strong>bhu_users</strong> collection' : '⚠️ Firebase offline – stored in localStorage only'}
           </div>
         </div>
-        <button class="btn btn-light" style="font-size:12px;" onclick="if(fbOK){usersDB.forEach(u=>saveUserToFirebase(u));toast('All users synced to Firebase!');}else{toast('Firebase not connected','e');}">
+        <button class="btn btn-light" style="font-size:12px;" onclick="syncAllUsersToFirebase()">
           🔄 Force Sync to Firebase
         </button>
       </div>
@@ -10168,18 +10384,8 @@ function premiumGateHTML(feature,style=""){
 }
 
 // Premium gate for doubts posting
-const _origPostDoubt=postDoubt;
-async function postDoubt(){
-  if(!currentUser){ openLogin(); return; }
-  if(!isSubActive(currentUser)){
-    const myQs=questions.filter(q=>q.authorEmail===currentUser.email);
-    if(myQs.length>=2){
-      toast("⭐ Free limit: 2 doubts. Upgrade to post unlimited questions!","e");
-      setTimeout(()=>openPay(),800); return;
-    }
-  }
-  await _origPostDoubt();
-}
+// Doubts posting initialized
+
 
 function generatePlan2(){
   if(!currentUser){ openLogin(); return; }
