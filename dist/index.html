@@ -3301,10 +3301,7 @@ function updateQuizCount() {
 
 
 async function loadCustomQuizBank() {
-  // If admin requested a full wipe of custom quiz questions:
-  if (localStorage.getItem("bhu:reset_custom_quiz_done") === "true") {
-    return null;
-  }
+  return null;
   const result = {};
   // 1. Try reading the combined doc from Firestore (old format, small banks)
   const combined = await sGet("bhu:customquizbank");
@@ -6042,54 +6039,41 @@ async function renderAdmin(){
         </div>
       </div>
 
-      <!-- Excel/CSV Bulk Import for MCQ Quiz Bank -->
-      <div class="card" style="padding:22px;margin-bottom:16px;border:2px solid #5E35B1;border-radius:14px;background:#F9F7FE;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-          <div style="font-weight:800;font-size:15px;color:#1a0533;display:flex;align-items:center;gap:8px;">
-            <span style="font-size:20px;">&#128202;</span> Bulk Import MCQs from Excel / CSV
-          </div>
-          <button class="btn btn-light" style="font-size:11px;padding:5px 12px;border:1px solid #5E35B1;color:#5E35B1;" onclick="downloadMCQSampleTemplate()">
-            &#11015; Download Sample Template
-          </button>
+      <!-- Document Intelligence: PDF / Scanned PDF / Image OCR Upload -->
+      <div class="card" style="padding:22px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">🧠 Document Intelligence — Upload Question Paper</div>
+        <div style="font-size:12px;color:#777;margin-bottom:14px;line-height:1.7;">
+          Upload a <strong>text PDF</strong>, a <strong>scanned PDF</strong> (photocopied paper), or a <strong>photo/screenshot (JPG/PNG)</strong> of a question paper.
+          We automatically detect whether the PDF has a real text layer — if not, every page is run through on-device OCR.<br>
+          Expected question format:<br>
+          <code style="background:#F8FBF8;padding:2px 6px;border-radius:5px;font-size:11px;">Q. Your question here?<br>A. Option 1<br>B. Option 2<br>C. Option 3<br>D. Option 4<br>ANS: B<br>EXP: Explanation here.</code><br>
+          <span style="margin-top:4px;display:block;">Leave a blank line between questions.</span>
+          <span style="margin-top:4px;display:block;">🤖 <strong>Subject is auto-detected per question</strong> — add a heading like <strong>Subject: Agronomy</strong> anywhere in the document to tag everything below it, or leave it out and each question is auto-classified by keyword matching against the subject's topics. Review/override any question's subject before adding it.</span>
         </div>
-        <div style="font-size:12px;color:#666;margin-bottom:14px;line-height:1.6;background:#EDE7F6;padding:10px 12px;border-radius:8px;border-left:3px solid #5E35B1;">
-          Upload an <strong>Excel (.xlsx)</strong> or <strong>CSV</strong> file with thousands of MCQs. Required columns: <strong>Subject, Topic, Exam, Year, Question, OptionA, OptionB, OptionC, OptionD, Answer, Explanation, Difficulty</strong>. Columns are auto-detected &mdash; partial matches work (e.g. "Opt A", "option_a").
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
-          <div><label class="lbl">Default Subject (if not in file)</label>
-            <select id="mcqXlsSubject" class="inp">
-              <option>Agronomy</option><option>Soil Science</option><option>Horticulture</option>
-              <option>Plant Pathology</option><option>Entomology</option><option>Genetics &amp; Plant Breeding</option>
-              <option>Agricultural Economics</option><option>Agricultural Extension</option>
-              <option>Agricultural Engineering</option><option>Animal Husbandry</option><option>General Agriculture</option>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div>
+            <label class="lbl">Fallback subject <span style="font-weight:400;color:#777;">(if auto-detect fails)</span></label>
+            <select id="pdfQuizSubject" class="inp">
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
             </select>
           </div>
-          <div><label class="lbl">Default Exam (if not in file)</label>
-            <select id="mcqXlsExam" class="inp">
-              <option>CUET PG / ICAR AIEEA</option><option>ICAR JRF / SRF</option><option>IBPS AFO</option>
-              <option>NABARD Grade A</option><option>State PSC</option><option>UPSC IFS</option>
-              <option>BHU ENTRANCE</option><option>IARI PG</option><option>General</option><option>OTHER</option>
-            </select>
-          </div>
-          <div><label class="lbl">Difficulty Default</label>
-            <select id="mcqXlsDifficulty" class="inp">
-              <option value="medium">Medium</option><option value="easy">Easy</option><option value="hard">Hard</option>
+          <div>
+            <label class="lbl">OCR language <span style="font-weight:400;color:#777;">(for scanned docs/images)</span></label>
+            <select id="ocrLang" class="inp">
+              <option value="eng">English</option>
+              <option value="hin">Hindi</option>
+              <option value="eng+hin">English + Hindi</option>
             </select>
           </div>
         </div>
-        <div id="mcqXlsDropZone" onclick="document.getElementById('mcqXlsFile').click()" style="margin-bottom:12px;border:2px dashed #5E35B1;border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:#fff;">
-          <input id="mcqXlsFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleMCQExcelImport(this)">
-          <div style="font-size:32px;margin-bottom:6px;">&#128202;</div>
-          <div id="mcqXlsLabel" style="font-size:13px;color:#333;font-weight:600;">Click to upload Excel (.xlsx) or CSV file</div>
-          <div style="font-size:11px;color:#777;margin-top:4px;">Max 20 MB &middot; Supports thousands of MCQs &middot; Columns auto-mapped</div>
+        <div class="drop-zone" id="pdfDropZone" onclick="document.getElementById('pdfQuizFile').click()" style="margin-bottom:12px;">
+          <input id="pdfQuizFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.csv,.tsv" style="display:none;" onchange="handleQuizDocument(this)">
+          <div style="font-size:28px;margin-bottom:6px;">📄🖼️</div>
+          <div id="pdfDropLabel" style="font-size:13px;color:#333;font-weight:500;">Click to upload a PDF, CSV/TSV table, or photo of the question paper</div>
+          <div style="font-size:11px;color:#777;margin-top:4px;">PDF, CSV, Excel TSV, JPG or PNG · max 15 MB · scanned pages run through automatic OCR</div>
         </div>
-        <div id="mcqXlsStatus" style="display:none;margin-bottom:12px;"></div>
-        <div id="mcqXlsPreview" style="display:none;margin-bottom:12px;overflow-x:auto;"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary" id="mcqXlsImportBtn" onclick="commitMCQExcelImport()" disabled style="background:#5E35B1;border-color:#5E35B1;opacity:0.5;">&#128229; Import to Quiz Bank</button>
-          <button class="btn btn-light" id="mcqXlsCancelBtn" onclick="cancelMCQExcelImport()" style="display:none;">&#10005; Cancel</button>
-        </div>
-        <div id="mcqXlsProgress" style="display:none;margin-top:10px;"></div>
+        <div id="pdfParseStatus" style="display:none;margin-bottom:12px;"></div>
+        <button class="btn btn-primary" id="pdfUploadBtn" onclick="uploadQuizPdf()" disabled>📤 Parse & Add to Quiz Bank</button>
       </div>
 
       <!-- Bulk Paste Entry -->
