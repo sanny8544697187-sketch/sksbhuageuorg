@@ -6132,6 +6132,14 @@ async function renderAdmin(){
       <div class="card" style="padding:20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
           <div style="font-weight:700;font-size:15px;">📋 Admin-Added Questions (${customQ})</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-sm" style="background:#FFF3E0;color:#E65100;font-size:11px;padding:4px 10px;border:1px solid #FFE0B2;border-radius:6px;cursor:pointer;font-weight:600;" onclick="clearExcelImportedMCQs()">
+              🗑 Clear Excel Imports Only
+            </button>
+            <button class="btn btn-sm" style="background:#FFEBEE;color:#C62828;font-size:11px;padding:4px 10px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;font-weight:600;" onclick="clearAllCustomQuizBank()">
+              ⚠️ Clear All Custom Questions
+            </button>
+          </div>
           <input id="cqSearchInput" class="inp" placeholder="🔍 Search questions…" style="width:auto;flex:1;max-width:240px;font-size:12px;padding:7px 12px;" value="${escapeHTML(customQSearch||"")}" oninput="customQSearch=this.value;renderCustomQList();">
         </div>
         <div id="customQListContainer"></div>
@@ -6293,6 +6301,14 @@ async function renderAdmin(){
       <div class="card" style="padding:20px;" id="pyqAdminList">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
           <div id="pyqAdminListCountTitle" style="font-weight:700;font-size:15px;flex:1;">Uploaded PYQs (${total})</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button class="btn btn-sm" style="background:#FFF3E0;color:#E65100;font-size:11px;padding:4px 10px;border:1px solid #FFE0B2;border-radius:6px;cursor:pointer;font-weight:600;" onclick="clearExcelImportedPYQs()">
+              🗑 Clear Excel Imports Only
+            </button>
+            <button class="btn btn-sm" style="background:#FFEBEE;color:#C62828;font-size:11px;padding:4px 10px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;font-weight:600;" onclick="clearAllPYQs()">
+              ⚠️ Clear All PYQs
+            </button>
+          </div>
           <input id="pyqAdminSearch" class="inp" placeholder="🔍 Search…" style="width:auto;flex:1;max-width:220px;font-size:12px;padding:7px 12px;" oninput="renderAdminPYQList()">
         </div>
         <div id="pyqAdminListItems"></div>
@@ -11819,7 +11835,119 @@ function loadPYQPdfsFromFirestore(){if(!window.firebase||!firebase.firestore)ret
 <!-- Play Store Banner -->
 <!-- Play Store Banner Removed -->
   <script src="./agri-exams-db.js"></script>
-  <script src="./agri-harvester.js"></script>
+  <script src="./agri-harvester.js">
+// ═══════════════════════════════════════════════════════════════
+// KrishiGyan - Bulk Cleanup Utilities for Quiz & PYQ Banks
+// ═══════════════════════════════════════════════════════════════
+
+// Delete only MCQs uploaded via Excel import
+async function clearExcelImportedMCQs() {
+  var count = 0;
+  var subjs = Object.keys(customQuizBank || {});
+  subjs.forEach(function(s) {
+    if (Array.isArray(customQuizBank[s])) {
+      customQuizBank[s] = customQuizBank[s].filter(function(q) {
+        if (q.source === 'excel_import' || (q.id && q.id.startsWith('xi_'))) {
+          count++;
+          return false;
+        }
+        return true;
+      });
+      if (customQuizBank[s].length === 0) delete customQuizBank[s];
+    }
+  });
+
+  if (count === 0) {
+    // Also check if user has questions that have wrong/short names like KG-AG- or id prefix
+    if (!confirm('No questions explicitly tagged "excel_import" found. Would you like to clear ALL custom questions instead?')) {
+      return;
+    }
+    return clearAllCustomQuizBank();
+  }
+
+  if (!confirm('Delete all ' + count + ' Excel-imported questions from Quiz Bank? Built-in questions will NOT be touched.')) {
+    return;
+  }
+
+  await saveCustomQuizBank(customQuizBank);
+  rebuildQuizBank();
+  updateQuizCount();
+  toast('Removed ' + count + ' Excel imported questions.');
+  if (typeof renderAdmin === 'function') renderAdmin();
+}
+
+// Delete ALL admin-added / imported custom quiz questions
+async function clearAllCustomQuizBank() {
+  var total = Object.values(customQuizBank || {}).reduce(function(acc, a){ return acc + (Array.isArray(a)?a.length:0); }, 0);
+  if (total === 0) {
+    alert('Custom Quiz Bank is already empty.');
+    return;
+  }
+
+  if (!confirm('WARNING: Are you sure you want to delete ALL ' + total + ' custom quiz questions? Built-in questions are preserved.')) {
+    return;
+  }
+
+  try {
+    // Delete split subject docs in Firestore
+    var subjs = Object.keys(customQuizBank || {});
+    if (typeof sDel === 'function') {
+      await Promise.all(subjs.map(function(s){ return sDel('bhu:customquizbank_subj_' + s); }));
+      await sDel('bhu:customquizbank_split');
+      await sDel('bhu:customquizbank');
+    }
+    // Clear localStorage
+    try {
+      localStorage.removeItem('bhu:cqb_subjects');
+      subjs.forEach(function(s){ localStorage.removeItem('bhu:cqb_subj_' + s); });
+    } catch(e) {}
+
+    window.customQuizBank = {};
+    rebuildQuizBank();
+    updateQuizCount();
+    toast('Custom Quiz Bank cleared successfully.');
+    if (typeof renderAdmin === 'function') renderAdmin();
+  } catch(err) {
+    console.error('Error clearing Custom Quiz Bank:', err);
+    alert('Error clearing bank: ' + err.message);
+  }
+}
+
+// Delete only Excel imported PYQs from pyqData
+async function clearExcelImportedPYQs() {
+  if (!Array.isArray(pyqData) || !pyqData.length) {
+    alert('PYQ Bank is already empty.');
+    return;
+  }
+  var origLen = pyqData.length;
+  pyqData = pyqData.filter(function(q) {
+    return !(q.source === 'excel_import' || (q.id && q.id.startsWith('pyqxi_')));
+  });
+  var removed = origLen - pyqData.length;
+  if (removed === 0) {
+    if (!confirm('No questions tagged "excel_import" found in PYQ Bank. Would you like to clear ALL PYQ questions instead?')) return;
+    return clearAllPYQs();
+  }
+  if (!confirm('Delete ' + removed + ' Excel-imported questions from PYQ Bank?')) return;
+  await sSet('bhu:pyqdata', pyqData);
+  toast('Removed ' + removed + ' PYQ questions.');
+  if (typeof renderAdmin === 'function') renderAdmin();
+}
+
+// Delete ALL PYQs from pyqData
+async function clearAllPYQs() {
+  if (!Array.isArray(pyqData) || !pyqData.length) {
+    alert('PYQ Bank is already empty.');
+    return;
+  }
+  if (!confirm('WARNING: Delete ALL ' + pyqData.length + ' PYQ questions from the database?')) return;
+  pyqData = [];
+  await sSet('bhu:pyqdata', pyqData);
+  toast('PYQ Bank cleared.');
+  if (typeof renderAdmin === 'function') renderAdmin();
+}
+
+</script>
 </body>
 </html>
 
