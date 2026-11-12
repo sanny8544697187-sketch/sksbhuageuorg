@@ -1339,7 +1339,7 @@ window._fbConfigured = false;
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
         <div><strong id="statResources">151</strong><span>Resources</span></div>
         <div><strong id="statBooks">28</strong><span>Ebooks available</span></div>
-        <div><strong id="statQuizCount">100+</strong><span>Quiz Qs</span></div>
+        <div><strong id="statQuizCount">37+</strong><span>Quiz Qs</span></div>
       </div>
     </div>
 
@@ -3301,7 +3301,6 @@ function updateQuizCount() {
 
 
 async function loadCustomQuizBank() {
-  return null;
   const result = {};
   // 1. Try reading the combined doc from Firestore (old format, small banks)
   const combined = await sGet("bhu:customquizbank");
