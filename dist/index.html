@@ -3301,6 +3301,10 @@ function updateQuizCount() {
 
 
 async function loadCustomQuizBank() {
+  // If admin requested a full wipe of custom quiz questions:
+  if (localStorage.getItem("bhu:reset_custom_quiz_done") === "true") {
+    return null;
+  }
   const result = {};
   // 1. Try reading the combined doc from Firestore (old format, small banks)
   const combined = await sGet("bhu:customquizbank");
@@ -3515,6 +3519,31 @@ window.addEventListener("DOMContentLoaded", async () => {
       try { await loadPYQPdfs(); } catch(e) {}
 
       try {
+        // Clear custom quiz bank if it contained the corrupted 6,000 questions
+        if (localStorage.getItem("bhu:customquizbank_cleared_v54") !== "true") {
+          try {
+            var rawSubjs = localStorage.getItem("bhu:cqb_subjects");
+            if (rawSubjs) {
+              var sArr = JSON.parse(rawSubjs);
+              if (Array.isArray(sArr)) {
+                sArr.forEach(function(s){ localStorage.removeItem("bhu:cqb_subj_" + s); });
+                if (typeof sDel === 'function') {
+                  await Promise.all(sArr.map(function(s){ return sDel("bhu:customquizbank_subj_" + s); }));
+                }
+              }
+            }
+            localStorage.removeItem("bhu:cqb_subjects");
+            if (typeof sDel === 'function') {
+              await sDel("bhu:customquizbank_split");
+              await sDel("bhu:customquizbank");
+            }
+            window.customQuizBank = {};
+            localStorage.setItem("bhu:customquizbank_cleared_v54", "true");
+            console.log("[KG] Corrupted custom quiz questions automatically purged.");
+          } catch(err) {
+            console.warn("[KG] Auto-purge error:", err);
+          }
+        }
         const cqb = await loadCustomQuizBank();
         if(cqb){ customQuizBank=cqb; rebuildQuizBank(); updateQuizCount(); renderQuizStart(); }
       } catch(e) {}
