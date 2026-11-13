@@ -937,8 +937,7 @@
 <script>setTimeout(function(){var s=document.getElementById("splash");if(s)s.style.display="none";}, 300);</script>
 
 <!-- Firebase SDK -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
@@ -1339,7 +1338,7 @@ window._fbConfigured = false;
         <div><strong id="statSubjects">13</strong><span>Subjects</span></div>
         <div><strong id="statResources">151</strong><span>Resources</span></div>
         <div><strong id="statBooks">28</strong><span>Ebooks available</span></div>
-        <div><strong id="statQuizCount">37+</strong><span>Quiz Qs</span></div>
+        <div><strong id="statQuizCount">100+</strong><span>Quiz Qs</span></div>
       </div>
     </div>
 
@@ -3331,7 +3330,6 @@ async function loadCustomQuizBank() {
   return Object.keys(result).length > 0 ? result : null;
 }
 async function saveCustomQuizBank(cqb) {
-  if (!cqb) cqb = (typeof window !== 'undefined' && window.customQuizBank) ? window.customQuizBank : {};
   const subjects = Object.keys(cqb);
   // Always write localStorage backup per-subject first (survives hard refresh + Firebase failures)
   try {
@@ -3515,7 +3513,6 @@ window.addEventListener("DOMContentLoaded", async () => {
       try { await loadPYQPdfs(); } catch(e) {}
 
       try {
-        // Corrupted import purge completed
         const cqb = await loadCustomQuizBank();
         if(cqb){ customQuizBank=cqb; rebuildQuizBank(); updateQuizCount(); renderQuizStart(); }
       } catch(e) {}
@@ -4261,7 +4258,6 @@ function renderSubjectDetailPage(subjectName) {
                 <div style="display:flex;gap:6px;margin-top:auto;padding-top:4px;">
                   <button class="btn btn-primary btn-sm" onclick="viewPaperDirect('${p.id}')" style="font-size:11px;padding:4px 10px;">👁 View</button>
                   <button class="btn btn-light btn-sm" onclick="downloadPYQPdf('${p.id}')" style="font-size:11px;padding:4px 10px;">⬇ Download</button>
-                      <button class="btn btn-light btn-sm" onclick="sharePYQPaperLink('${p.id}')" style="font-size:11px;padding:4px 10px;">&#128279; Share</button>
                   ${p.answerKeyLink ? `<button class="btn btn-light btn-sm" onclick="viewAnswerKey('${p.id}')" style="font-size:11px;padding:4px 10px;background:#FFF3E0;color:#E65100;">🔑 Key</button>` : ''}
                 </div>
               </div>
@@ -6120,14 +6116,6 @@ async function renderAdmin(){
       <div class="card" style="padding:20px;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
           <div style="font-weight:700;font-size:15px;">📋 Admin-Added Questions (${customQ})</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="btn btn-sm" style="background:#FFF3E0;color:#E65100;font-size:11px;padding:4px 10px;border:1px solid #FFE0B2;border-radius:6px;cursor:pointer;font-weight:600;" onclick="clearExcelImportedMCQs()">
-              🗑 Clear Excel Imports Only
-            </button>
-            <button class="btn btn-sm" style="background:#FFEBEE;color:#C62828;font-size:11px;padding:4px 10px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;font-weight:600;" onclick="clearAllCustomQuizBank()">
-              ⚠️ Clear All Custom Questions
-            </button>
-          </div>
           <input id="cqSearchInput" class="inp" placeholder="🔍 Search questions…" style="width:auto;flex:1;max-width:240px;font-size:12px;padding:7px 12px;" value="${escapeHTML(customQSearch||"")}" oninput="customQSearch=this.value;renderCustomQList();">
         </div>
         <div id="customQListContainer"></div>
@@ -6141,55 +6129,43 @@ async function renderAdmin(){
         <div style="font-size:12px;color:#777;">Add previous year questions via PDF upload, bulk paste, or manual entry.</div>
       </div>
 
-      <!-- Excel/CSV Bulk Import for PYQ Bank -->
-      <div class="card" style="padding:22px;margin-bottom:16px;border:2px solid #00B050;border-radius:14px;background:#F9FCF9;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-          <div style="font-weight:800;font-size:15px;color:#0F3D23;display:flex;align-items:center;gap:8px;">
-            <span style="font-size:20px;">&#128202;</span> Bulk Import PYQs from Excel / CSV
-          </div>
-          <button class="btn btn-light" style="font-size:11px;padding:5px 12px;border:1px solid #00B050;color:#00B050;" onclick="downloadPYQSampleTemplate()">
-            &#11015; Download Sample Template
-          </button>
-        </div>
-        <div style="font-size:12px;color:#666;margin-bottom:14px;line-height:1.6;background:#E8F5E9;padding:10px 12px;border-radius:8px;border-left:3px solid #00B050;">
-          Upload an <strong>Excel (.xlsx)</strong> or <strong>CSV</strong> file with PYQ MCQs. Required columns: <strong>Subject, Topic, Exam, Year, Question, OptionA, OptionB, OptionC, OptionD, Answer, Explanation, Difficulty</strong>. Columns are auto-detected.
-        </div>
+      <!-- PYQ PDF Upload -->
+      <div class="card" style="padding:22px;margin-bottom:16px;">
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📄 Bulk Import PYQs from PDF / Image</div>
+        <div style="font-size:12px;color:#777;margin-bottom:12px;line-height:1.7;">Upload a scanned or digital PDF of a previous year paper. Questions are auto-parsed in Q./A./B./C./D./ANS: format.<br>Set Exam, Year and Subject before importing — they apply to all imported questions.</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
-          <div><label class="lbl">Default Exam (if not in file)</label>
-            <select id="pyqXlsExam" class="inp">
-              <option>CUET PG / ICAR AIEEA</option><option>ICAR JRF / SRF</option><option>IBPS AFO</option>
-              <option>NABARD Grade A</option><option>State PSC / ADO / SADO</option><option>UPSC IFS / Agriculture</option>
-              <option>BHU ENTRANCE</option><option>IARI PG PAPER</option><option>OTHER</option>
+          <div><label class="lbl">Exam</label>
+            <select id="pyqBulkExam" class="inp">
+              <option>CUET PG / ICAR AIEEA</option>
+              <option>ICAR JRF / SRF</option>
+              <option>IBPS AFO</option>
+              <option>NABARD Grade A</option>
+              <option>State PSC / ADO / SADO</option>
+              <option>UPSC IFS / Agriculture</option>
+              <option>BHU ENTRANCE</option>
+              <option>IARI PG PAPER</option>
+              <option>OTHER</option>
             </select>
           </div>
-          <div><label class="lbl">Default Year (if not in file)</label>
-            <select id="pyqXlsYear" class="inp">
-              <option>2026</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option>
-              <option>2021</option><option>2020</option><option>2019</option><option>2018</option><option>2017</option>
+          <div><label class="lbl">Year</label>
+            <select id="pyqBulkYear" class="inp">
+              ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
             </select>
           </div>
-          <div><label class="lbl">Default Subject (if not in file)</label>
-            <select id="pyqXlsSubject" class="inp">
-              <option>Agronomy</option><option>Soil Science</option><option>Horticulture</option>
-              <option>Plant Pathology</option><option>Entomology</option><option>Genetics &amp; Plant Breeding</option>
-              <option>Agricultural Economics</option><option>Agricultural Extension</option>
-              <option>Agricultural Engineering</option><option>Animal Husbandry</option><option>General Agriculture</option>
+          <div><label class="lbl">Default Subject</label>
+            <select id="pyqBulkSubject" class="inp">
+              ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
             </select>
           </div>
         </div>
-        <div id="pyqXlsDropZone" onclick="document.getElementById('pyqXlsFile').click()" style="margin-bottom:12px;border:2px dashed #00B050;border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:#fff;">
-          <input id="pyqXlsFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handlePYQExcelImport(this)">
-          <div style="font-size:32px;margin-bottom:6px;">&#128202;</div>
-          <div id="pyqXlsLabel" style="font-size:13px;color:#333;font-weight:600;">Click to upload Excel (.xlsx) or CSV file</div>
-          <div style="font-size:11px;color:#777;margin-top:4px;">Max 20 MB &middot; Supports thousands of MCQs &middot; Columns auto-mapped</div>
+        <div class="drop-zone" onclick="document.getElementById('pyqBulkFile').click()" style="margin-bottom:10px;">
+          <input id="pyqBulkFile" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="handlePYQBulkFile(this)">
+          <div style="font-size:26px;margin-bottom:6px;">📄</div>
+          <div id="pyqBulkLabel" style="font-size:13px;color:#333;font-weight:500;">Click to upload PDF or photo of question paper</div>
+          <div style="font-size:11px;color:#777;margin-top:3px;">Max 15 MB · scanned pages auto-OCR'd</div>
         </div>
-        <div id="pyqXlsStatus" style="display:none;margin-bottom:12px;"></div>
-        <div id="pyqXlsPreview" style="display:none;margin-bottom:12px;overflow-x:auto;"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary" id="pyqXlsImportBtn" onclick="commitPYQExcelImport()" disabled style="opacity:0.5;">&#128229; Import to PYQ Bank</button>
-          <button class="btn btn-light" id="pyqXlsCancelBtn" onclick="cancelPYQExcelImport()" style="display:none;">&#10005; Cancel</button>
-        </div>
-        <div id="pyqXlsProgress" style="display:none;margin-top:10px;"></div>
+        <div id="pyqBulkStatus" style="display:none;margin-bottom:10px;"></div>
+        <button class="btn btn-primary" id="pyqBulkAddBtn" onclick="addBulkPYQQuestions()" disabled>➕ Add All to PYQ Bank</button>
       </div>
 
       <!-- PYQ Bulk Paste -->
@@ -6289,14 +6265,6 @@ async function renderAdmin(){
       <div class="card" style="padding:20px;" id="pyqAdminList">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
           <div id="pyqAdminListCountTitle" style="font-weight:700;font-size:15px;flex:1;">Uploaded PYQs (${total})</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="btn btn-sm" style="background:#FFF3E0;color:#E65100;font-size:11px;padding:4px 10px;border:1px solid #FFE0B2;border-radius:6px;cursor:pointer;font-weight:600;" onclick="clearExcelImportedPYQs()">
-              🗑 Clear Excel Imports Only
-            </button>
-            <button class="btn btn-sm" style="background:#FFEBEE;color:#C62828;font-size:11px;padding:4px 10px;border:1px solid #FFCDD2;border-radius:6px;cursor:pointer;font-weight:600;" onclick="clearAllPYQs()">
-              ⚠️ Clear All PYQs
-            </button>
-          </div>
           <input id="pyqAdminSearch" class="inp" placeholder="🔍 Search…" style="width:auto;flex:1;max-width:220px;font-size:12px;padding:7px 12px;" oninput="renderAdminPYQList()">
         </div>
         <div id="pyqAdminListItems"></div>
@@ -8410,19 +8378,6 @@ function renderAdminPYQPdfSection() {
           <label class="lbl">Subject / Specialization</label>
           <input id="pyqPdfSubject" class="inp" placeholder="e.g. Agronomy, Soil Science, General">
         </div>
-          <div>
-            <label class="lbl">Phase (optional)</label>
-            <input type="text" id="pyqPdfPhase" class="inp" placeholder="e.g. Phase 1, Shift 1" />
-          </div>
-          <div>
-            <label class="lbl">Shift (optional)</label>
-            <select id="pyqPdfShift" class="inp">
-              <option value="">Not Applicable</option>
-              <option value="Morning">Morning Shift</option>
-              <option value="Afternoon">Afternoon Shift</option>
-              <option value="Evening">Evening Shift</option>
-            </select>
-          </div>
 
         <div>
           <label class="lbl">Conducting Institution / Board</label>
@@ -11789,30 +11744,6 @@ async function deleteNotice(id) {
   toast("Notice deleted");
   renderAdminNotices();
 }
-
-// KrishiGyan v52 - Excel Import + Share + Firebase Storage
-function parseExcelOrCSV(file){return new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(e){try{var data=new Uint8Array(e.target.result);var wb=XLSX.read(data,{type:'array'});var ws=wb.Sheets[wb.SheetNames[0]];resolve(XLSX.utils.sheet_to_json(ws,{defval:''}));}catch(err){reject(err);}};reader.onerror=function(){reject(new Error('File read error'));};reader.readAsArrayBuffer(file);});}
-function _xlsFindCol(headers,aliases){var lower=headers.map(function(h){return String(h).toLowerCase().replace(/[^a-z0-9]/g,'');});for(var i=0;i<aliases.length;i++){var alias=aliases[i].toLowerCase().replace(/[^a-z0-9]/g,'');for(var j=0;j<lower.length;j++){if(lower[j]===alias||lower[j].includes(alias)||alias.includes(lower[j])){return headers[j];}}}return null;}
-function _mapMCQRow(row,colMap,defaults){var get=function(key){return key?String(row[key]||'').trim():'';};return{subject:get(colMap.subject)||defaults.subject||'General Agriculture',topic:get(colMap.topic)||defaults.topic||'',exam:get(colMap.exam)||defaults.exam||'General',year:get(colMap.year)||defaults.year||String(new Date().getFullYear()),question:get(colMap.question),options:[get(colMap.a),get(colMap.b),get(colMap.c),get(colMap.d)],answer:get(colMap.answer),explanation:get(colMap.explanation)||'',difficulty:(get(colMap.difficulty)||defaults.difficulty||'medium').toLowerCase()};}
-function _validateMCQRow(r,rowNum){var e=[];if(!r.question)e.push('Missing question');if(!r.options[0]||!r.options[1]||!r.options[2]||!r.options[3])e.push('Missing options');if(!r.answer)e.push('Missing answer');return e;}
-function _normalizeAnswer(val,opts){var v=String(val).trim().toUpperCase();if(v==='A'||v==='1')return 0;if(v==='B'||v==='2')return 1;if(v==='C'||v==='3')return 2;if(v==='D'||v==='4')return 3;for(var i=0;i<opts.length;i++){if(opts[i]&&opts[i].toLowerCase()===val.toLowerCase())return i;}return 0;}
-function _renderXlsPreviewTable(validRows,errorRows,maxShow,containerId){var el=document.getElementById(containerId);if(!el)return;var showRows=validRows.slice(0,maxShow);var h='<div style="margin-bottom:8px;font-size:12px;color:#333;"><strong style="color:#00B050;">'+validRows.length+' valid</strong>'+(errorRows.length?' &nbsp;|&nbsp; <strong style="color:#c62828;">'+errorRows.length+' errors</strong>':'')+'</div>';h+='<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:#0F3D23;color:#fff;"><th style="padding:5px 8px;">Row</th><th style="padding:5px 8px;">Subject</th><th style="padding:5px 8px;">Question</th><th style="padding:5px 8px;">Ans</th><th style="padding:5px 8px;">Status</th></tr></thead><tbody>';showRows.forEach(function(r,i){var q=r.question?(r.question.slice(0,55)+(r.question.length>55?'...':'')):'-';h+='<tr style="background:'+(i%2===0?'#f9f9f9':'#fff')+';"><td style="padding:4px 8px;">'+(i+1)+'</td><td style="padding:4px 8px;">'+(r.subject||'-')+'</td><td style="padding:4px 8px;">'+q+'</td><td style="padding:4px 8px;">'+(r.answer||'-')+'</td><td style="padding:4px 8px;color:#00B050;">&#10003;</td></tr>';});if(validRows.length>maxShow)h+='<tr><td colspan="5" style="padding:6px;text-align:center;color:#666;font-style:italic;">...and '+(validRows.length-maxShow)+' more</td></tr>';errorRows.slice(0,5).forEach(function(e){h+='<tr style="background:#FFF3F3;"><td style="padding:4px 8px;color:#c62828;">'+(e.row||'?')+'</td><td colspan="3" style="padding:4px 8px;color:#c62828;">'+(e.errors?e.errors.join('; '):'Error')+'</td><td style="padding:4px 8px;color:#c62828;">&#10005;</td></tr>';});h+='</tbody></table>';el.innerHTML=h;el.style.display='block';}
-function _commitMCQBatch(entries,progressId,bankKey,isQuizBank){var progressEl=document.getElementById(progressId);var total=entries.length;var batchSize=450;var committed=0;async function processBatch(start){var batch=entries.slice(start,start+batchSize);if(isQuizBank){batch.forEach(function(e){var subj=e.subject||'General Agriculture';if(!window.customQuizBank)window.customQuizBank={};if(!window.customQuizBank[subj])window.customQuizBank[subj]=[];var ansIdx=_normalizeAnswer(e.answer,e.options);window.customQuizBank[subj].push({q:e.question,opts:e.options,ans:ansIdx,exp:e.explanation||'',topic:e.topic||'',exam:e.exam||'',year:e.year||'',difficulty:e.difficulty||'medium',source:'excel_import',id:'xi_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)});});if(typeof saveCustomQuizBank==='function'){ try{ await saveCustomQuizBank(window.customQuizBank); }catch(err){ console.warn('saveCustomQuizBank err:', err); } }}else{var pyqData=(typeof sGet==='function'?sGet('bhu:pyqdata'):null)||[];batch.forEach(function(e){var ansIdx=_normalizeAnswer(e.answer,e.options);pyqData.push({q:e.question,opts:e.options,ans:ansIdx,exp:e.explanation||'',subject:e.subject||'General Agriculture',topic:e.topic||'',exam:e.exam||'',year:e.year||'',difficulty:e.difficulty||'medium',source:'excel_import',id:'pyqxi_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)});});if(typeof sSet==='function'){ try{ await sSet('bhu:pyqdata',pyqData); }catch(err){ console.warn('sSet pyqdata err:', err); } }}committed+=batch.length;if(progressEl)progressEl.innerHTML='<div style="padding:8px;background:#E8F5E9;border-radius:6px;font-size:12px;color:#0F3D23;">Committed '+committed+' / '+total+'...</div>';if(start+batchSize<total){setTimeout(function(){processBatch(start+batchSize);},100);}else{if(progressEl)progressEl.innerHTML='<div style="padding:10px;background:#E8F5E9;border-radius:6px;font-size:13px;color:#0F3D23;font-weight:600;">&#10003; Successfully imported '+total+' records!</div>';}}processBatch(0);}
-var _pyqXlsValid=[],_pyqXlsErrors=[];
-function handlePYQExcelImport(input){var file=input.files[0];if(!file)return;var labelEl=document.getElementById('pyqXlsLabel'),statusEl=document.getElementById('pyqXlsStatus'),importBtn=document.getElementById('pyqXlsImportBtn');if(labelEl)labelEl.textContent='Parsing '+file.name+'...';if(statusEl){statusEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;">Parsing file...</div>';statusEl.style.display='block';}parseExcelOrCSV(file).then(function(rows){if(!rows||!rows.length){if(statusEl)statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">No data found.</div>';return;}var headers=Object.keys(rows[0]),colMap={subject:_xlsFindCol(headers,['subject','sub']),topic:_xlsFindCol(headers,['topic','chapter','unit']),exam:_xlsFindCol(headers,['exam','examination','test']),year:_xlsFindCol(headers,['year','yr']),question:_xlsFindCol(headers,['question','q','ques']),a:_xlsFindCol(headers,['optiona','option a','opt a','opta','a']),b:_xlsFindCol(headers,['optionb','option b','opt b','optb','b']),c:_xlsFindCol(headers,['optionc','option c','opt c','optc','c']),d:_xlsFindCol(headers,['optiond','option d','opt d','optd','d']),answer:_xlsFindCol(headers,['answer','ans','correct']),explanation:_xlsFindCol(headers,['explanation','exp','expl','reason']),difficulty:_xlsFindCol(headers,['difficulty','level','diff'])};var exam=document.getElementById('pyqXlsExam')?document.getElementById('pyqXlsExam').value:'General',year=document.getElementById('pyqXlsYear')?document.getElementById('pyqXlsYear').value:'2025',subject=document.getElementById('pyqXlsSubject')?document.getElementById('pyqXlsSubject').value:'Agronomy',defaults={exam:exam,year:year,subject:subject};_pyqXlsValid=[];_pyqXlsErrors=[];rows.forEach(function(row,i){var mapped=_mapMCQRow(row,colMap,defaults),errs=_validateMCQRow(mapped,i+2);if(errs.length)_pyqXlsErrors.push({row:i+2,errors:errs});else _pyqXlsValid.push(mapped);});_renderXlsPreviewTable(_pyqXlsValid,_pyqXlsErrors,20,'pyqXlsPreview');if(statusEl)statusEl.innerHTML='<div style="padding:8px;background:#E8F5E9;border-radius:6px;font-size:12px;color:#0F3D23;">Parsed <strong>'+rows.length+'</strong> rows: <strong>'+_pyqXlsValid.length+'</strong> valid, <strong>'+_pyqXlsErrors.length+'</strong> errors.</div>';if(labelEl)labelEl.textContent=file.name+' ('+rows.length+' rows)';if(importBtn){importBtn.disabled=!_pyqXlsValid.length;importBtn.style.opacity=_pyqXlsValid.length?'1':'0.5';}var cb=document.getElementById('pyqXlsCancelBtn');if(cb)cb.style.display='inline-block';}).catch(function(err){if(statusEl)statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">Error: '+(err.message||err)+'</div>';});}
-function commitPYQExcelImport(){if(!_pyqXlsValid.length){alert('No valid rows!');return;}var p=document.getElementById('pyqXlsProgress');if(p)p.style.display='block';var b=document.getElementById('pyqXlsImportBtn');if(b){b.disabled=true;b.style.opacity='0.5';}_commitMCQBatch(_pyqXlsValid,'pyqXlsProgress','bhu:pyqdata',false);}
-function cancelPYQExcelImport(){_pyqXlsValid=[];_pyqXlsErrors=[];['pyqXlsStatus','pyqXlsPreview','pyqXlsProgress'].forEach(function(id){var el=document.getElementById(id);if(el){el.innerHTML='';el.style.display='none';}});var l=document.getElementById('pyqXlsLabel');if(l)l.textContent='Click to upload Excel (.xlsx) or CSV file';var b=document.getElementById('pyqXlsImportBtn');if(b){b.disabled=true;b.style.opacity='0.5';}var c=document.getElementById('pyqXlsCancelBtn');if(c)c.style.display='none';var f=document.getElementById('pyqXlsFile');if(f)f.value='';}
-function downloadPYQSampleTemplate(){if(!window.XLSX){alert('SheetJS not loaded. Refresh page.');return;}var wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet([['Subject','Topic','Exam','Year','Question','OptionA','OptionB','OptionC','OptionD','Answer','Explanation','Difficulty'],['Agronomy','Crop Science','CUET PG / ICAR AIEEA','2024','Which is a Kharif crop?','Rice','Wheat','Barley','Mustard','A','Rice is Kharif crop.','easy'],['Soil Science','Soil Fertility','IBPS AFO','2023','pH of neutral soil:','6','7','8','5','B','Neutral pH is 7.','medium']]);XLSX.utils.book_append_sheet(wb,ws,'PYQ_MCQs');XLSX.writeFile(wb,'KrishiGyan_PYQ_Import_Template.xlsx');}
-var _mcqXlsValid=[],_mcqXlsErrors=[];
-function handleMCQExcelImport(input){var file=input.files[0];if(!file)return;var labelEl=document.getElementById('mcqXlsLabel'),statusEl=document.getElementById('mcqXlsStatus'),importBtn=document.getElementById('mcqXlsImportBtn');if(labelEl)labelEl.textContent='Parsing '+file.name+'...';if(statusEl){statusEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;">Parsing file...</div>';statusEl.style.display='block';}parseExcelOrCSV(file).then(function(rows){if(!rows||!rows.length){if(statusEl)statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">No data found.</div>';return;}var headers=Object.keys(rows[0]),colMap={subject:_xlsFindCol(headers,['subject','sub']),topic:_xlsFindCol(headers,['topic','chapter','unit']),exam:_xlsFindCol(headers,['exam','examination','test']),year:_xlsFindCol(headers,['year','yr']),question:_xlsFindCol(headers,['question','q','ques']),a:_xlsFindCol(headers,['optiona','option a','opt a','opta','a']),b:_xlsFindCol(headers,['optionb','option b','opt b','optb','b']),c:_xlsFindCol(headers,['optionc','option c','opt c','optc','c']),d:_xlsFindCol(headers,['optiond','option d','opt d','optd','d']),answer:_xlsFindCol(headers,['answer','ans','correct']),explanation:_xlsFindCol(headers,['explanation','exp','expl','reason']),difficulty:_xlsFindCol(headers,['difficulty','level','diff'])};var subj=document.getElementById('mcqXlsSubject')?document.getElementById('mcqXlsSubject').value:'General Agriculture',exam=document.getElementById('mcqXlsExam')?document.getElementById('mcqXlsExam').value:'General',diff=document.getElementById('mcqXlsDifficulty')?document.getElementById('mcqXlsDifficulty').value:'medium',defaults={subject:subj,exam:exam,difficulty:diff};_mcqXlsValid=[];_mcqXlsErrors=[];rows.forEach(function(row,i){var mapped=_mapMCQRow(row,colMap,defaults),errs=_validateMCQRow(mapped,i+2);if(errs.length)_mcqXlsErrors.push({row:i+2,errors:errs});else _mcqXlsValid.push(mapped);});_renderXlsPreviewTable(_mcqXlsValid,_mcqXlsErrors,20,'mcqXlsPreview');if(statusEl)statusEl.innerHTML='<div style="padding:8px;background:#EDE7F6;border-radius:6px;font-size:12px;color:#1a0533;">Parsed <strong>'+rows.length+'</strong> rows: <strong>'+_mcqXlsValid.length+'</strong> valid, <strong>'+_mcqXlsErrors.length+'</strong> errors.</div>';if(labelEl)labelEl.textContent=file.name+' ('+rows.length+' rows)';if(importBtn){importBtn.disabled=!_mcqXlsValid.length;importBtn.style.opacity=_mcqXlsValid.length?'1':'0.5';}var cb=document.getElementById('mcqXlsCancelBtn');if(cb)cb.style.display='inline-block';}).catch(function(err){if(statusEl)statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">Error: '+(err.message||err)+'</div>';});}
-function commitMCQExcelImport(){if(!_mcqXlsValid.length){alert('No valid rows!');return;}var p=document.getElementById('mcqXlsProgress');if(p)p.style.display='block';var b=document.getElementById('mcqXlsImportBtn');if(b){b.disabled=true;b.style.opacity='0.5';}_commitMCQBatch(_mcqXlsValid,'mcqXlsProgress','customQuizBank',true);}
-function cancelMCQExcelImport(){_mcqXlsValid=[];_mcqXlsErrors=[];['mcqXlsStatus','mcqXlsPreview','mcqXlsProgress'].forEach(function(id){var el=document.getElementById(id);if(el){el.innerHTML='';el.style.display='none';}});var l=document.getElementById('mcqXlsLabel');if(l)l.textContent='Click to upload Excel (.xlsx) or CSV file';var b=document.getElementById('mcqXlsImportBtn');if(b){b.disabled=true;b.style.opacity='0.5';}var c=document.getElementById('mcqXlsCancelBtn');if(c)c.style.display='none';var f=document.getElementById('mcqXlsFile');if(f)f.value='';}
-function downloadMCQSampleTemplate(){if(!window.XLSX){alert('SheetJS not loaded. Refresh page.');return;}var wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet([['Subject','Topic','Exam','Year','Question','OptionA','OptionB','OptionC','OptionD','Answer','Explanation','Difficulty'],['Agronomy','Crop Science','CUET PG / ICAR AIEEA','2024','Which is a Kharif crop?','Rice','Wheat','Barley','Mustard','A','Rice is Kharif crop.','easy'],['Soil Science','Soil Fertility','IBPS AFO','2023','pH of neutral soil:','6','7','8','5','B','Neutral pH is 7.','medium'],['Horticulture','Fruits','ICAR JRF','2022','King of fruits:','Mango','Banana','Apple','Guava','A','Mango is King of fruits.','easy']]);XLSX.utils.book_append_sheet(wb,ws,'MCQ_Bank');XLSX.writeFile(wb,'KrishiGyan_MCQ_Import_Template.xlsx');}
-function sharePYQPaperLink(paperId){var shareUrl=window.location.origin+window.location.pathname+'?pyqpdf='+paperId,shareData={title:'KrishiGyan - Previous Year Paper',text:'Check out this previous year paper on KrishiGyan!',url:shareUrl};if(navigator.share){navigator.share(shareData).catch(function(){});}else if(navigator.clipboard){navigator.clipboard.writeText(shareUrl).then(function(){alert('Link copied to clipboard!');});}else{prompt('Copy this link:',shareUrl);}}
-function uploadPYQPdfToStorage(file,paperId){return new Promise(function(resolve,reject){if(!window.firebase||!firebase.storage){reject(new Error('Firebase Storage not available'));return;}var storageRef=firebase.storage().ref('pyq_papers/'+paperId+'/'+file.name);var uploadTask=storageRef.put(file);uploadTask.on('state_changed',function(snap){},function(err){reject(err);},function(){uploadTask.snapshot.ref.getDownloadURL().then(resolve).catch(reject);});});}
-function loadPYQPdfsFromFirestore(){if(!window.firebase||!firebase.firestore)return;firebase.firestore().collection('pyq_papers').orderBy('uploadDate','desc').limit(100).get().then(function(snap){if(snap.empty)return;var pyqPdfs=(typeof sGet==='function'?sGet('bhu:pyqpdfs'):null)||[];var fsIds=new Set(pyqPdfs.map(function(p){return p.id;}));snap.forEach(function(doc){if(!fsIds.has(doc.id))pyqPdfs.push(Object.assign({id:doc.id},doc.data()));});if(typeof sSet==='function')sSet('bhu:pyqpdfs',pyqPdfs);}).catch(function(err){});}
-(function(){if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(loadPYQPdfsFromFirestore,3000);});}else{setTimeout(loadPYQPdfsFromFirestore,3000);}})();
-
 </script>
 
 <script src="./representative-system.js"></script>
@@ -11823,119 +11754,7 @@ function loadPYQPdfsFromFirestore(){if(!window.firebase||!firebase.firestore)ret
 <!-- Play Store Banner -->
 <!-- Play Store Banner Removed -->
   <script src="./agri-exams-db.js"></script>
-  <script src="./agri-harvester.js">
-// ═══════════════════════════════════════════════════════════════
-// KrishiGyan - Bulk Cleanup Utilities for Quiz & PYQ Banks
-// ═══════════════════════════════════════════════════════════════
-
-// Delete only MCQs uploaded via Excel import
-async function clearExcelImportedMCQs() {
-  var count = 0;
-  var subjs = Object.keys(customQuizBank || {});
-  subjs.forEach(function(s) {
-    if (Array.isArray(customQuizBank[s])) {
-      customQuizBank[s] = customQuizBank[s].filter(function(q) {
-        if (q.source === 'excel_import' || (q.id && q.id.startsWith('xi_'))) {
-          count++;
-          return false;
-        }
-        return true;
-      });
-      if (customQuizBank[s].length === 0) delete customQuizBank[s];
-    }
-  });
-
-  if (count === 0) {
-    // Also check if user has questions that have wrong/short names like KG-AG- or id prefix
-    if (!confirm('No questions explicitly tagged "excel_import" found. Would you like to clear ALL custom questions instead?')) {
-      return;
-    }
-    return clearAllCustomQuizBank();
-  }
-
-  if (!confirm('Delete all ' + count + ' Excel-imported questions from Quiz Bank? Built-in questions will NOT be touched.')) {
-    return;
-  }
-
-  await saveCustomQuizBank(customQuizBank);
-  rebuildQuizBank();
-  updateQuizCount();
-  toast('Removed ' + count + ' Excel imported questions.');
-  if (typeof renderAdmin === 'function') renderAdmin();
-}
-
-// Delete ALL admin-added / imported custom quiz questions
-async function clearAllCustomQuizBank() {
-  var total = Object.values(customQuizBank || {}).reduce(function(acc, a){ return acc + (Array.isArray(a)?a.length:0); }, 0);
-  if (total === 0) {
-    alert('Custom Quiz Bank is already empty.');
-    return;
-  }
-
-  if (!confirm('WARNING: Are you sure you want to delete ALL ' + total + ' custom quiz questions? Built-in questions are preserved.')) {
-    return;
-  }
-
-  try {
-    // Delete split subject docs in Firestore
-    var subjs = Object.keys(customQuizBank || {});
-    if (typeof sDel === 'function') {
-      await Promise.all(subjs.map(function(s){ return sDel('bhu:customquizbank_subj_' + s); }));
-      await sDel('bhu:customquizbank_split');
-      await sDel('bhu:customquizbank');
-    }
-    // Clear localStorage
-    try {
-      localStorage.removeItem('bhu:cqb_subjects');
-      subjs.forEach(function(s){ localStorage.removeItem('bhu:cqb_subj_' + s); });
-    } catch(e) {}
-
-    window.customQuizBank = {};
-    rebuildQuizBank();
-    updateQuizCount();
-    toast('Custom Quiz Bank cleared successfully.');
-    if (typeof renderAdmin === 'function') renderAdmin();
-  } catch(err) {
-    console.error('Error clearing Custom Quiz Bank:', err);
-    alert('Error clearing bank: ' + err.message);
-  }
-}
-
-// Delete only Excel imported PYQs from pyqData
-async function clearExcelImportedPYQs() {
-  if (!Array.isArray(pyqData) || !pyqData.length) {
-    alert('PYQ Bank is already empty.');
-    return;
-  }
-  var origLen = pyqData.length;
-  pyqData = pyqData.filter(function(q) {
-    return !(q.source === 'excel_import' || (q.id && q.id.startsWith('pyqxi_')));
-  });
-  var removed = origLen - pyqData.length;
-  if (removed === 0) {
-    if (!confirm('No questions tagged "excel_import" found in PYQ Bank. Would you like to clear ALL PYQ questions instead?')) return;
-    return clearAllPYQs();
-  }
-  if (!confirm('Delete ' + removed + ' Excel-imported questions from PYQ Bank?')) return;
-  await sSet('bhu:pyqdata', pyqData);
-  toast('Removed ' + removed + ' PYQ questions.');
-  if (typeof renderAdmin === 'function') renderAdmin();
-}
-
-// Delete ALL PYQs from pyqData
-async function clearAllPYQs() {
-  if (!Array.isArray(pyqData) || !pyqData.length) {
-    alert('PYQ Bank is already empty.');
-    return;
-  }
-  if (!confirm('WARNING: Delete ALL ' + pyqData.length + ' PYQ questions from the database?')) return;
-  pyqData = [];
-  await sSet('bhu:pyqdata', pyqData);
-  toast('PYQ Bank cleared.');
-  if (typeof renderAdmin === 'function') renderAdmin();
-}
-
-</script>
+  <script src="./agri-harvester.js"></script>
 </body>
 </html>
 
