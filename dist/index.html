@@ -934,7 +934,18 @@
   <p style="font-size:13px;color:#777">Loading resources…</p>
   <div class="splash-bar"><div></div></div>
 </div>
-<script>setTimeout(function(){var s=document.getElementById("splash");if(s)s.style.display="none";}, 300);</script>
+<script>
+setTimeout(function(){var s=document.getElementById("splash");if(s)s.style.display="none";}, 300);
+// Early definitions to prevent ReferenceError if clicked before main bundle executes
+window.toggleDark = function() {
+  var isDark = document.body.classList.toggle("dark");
+  try { localStorage.setItem("bhu:theme", isDark ? "dark" : "light"); } catch(e){}
+};
+window.openLogin = function() {
+  var m = document.getElementById("loginModal");
+  if (m) m.classList.remove("hidden");
+};
+</script>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -9948,6 +9959,7 @@ function toggleDark(){
   document.body.classList.toggle("dark",dark);
   localStorage.setItem("bhu:theme",dark?"dark":"light");
 }
+window.toggleDark = toggleDark;
 
 function searchHeader(){
   const val=(document.getElementById("headerSearch")?.value || "").trim();
