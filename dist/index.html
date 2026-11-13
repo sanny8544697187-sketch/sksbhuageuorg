@@ -11976,10 +11976,14 @@ function _commitMCQBatch(entries,progressId,bankKey,isQuizBank){
         try{ await saveCustomQuizBank(window.customQuizBank); }catch(err){ console.warn('saveCustomQuizBank err:', err); }
       }
     } else {
-      var pyqData=(typeof sGet==='function'?sGet('bhu:pyqdata'):null)||[];
+      var loaded = null;
+      if (typeof sGet === 'function') {
+        try { loaded = await sGet('bhu:pyqdata'); } catch(_) {}
+      }
+      var targetPyq = Array.isArray(loaded) ? loaded : (Array.isArray(window.pyqData) ? window.pyqData : (Array.isArray(pyqData) ? pyqData : []));
       batch.forEach(function(e){
         var ansIdx=_normalizeAnswer(e.answer,e.options);
-        pyqData.push({
+        targetPyq.push({
           q: e.question,
           opts: e.options,
           ans: ansIdx,
@@ -11993,8 +11997,11 @@ function _commitMCQBatch(entries,progressId,bankKey,isQuizBank){
           id: 'pyqxi_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)
         });
       });
+      if (typeof pyqData !== 'undefined') pyqData = targetPyq;
+      window.pyqData = targetPyq;
+      try { localStorage.setItem('bhu:pyqdata', JSON.stringify(targetPyq)); } catch(_) {}
       if(typeof sSet==='function'){
-        try{ await sSet('bhu:pyqdata',pyqData); }catch(err){ console.warn('sSet pyqdata err:', err); }
+        try{ await sSet('bhu:pyqdata',targetPyq); }catch(err){ console.warn('sSet pyqdata err:', err); }
       }
     }
     committed+=batch.length;
@@ -12002,8 +12009,9 @@ function _commitMCQBatch(entries,progressId,bankKey,isQuizBank){
     if(start+batchSize<total){
       setTimeout(function(){ processBatch(start+batchSize); },100);
     } else {
-      rebuildQuizBank();
-      updateQuizCount();
+      if(typeof rebuildQuizBank === 'function') rebuildQuizBank();
+      if(typeof updateQuizCount === 'function') updateQuizCount();
+      if(typeof renderPYQHierarchy === 'function') { try { renderPYQHierarchy(); } catch(_) {} }
       if(progressEl) progressEl.innerHTML='<div style="padding:10px;background:#E8F5E9;border-radius:6px;font-size:13px;color:#0F3D23;font-weight:600;">✓ Successfully imported '+total+' records!</div>';
     }
   }
