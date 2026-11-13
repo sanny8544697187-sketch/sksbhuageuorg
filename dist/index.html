@@ -3355,6 +3355,195 @@ async function saveCustomQuizBank(cqb) {
   await sSet("bhu:customquizbank_split", subjects);
   await Promise.all(subjects.map(s => sSet("bhu:customquizbank_subj_"+s, cqb[s])));
 }
+async function loadPYQData() {
+  const result = [];
+  const _seen = new Set();
+  function addItems(items) {
+    if (!Array.isArray(items)) return;
+    for (const q of items) {
+      const k = q.q || q.id;
+      if (k && !_seen.has(k)) {
+        _seen.add(k);
+        result.push(q);
+      }
+    }
+  }
+
+  // 1. Try reading split chunks from Firestore (modern format, avoids 1MB limit)
+  try {
+    const chunkKeys = await sGet("bhu:pyq_split");
+    if (chunkKeys && Array.isArray(chunkKeys) && chunkKeys.length > 0) {
+      for (const k of chunkKeys) {
+        const chunk = await sGet("bhu:pyq_chunk_" + k);
+        addItems(chunk);
+      }
+    }
+  } catch(_) {}
+
+  // 2. Also try reading legacy combined document if split returned nothing
+  if (result.length === 0) {
+    try {
+      const legacy = await sGet("bhu:pyqdata");
+      addItems(legacy);
+    } catch(_) {}
+  }
+
+  // 3. Fallback: read per-chunk or combined localStorage backup
+  if (result.length === 0) {
+    try {
+      const lsKeys = localStorage.getItem("bhu:pyq_split");
+      if (lsKeys) {
+        const keys = JSON.parse(lsKeys);
+        for (const k of keys) {
+          const raw = localStorage.getItem("bhu:pyq_chunk_" + k);
+          if (raw) addItems(JSON.parse(raw));
+        }
+      }
+    } catch(_) {}
+    if (result.length === 0) {
+      try {
+        const raw = localStorage.getItem("bhu:pyqdata");
+        if (raw) addItems(JSON.parse(raw));
+      } catch(_) {}
+    }
+  }
+
+  return result.length > 0 ? result : null;
+}
+
+async function savePYQData(data) {
+  if (!Array.isArray(data)) data = window.pyqData || [];
+  
+  // Deduplicate before saving
+  const _seen = new Set();
+  const deduped = [];
+  for (const q of data) {
+    const k = q.q || q.id;
+    if (k && !_seen.has(k)) {
+      _seen.add(k);
+      deduped.push(q);
+    }
+  }
+
+  // Update in-memory references
+  if (typeof pyqData !== 'undefined') pyqData = deduped;
+  window.pyqData = deduped;
+
+  // Split into chunks of 350 items each (~60-80KB per doc, well under 1MB Firestore limit)
+  const CHUNK_SIZE = 350;
+  const chunkKeys = [];
+  const chunkMap = {};
+  for (let i = 0; i < deduped.length; i += CHUNK_SIZE) {
+    const chunkIdx = Math.floor(i / CHUNK_SIZE);
+    chunkKeys.push(chunkIdx);
+    chunkMap[chunkIdx] = deduped.slice(i, i + CHUNK_SIZE);
+  }
+
+  // 1. Always write localStorage backups first
+  try {
+    localStorage.setItem("bhu:pyq_split", JSON.stringify(chunkKeys));
+    for (const k of chunkKeys) {
+      localStorage.setItem("bhu:pyq_chunk_" + k, JSON.stringify(chunkMap[k]));
+    }
+    // Also save legacy combined key if under safe size limit
+    if (deduped.length <= 400) {
+      localStorage.setItem("bhu:pyqdata", JSON.stringify(deduped));
+    }
+  } catch(_) {}
+
+  // 2. Write split chunks to Firestore
+  try {
+    await sSet("bhu:pyq_split", chunkKeys);
+    await Promise.all(chunkKeys.map(k => sSet("bhu:pyq_chunk_" + k, chunkMap[k])));
+    // Update legacy key with head subset for backwards compatibility if needed
+    if (deduped.length <= 400) {
+      await sSet("bhu:pyqdata", deduped);
+    }
+  } catch(err) {
+    console.warn("savePYQData Firestore write err:", err);
+  }
+}
+window.loadPYQData = loadPYQData;
+window.savePYQData = savePYQData;
+
+
+async function loadPYQData() {
+  const result = [];
+  const _seen = new Set();
+  function addUnique(list) {
+    if(!Array.isArray(list)) return;
+    list.forEach(q => {
+      const k = q.q || q.id;
+      if(k && !_seen.has(k)) { _seen.add(k); result.push(q); }
+    });
+  }
+  // 1. Read split chunks from Firestore (bhu:pyq_split)
+  const splitChunks = await sGet("bhu:pyq_split");
+  if(splitChunks && Array.isArray(splitChunks) && splitChunks.length > 0) {
+    for(const chunkKey of splitChunks) {
+      try {
+        const chunkData = await sGet("bhu:pyq_chunk_" + chunkKey);
+        if(chunkData && Array.isArray(chunkData)) addUnique(chunkData);
+      } catch(_) {}
+    }
+  }
+  // 2. Also check legacy bhu:pyqdata in Firestore if split was empty
+  if(result.length === 0) {
+    try {
+      const legacy = await sGet("bhu:pyqdata");
+      if(legacy && Array.isArray(legacy)) addUnique(legacy);
+    } catch(_) {}
+  }
+  // 3. Fallback to localStorage split chunks
+  if(result.length === 0) {
+    try {
+      const lsChunks = localStorage.getItem("bhu:pyq_chunks");
+      if(lsChunks) {
+        const chunks = JSON.parse(lsChunks);
+        for(const c of chunks) {
+          const raw = localStorage.getItem("bhu:pyq_chunk_" + c);
+          if(raw) addUnique(JSON.parse(raw));
+        }
+      }
+    } catch(_) {}
+  }
+  // 4. Final fallback to legacy localStorage
+  if(result.length === 0) {
+    try {
+      const rawLegacy = localStorage.getItem("bhu:pyqdata");
+      if(rawLegacy) addUnique(JSON.parse(rawLegacy));
+    } catch(_) {}
+  }
+  return result;
+}
+
+async function savePYQData(data) {
+  if(!data || !Array.isArray(data)) data = window.pyqData || [];
+  const chunkSize = 350;
+  const chunkCount = Math.ceil(data.length / chunkSize) || 1;
+  const chunkKeys = [];
+  // 1. Write to localStorage per-chunk first (survives offline/hard refresh)
+  try {
+    for(let i = 0; i < chunkCount; i++) {
+      const slice = data.slice(i * chunkSize, (i + 1) * chunkSize);
+      chunkKeys.push(i);
+      localStorage.setItem("bhu:pyq_chunk_" + i, JSON.stringify(slice));
+    }
+    localStorage.setItem("bhu:pyq_chunks", JSON.stringify(chunkKeys));
+    localStorage.setItem("bhu:pyqdata", JSON.stringify(data));
+  } catch(_) {}
+
+  // 2. Write split chunks to Firestore (avoids 1MB document size limit)
+  try {
+    await sSet("bhu:pyq_split", chunkKeys);
+    for(let i = 0; i < chunkCount; i++) {
+      const slice = data.slice(i * chunkSize, (i + 1) * chunkSize);
+      await sSet("bhu:pyq_chunk_" + i, slice);
+    }
+    // Also update legacy key with small top sample so legacy listeners don't break
+    await sSet("bhu:pyqdata", data.slice(0, 300));
+  } catch(e) { console.warn("savePYQData Firestore error:", e); }
+}
 
 function toast(msg,type="s"){
   const el=document.getElementById("toast");
@@ -3502,7 +3691,28 @@ window.addEventListener("DOMContentLoaded", async () => {
         if(p && Array.isArray(p)) pending=p;
         if(u && Array.isArray(u)){ usersDB=u; try{ localStorage.setItem("bhu:users", JSON.stringify(u)); }catch(_){} }
         if(q && Array.isArray(q)) questions=q;
-        if(pyq && Array.isArray(pyq)){ const _seen=new Set(); pyqData=pyq.filter(q=>{ const k=q.q||q.id; if(_seen.has(k)) return false; _seen.add(k); return true; }); try{ localStorage.setItem("bhu:pyqdata", JSON.stringify(pyqData)); }catch(_){} updateQuizCount(); if(typeof renderPYQHierarchy==="function") renderPYQHierarchy(); }
+        try {
+          const loadedPYQ = await loadPYQData();
+          if (loadedPYQ && loadedPYQ.length > 0) {
+            const _seen = new Set();
+            const merged = [];
+            for (const q of loadedPYQ) {
+              const k = q.q || q.id;
+              if (k && !_seen.has(k)) { _seen.add(k); merged.push(q); }
+            }
+            if (Array.isArray(pyqData)) {
+              for (const q of pyqData) {
+                const k = q.q || q.id;
+                if (k && !_seen.has(k)) { _seen.add(k); merged.push(q); }
+              }
+            }
+            pyqData = merged;
+            window.pyqData = merged;
+            try { localStorage.setItem("bhu:pyqdata", JSON.stringify(merged)); } catch(_) {}
+            updateQuizCount();
+            if (typeof renderPYQHierarchy === "function") renderPYQHierarchy();
+          }
+        } catch(_) {}
         if(ra) repApps=ra;
         if(eb && eb.length){ adminEbooks=eb; try{ localStorage.setItem("bhu:adminebooks", JSON.stringify(eb)); }catch(_){} renderHome(); if(typeof renderEbooksLibrary==="function") renderEbooksLibrary(); }
         if(ntc && ntc.length) { noticesList=ntc; try{ localStorage.setItem("bhu:notices", JSON.stringify(ntc)); }catch(_){} } else {
@@ -11818,11 +12028,23 @@ async function forceSyncAllFromFirebase() {
     }
 
     // 3. Force sync PYQ Papers & PYQ Data
-    const pyq = await sGet("bhu:pyqdata");
-    if (pyq && Array.isArray(pyq) && pyq.length > 0) {
+    const loadedPyqs = await loadPYQData();
+    if (loadedPyqs && Array.isArray(loadedPyqs) && loadedPyqs.length > 0) {
       const _seen = new Set();
-      pyqData = pyq.filter(q => { const k = q.q || q.id; if(_seen.has(k)) return false; _seen.add(k); return true; });
-      try { localStorage.setItem("bhu:pyqdata", JSON.stringify(pyqData)); } catch(e) {}
+      const merged = [];
+      for (const q of loadedPyqs) {
+        const k = q.q || q.id;
+        if (k && !_seen.has(k)) { _seen.add(k); merged.push(q); }
+      }
+      if (Array.isArray(pyqData)) {
+        for (const q of pyqData) {
+          const k = q.q || q.id;
+          if (k && !_seen.has(k)) { _seen.add(k); merged.push(q); }
+        }
+      }
+      pyqData = merged;
+      window.pyqData = merged;
+      try { localStorage.setItem("bhu:pyqdata", JSON.stringify(merged)); } catch(e) {}
       console.log("[KG] Synced pyqData:", pyqData.length);
     }
 
@@ -11976,11 +12198,7 @@ function _commitMCQBatch(entries,progressId,bankKey,isQuizBank){
         try{ await saveCustomQuizBank(window.customQuizBank); }catch(err){ console.warn('saveCustomQuizBank err:', err); }
       }
     } else {
-      var loaded = null;
-      if (typeof sGet === 'function') {
-        try { loaded = await sGet('bhu:pyqdata'); } catch(_) {}
-      }
-      var targetPyq = Array.isArray(loaded) ? loaded : (Array.isArray(window.pyqData) ? window.pyqData : (Array.isArray(pyqData) ? pyqData : []));
+      var targetPyq = Array.isArray(window.pyqData) ? window.pyqData : (Array.isArray(pyqData) ? pyqData : []);
       batch.forEach(function(e){
         var ansIdx=_normalizeAnswer(e.answer,e.options);
         targetPyq.push({
@@ -11999,16 +12217,18 @@ function _commitMCQBatch(entries,progressId,bankKey,isQuizBank){
       });
       if (typeof pyqData !== 'undefined') pyqData = targetPyq;
       window.pyqData = targetPyq;
-      try { localStorage.setItem('bhu:pyqdata', JSON.stringify(targetPyq)); } catch(_) {}
-      if(typeof sSet==='function'){
-        try{ await sSet('bhu:pyqdata',targetPyq); }catch(err){ console.warn('sSet pyqdata err:', err); }
-      }
     }
     committed+=batch.length;
     if(progressEl) progressEl.innerHTML='<div style="padding:8px;background:#E8F5E9;border-radius:6px;font-size:12px;color:#0F3D23;">Committed '+committed+' / '+total+'...</div>';
     if(start+batchSize<total){
       setTimeout(function(){ processBatch(start+batchSize); },100);
     } else {
+      if (!isQuizBank) {
+        if (progressEl) progressEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;color:#333;">Saving to partitioned cloud storage...</div>';
+        if (typeof savePYQData === 'function') {
+          try { await savePYQData(window.pyqData); } catch(err) { console.warn('savePYQData err:', err); }
+        }
+      }
       if(typeof rebuildQuizBank === 'function') rebuildQuizBank();
       if(typeof updateQuizCount === 'function') updateQuizCount();
       if(typeof renderPYQHierarchy === 'function') { try { renderPYQHierarchy(); } catch(_) {} }
