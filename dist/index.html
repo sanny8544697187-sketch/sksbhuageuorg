@@ -3342,6 +3342,7 @@ async function loadCustomQuizBank() {
   return Object.keys(result).length > 0 ? result : null;
 }
 async function saveCustomQuizBank(cqb) {
+  if (!cqb) cqb = window.customQuizBank || {};
   const subjects = Object.keys(cqb);
   // Always write localStorage backup per-subject first (survives hard refresh + Firebase failures)
   try {
@@ -11785,7 +11786,8 @@ async function deleteNotice(id) {
 <!-- Play Store Banner -->
 <!-- Play Store Banner Removed -->
   <script src="./agri-exams-db.js"></script>
-  <script src="./agri-harvester.js">
+  <script src="./agri-harvester.js"></script>
+<script>
 // ═══════════════════════════════════════════════════════════════
 // FORCE CLOUD SYNC: Re-fetches all Resources, eBooks, and Quizzes from Firebase
 // ═══════════════════════════════════════════════════════════════
