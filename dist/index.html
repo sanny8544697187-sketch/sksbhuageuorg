@@ -947,6 +947,7 @@ window.openLogin = function() {
 };
 </script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -6021,41 +6022,51 @@ async function renderAdmin(){
         </div>
       </div>
 
-      <!-- Document Intelligence: PDF / Scanned PDF / Image OCR Upload -->
-      <div class="card" style="padding:22px;margin-bottom:16px;">
-        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">🧠 Document Intelligence — Upload Question Paper</div>
-        <div style="font-size:12px;color:#777;margin-bottom:14px;line-height:1.7;">
-          Upload a <strong>text PDF</strong>, a <strong>scanned PDF</strong> (photocopied paper), or a <strong>photo/screenshot (JPG/PNG)</strong> of a question paper.
-          We automatically detect whether the PDF has a real text layer — if not, every page is run through on-device OCR.<br>
-          Expected question format:<br>
-          <code style="background:#F8FBF8;padding:2px 6px;border-radius:5px;font-size:11px;">Q. Your question here?<br>A. Option 1<br>B. Option 2<br>C. Option 3<br>D. Option 4<br>ANS: B<br>EXP: Explanation here.</code><br>
-          <span style="margin-top:4px;display:block;">Leave a blank line between questions.</span>
-          <span style="margin-top:4px;display:block;">🤖 <strong>Subject is auto-detected per question</strong> — add a heading like <strong>Subject: Agronomy</strong> anywhere in the document to tag everything below it, or leave it out and each question is auto-classified by keyword matching against the subject's topics. Review/override any question's subject before adding it.</span>
+      <!-- Bulk Import MCQs from Excel / CSV -->
+      <div class="card" style="padding:22px;margin-bottom:16px;border:2px solid #5E35B1;border-radius:14px;background:#F9F7FE;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div style="font-weight:800;font-size:15px;color:#1a0533;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">📊</span> Bulk Import MCQs from Excel / CSV
+          </div>
+          <button class="btn btn-light" style="font-size:11px;padding:5px 12px;border:1px solid #5E35B1;color:#5E35B1;" onclick="downloadMCQSampleTemplate()">
+            ⬇ Download Sample Template
+          </button>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-          <div>
-            <label class="lbl">Fallback subject <span style="font-weight:400;color:#777;">(if auto-detect fails)</span></label>
-            <select id="pdfQuizSubject" class="inp">
+        <div style="font-size:12px;color:#666;margin-bottom:14px;line-height:1.6;background:#EDE7F6;padding:10px 12px;border-radius:8px;border-left:3px solid #5E35B1;">
+          Upload an <strong>Excel (.xlsx)</strong> or <strong>CSV</strong> file with thousands of MCQs. Required columns: <strong>Subject, Topic, Exam, Year, Question, OptionA, OptionB, OptionC, OptionD, Answer, Explanation, Difficulty</strong>. Columns are auto-detected — partial matches work (e.g. "Opt A", "option_a").
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
+          <div><label class="lbl">Default Subject (if not in file)</label>
+            <select id="mcqXlsSubject" class="inp">
               ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
             </select>
           </div>
-          <div>
-            <label class="lbl">OCR language <span style="font-weight:400;color:#777;">(for scanned docs/images)</span></label>
-            <select id="ocrLang" class="inp">
-              <option value="eng">English</option>
-              <option value="hin">Hindi</option>
-              <option value="eng+hin">English + Hindi</option>
+          <div><label class="lbl">Default Exam (if not in file)</label>
+            <select id="mcqXlsExam" class="inp">
+              <option>CUET PG / ICAR AIEEA</option><option>ICAR JRF / SRF</option><option>IBPS AFO</option>
+              <option>NABARD Grade A</option><option>State PSC</option><option>UPSC IFS</option>
+              <option>BHU ENTRANCE</option><option>IARI PG</option><option>General</option><option>OTHER</option>
+            </select>
+          </div>
+          <div><label class="lbl">Difficulty Default</label>
+            <select id="mcqXlsDifficulty" class="inp">
+              <option value="medium">Medium</option><option value="easy">Easy</option><option value="hard">Hard</option>
             </select>
           </div>
         </div>
-        <div class="drop-zone" id="pdfDropZone" onclick="document.getElementById('pdfQuizFile').click()" style="margin-bottom:12px;">
-          <input id="pdfQuizFile" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.csv,.tsv" style="display:none;" onchange="handleQuizDocument(this)">
-          <div style="font-size:28px;margin-bottom:6px;">📄🖼️</div>
-          <div id="pdfDropLabel" style="font-size:13px;color:#333;font-weight:500;">Click to upload a PDF, CSV/TSV table, or photo of the question paper</div>
-          <div style="font-size:11px;color:#777;margin-top:4px;">PDF, CSV, Excel TSV, JPG or PNG · max 15 MB · scanned pages run through automatic OCR</div>
+        <div class="drop-zone" id="mcqXlsDropZone" onclick="document.getElementById('mcqXlsFile').click()" style="margin-bottom:12px;border:2px dashed #5E35B1;border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:#fff;">
+          <input id="mcqXlsFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleMCQExcelImport(this)">
+          <div style="font-size:32px;margin-bottom:6px;">📊</div>
+          <div id="mcqXlsLabel" style="font-size:13px;color:#333;font-weight:600;">Click to upload Excel (.xlsx) or CSV file</div>
+          <div style="font-size:11px;color:#777;margin-top:4px;">Max 20 MB · Supports thousands of MCQs · Columns auto-mapped</div>
         </div>
-        <div id="pdfParseStatus" style="display:none;margin-bottom:12px;"></div>
-        <button class="btn btn-primary" id="pdfUploadBtn" onclick="uploadQuizPdf()" disabled>📤 Parse & Add to Quiz Bank</button>
+        <div id="mcqXlsStatus" style="display:none;margin-bottom:12px;"></div>
+        <div id="mcqXlsPreview" style="display:none;margin-bottom:12px;overflow-x:auto;"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="mcqXlsImportBtn" onclick="commitMCQExcelImport()" disabled style="background:#5E35B1;border-color:#5E35B1;opacity:0.5;">📥 Import to Quiz Bank</button>
+          <button class="btn btn-light" id="mcqXlsCancelBtn" onclick="cancelMCQExcelImport()" style="display:none;">✕ Cancel</button>
+        </div>
+        <div id="mcqXlsProgress" style="display:none;margin-top:10px;"></div>
       </div>
 
       <!-- Bulk Paste Entry -->
@@ -6140,43 +6151,51 @@ async function renderAdmin(){
         <div style="font-size:12px;color:#777;">Add previous year questions via PDF upload, bulk paste, or manual entry.</div>
       </div>
 
-      <!-- PYQ PDF Upload -->
-      <div class="card" style="padding:22px;margin-bottom:16px;">
-        <div style="font-weight:700;font-size:15px;margin-bottom:6px;">📄 Bulk Import PYQs from PDF / Image</div>
-        <div style="font-size:12px;color:#777;margin-bottom:12px;line-height:1.7;">Upload a scanned or digital PDF of a previous year paper. Questions are auto-parsed in Q./A./B./C./D./ANS: format.<br>Set Exam, Year and Subject before importing — they apply to all imported questions.</div>
+      <!-- Bulk Import PYQs from Excel / CSV -->
+      <div class="card" style="padding:22px;margin-bottom:16px;border:2px solid #00B050;border-radius:14px;background:#F9FCF9;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+          <div style="font-weight:800;font-size:15px;color:#0F3D23;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:20px;">📊</span> Bulk Import PYQs from Excel / CSV
+          </div>
+          <button class="btn btn-light" style="font-size:11px;padding:5px 12px;border:1px solid #00B050;color:#00B050;" onclick="downloadPYQSampleTemplate()">
+            ⬇ Download Sample Template
+          </button>
+        </div>
+        <div style="font-size:12px;color:#666;margin-bottom:14px;line-height:1.6;background:#E8F5E9;padding:10px 12px;border-radius:8px;border-left:3px solid #00B050;">
+          Upload an <strong>Excel (.xlsx)</strong> or <strong>CSV</strong> file with PYQ MCQs. Required columns: <strong>Subject, Topic, Exam, Year, Question, OptionA, OptionB, OptionC, OptionD, Answer, Explanation, Difficulty</strong>. Columns are auto-detected.
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px;">
-          <div><label class="lbl">Exam</label>
-            <select id="pyqBulkExam" class="inp">
-              <option>CUET PG / ICAR AIEEA</option>
-              <option>ICAR JRF / SRF</option>
-              <option>IBPS AFO</option>
-              <option>NABARD Grade A</option>
-              <option>State PSC / ADO / SADO</option>
-              <option>UPSC IFS / Agriculture</option>
-              <option>BHU ENTRANCE</option>
-              <option>IARI PG PAPER</option>
-              <option>OTHER</option>
+          <div><label class="lbl">Default Exam (if not in file)</label>
+            <select id="pyqXlsExam" class="inp">
+              <option>CUET PG / ICAR AIEEA</option><option>ICAR JRF / SRF</option><option>IBPS AFO</option>
+              <option>NABARD Grade A</option><option>State PSC / ADO / SADO</option><option>UPSC IFS / Agriculture</option>
+              <option>BHU ENTRANCE</option><option>IARI PG PAPER</option><option>OTHER</option>
             </select>
           </div>
-          <div><label class="lbl">Year</label>
-            <select id="pyqBulkYear" class="inp">
-              ${[2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
+          <div><label class="lbl">Default Year (if not in file)</label>
+            <select id="pyqXlsYear" class="inp">
+              ${[2026,2025,2024,2023,2022,2021,2020,2019,2018,2017,2016].map(y=>`<option value="${y}">${y}</option>`).join("")}
             </select>
           </div>
-          <div><label class="lbl">Default Subject</label>
-            <select id="pyqBulkSubject" class="inp">
+          <div><label class="lbl">Default Subject (if not in file)</label>
+            <select id="pyqXlsSubject" class="inp">
               ${getSubjects().map(s=>`<option value="${escapeHTML(s.name)}">${escapeHTML(s.name)}</option>`).join("")}
             </select>
           </div>
         </div>
-        <div class="drop-zone" onclick="document.getElementById('pyqBulkFile').click()" style="margin-bottom:10px;">
-          <input id="pyqBulkFile" type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="handlePYQBulkFile(this)">
-          <div style="font-size:26px;margin-bottom:6px;">📄</div>
-          <div id="pyqBulkLabel" style="font-size:13px;color:#333;font-weight:500;">Click to upload PDF or photo of question paper</div>
-          <div style="font-size:11px;color:#777;margin-top:3px;">Max 15 MB · scanned pages auto-OCR'd</div>
+        <div class="drop-zone" id="pyqXlsDropZone" onclick="document.getElementById('pyqXlsFile').click()" style="margin-bottom:12px;border:2px dashed #00B050;border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:#fff;">
+          <input id="pyqXlsFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handlePYQExcelImport(this)">
+          <div style="font-size:32px;margin-bottom:6px;">📊</div>
+          <div id="pyqXlsLabel" style="font-size:13px;color:#333;font-weight:600;">Click to upload Excel (.xlsx) or CSV file</div>
+          <div style="font-size:11px;color:#777;margin-top:4px;">Max 20 MB · Supports thousands of MCQs · Columns auto-mapped</div>
         </div>
-        <div id="pyqBulkStatus" style="display:none;margin-bottom:10px;"></div>
-        <button class="btn btn-primary" id="pyqBulkAddBtn" onclick="addBulkPYQQuestions()" disabled>➕ Add All to PYQ Bank</button>
+        <div id="pyqXlsStatus" style="display:none;margin-bottom:12px;"></div>
+        <div id="pyqXlsPreview" style="display:none;margin-bottom:12px;overflow-x:auto;"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="pyqXlsImportBtn" onclick="commitPYQExcelImport()" disabled style="opacity:0.5;">📥 Import to PYQ Bank</button>
+          <button class="btn btn-light" id="pyqXlsCancelBtn" onclick="cancelPYQExcelImport()" style="display:none;">✕ Cancel</button>
+        </div>
+        <div id="pyqXlsProgress" style="display:none;margin-top:10px;"></div>
       </div>
 
       <!-- PYQ Bulk Paste -->
@@ -11837,6 +11856,298 @@ async function forceSyncAllFromFirebase() {
   }
 }
 window.forceSyncAllFromFirebase = forceSyncAllFromFirebase;
+
+
+// ═══════════════════════════════════════════════════════════════
+// Excel / CSV Bulk MCQ Import Functions
+// ═══════════════════════════════════════════════════════════════
+function parseExcelOrCSV(file){
+  return new Promise(function(resolve,reject){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        var data=new Uint8Array(e.target.result);
+        var wb=XLSX.read(data,{type:'array'});
+        var ws=wb.Sheets[wb.SheetNames[0]];
+        resolve(XLSX.utils.sheet_to_json(ws,{defval:''}));
+      }catch(err){ reject(err); }
+    };
+    reader.onerror=function(){ reject(new Error('File read error')); };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function _xlsFindCol(headers,aliases){
+  var lower=headers.map(function(h){ return String(h).toLowerCase().replace(/[^a-z0-9]/g,''); });
+  for(var i=0;i<aliases.length;i++){
+    var alias=aliases[i].toLowerCase().replace(/[^a-z0-9]/g,'');
+    for(var j=0;j<lower.length;j++){
+      if(lower[j]===alias||lower[j].includes(alias)||alias.includes(lower[j])){
+        return headers[j];
+      }
+    }
+  }
+  return null;
+}
+
+function _mapMCQRow(row,colMap,defaults){
+  var get=function(key){ return key?String(row[key]||'').trim():''; };
+  return {
+    subject: get(colMap.subject)||defaults.subject||'General Agriculture',
+    topic: get(colMap.topic)||defaults.topic||'',
+    exam: get(colMap.exam)||defaults.exam||'General',
+    year: get(colMap.year)||defaults.year||String(new Date().getFullYear()),
+    question: get(colMap.question),
+    options: [get(colMap.a),get(colMap.b),get(colMap.c),get(colMap.d)],
+    answer: get(colMap.answer),
+    explanation: get(colMap.explanation)||'',
+    difficulty: (get(colMap.difficulty)||defaults.difficulty||'medium').toLowerCase()
+  };
+}
+
+function _validateMCQRow(r,rowNum){
+  var e=[];
+  if(!r.question) e.push('Missing question');
+  if(!r.options[0]||!r.options[1]||!r.options[2]||!r.options[3]) e.push('Missing options');
+  if(!r.answer) e.push('Missing answer');
+  return e;
+}
+
+function _normalizeAnswer(val,opts){
+  var v=String(val).trim().toUpperCase();
+  if(v==='A'||v==='1') return 0;
+  if(v==='B'||v==='2') return 1;
+  if(v==='C'||v==='3') return 2;
+  if(v==='D'||v==='4') return 3;
+  for(var i=0;i<opts.length;i++){
+    if(opts[i]&&opts[i].toLowerCase()===val.toLowerCase()) return i;
+  }
+  return 0;
+}
+
+function _renderXlsPreviewTable(validRows,errorRows,maxShow,containerId){
+  var el=document.getElementById(containerId);
+  if(!el) return;
+  var showRows=validRows.slice(0,maxShow);
+  var h='<div style="margin-bottom:8px;font-size:12px;color:#333;"><strong style="color:#00B050;">'+validRows.length+' valid</strong>'+(errorRows.length?' &nbsp;|&nbsp; <strong style="color:#c62828;">'+errorRows.length+' errors</strong>':'')+'</div>';
+  h+='<table style="width:100%;border-collapse:collapse;font-size:11px;"><thead><tr style="background:#0F3D23;color:#fff;"><th style="padding:5px 8px;">Row</th><th style="padding:5px 8px;">Subject</th><th style="padding:5px 8px;">Question</th><th style="padding:5px 8px;">Ans</th><th style="padding:5px 8px;">Status</th></tr></thead><tbody>';
+  showRows.forEach(function(r,i){
+    var q=r.question?(r.question.slice(0,55)+(r.question.length>55?'...':'')):'-';
+    h+='<tr style="background:'+(i%2===0?'#f9f9f9':'#fff')+';"><td style="padding:4px 8px;">'+(i+1)+'</td><td style="padding:4px 8px;">'+(r.subject||'-')+'</td><td style="padding:4px 8px;">'+q+'</td><td style="padding:4px 8px;">'+(r.answer||'-')+'</td><td style="padding:4px 8px;color:#00B050;">✓</td></tr>';
+  });
+  if(validRows.length>maxShow) h+='<tr><td colspan="5" style="padding:6px;text-align:center;color:#666;font-style:italic;">...and '+(validRows.length-maxShow)+' more</td></tr>';
+  errorRows.slice(0,5).forEach(function(e){
+    h+='<tr style="background:#FFF3F3;"><td style="padding:4px 8px;color:#c62828;">'+(e.row||'?')+'</td><td colspan="3" style="padding:4px 8px;color:#c62828;">'+(e.errors?e.errors.join('; '):'Error')+'</td><td style="padding:4px 8px;color:#c62828;">✕</td></tr>';
+  });
+  h+='</tbody></table>';
+  el.innerHTML=h;
+  el.style.display='block';
+}
+
+function _commitMCQBatch(entries,progressId,bankKey,isQuizBank){
+  var progressEl=document.getElementById(progressId);
+  var total=entries.length;
+  var batchSize=450;
+  var committed=0;
+  async function processBatch(start){
+    var batch=entries.slice(start,start+batchSize);
+    if(isQuizBank){
+      batch.forEach(function(e){
+        var subj=e.subject||'General Agriculture';
+        if(!window.customQuizBank) window.customQuizBank={};
+        if(!window.customQuizBank[subj]) window.customQuizBank[subj]=[];
+        var ansIdx=_normalizeAnswer(e.answer,e.options);
+        window.customQuizBank[subj].push({
+          q: e.question,
+          opts: e.options,
+          ans: ansIdx,
+          exp: e.explanation||'',
+          topic: e.topic||'',
+          exam: e.exam||'',
+          year: e.year||'',
+          difficulty: e.difficulty||'medium',
+          source: 'excel_import',
+          id: 'xi_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)
+        });
+      });
+      if(typeof saveCustomQuizBank==='function'){
+        try{ await saveCustomQuizBank(window.customQuizBank); }catch(err){ console.warn('saveCustomQuizBank err:', err); }
+      }
+    } else {
+      var pyqData=(typeof sGet==='function'?sGet('bhu:pyqdata'):null)||[];
+      batch.forEach(function(e){
+        var ansIdx=_normalizeAnswer(e.answer,e.options);
+        pyqData.push({
+          q: e.question,
+          opts: e.options,
+          ans: ansIdx,
+          exp: e.explanation||'',
+          subject: e.subject||'General Agriculture',
+          topic: e.topic||'',
+          exam: e.exam||'',
+          year: e.year||'',
+          difficulty: e.difficulty||'medium',
+          source: 'excel_import',
+          id: 'pyqxi_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)
+        });
+      });
+      if(typeof sSet==='function'){
+        try{ await sSet('bhu:pyqdata',pyqData); }catch(err){ console.warn('sSet pyqdata err:', err); }
+      }
+    }
+    committed+=batch.length;
+    if(progressEl) progressEl.innerHTML='<div style="padding:8px;background:#E8F5E9;border-radius:6px;font-size:12px;color:#0F3D23;">Committed '+committed+' / '+total+'...</div>';
+    if(start+batchSize<total){
+      setTimeout(function(){ processBatch(start+batchSize); },100);
+    } else {
+      rebuildQuizBank();
+      updateQuizCount();
+      if(progressEl) progressEl.innerHTML='<div style="padding:10px;background:#E8F5E9;border-radius:6px;font-size:13px;color:#0F3D23;font-weight:600;">✓ Successfully imported '+total+' records!</div>';
+    }
+  }
+  processBatch(0);
+}
+
+var _pyqXlsValid=[],_pyqXlsErrors=[];
+function handlePYQExcelImport(input){
+  var file=input.files[0];
+  if(!file) return;
+  var labelEl=document.getElementById('pyqXlsLabel'),statusEl=document.getElementById('pyqXlsStatus'),importBtn=document.getElementById('pyqXlsImportBtn');
+  if(labelEl) labelEl.textContent='Parsing '+file.name+'...';
+  if(statusEl){ statusEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;">Parsing file...</div>'; statusEl.style.display='block'; }
+  parseExcelOrCSV(file).then(function(rows){
+    if(!rows||!rows.length){ if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">No data found.</div>'; return; }
+    var headers=Object.keys(rows[0]);
+    var colMap={
+      subject: _xlsFindCol(headers,['subject','sub']),
+      topic: _xlsFindCol(headers,['topic','chapter','unit']),
+      exam: _xlsFindCol(headers,['exam','examination','test']),
+      year: _xlsFindCol(headers,['year','yr']),
+      question: _xlsFindCol(headers,['question','q','ques']),
+      a: _xlsFindCol(headers,['optiona','option a','opt a','opta','a']),
+      b: _xlsFindCol(headers,['optionb','option b','opt b','optb','b']),
+      c: _xlsFindCol(headers,['optionc','option c','opt c','optc','c']),
+      d: _xlsFindCol(headers,['optiond','option d','opt d','optd','d']),
+      answer: _xlsFindCol(headers,['answer','ans','correct']),
+      explanation: _xlsFindCol(headers,['explanation','exp','expl','reason']),
+      difficulty: _xlsFindCol(headers,['difficulty','level','diff'])
+    };
+    var exam=document.getElementById('pyqXlsExam')?document.getElementById('pyqXlsExam').value:'General';
+    var year=document.getElementById('pyqXlsYear')?document.getElementById('pyqXlsYear').value:'2025';
+    var subject=document.getElementById('pyqXlsSubject')?document.getElementById('pyqXlsSubject').value:'Agronomy';
+    var defaults={exam:exam,year:year,subject:subject};
+    _pyqXlsValid=[]; _pyqXlsErrors=[];
+    rows.forEach(function(row,i){
+      var mapped=_mapMCQRow(row,colMap,defaults),errs=_validateMCQRow(mapped,i+2);
+      if(errs.length) _pyqXlsErrors.push({row:i+2,errors:errs}); else _pyqXlsValid.push(mapped);
+    });
+    _renderXlsPreviewTable(_pyqXlsValid,_pyqXlsErrors,20,'pyqXlsPreview');
+    if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#E8F5E9;border-radius:6px;font-size:12px;color:#0F3D23;">Parsed <strong>'+rows.length+'</strong> rows: <strong>'+_pyqXlsValid.length+'</strong> valid, <strong>'+_pyqXlsErrors.length+'</strong> errors.</div>';
+    if(labelEl) labelEl.textContent=file.name+' ('+rows.length+' rows)';
+    if(importBtn){ importBtn.disabled=!_pyqXlsValid.length; importBtn.style.opacity=_pyqXlsValid.length?'1':'0.5'; }
+    var cb=document.getElementById('pyqXlsCancelBtn'); if(cb) cb.style.display='inline-block';
+  }).catch(function(err){
+    if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">Error: '+(err.message||err)+'</div>';
+  });
+}
+
+function commitPYQExcelImport(){
+  if(!_pyqXlsValid.length){ alert('No valid rows!'); return; }
+  var p=document.getElementById('pyqXlsProgress'); if(p) p.style.display='block';
+  var b=document.getElementById('pyqXlsImportBtn'); if(b){ b.disabled=true; b.style.opacity='0.5'; }
+  _commitMCQBatch(_pyqXlsValid,'pyqXlsProgress','bhu:pyqdata',false);
+}
+
+function cancelPYQExcelImport(){
+  _pyqXlsValid=[]; _pyqXlsErrors=[];
+  ['pyqXlsStatus','pyqXlsPreview','pyqXlsProgress'].forEach(function(id){ var el=document.getElementById(id); if(el){ el.innerHTML=''; el.style.display='none'; } });
+  var l=document.getElementById('pyqXlsLabel'); if(l) l.textContent='Click to upload Excel (.xlsx) or CSV file';
+  var b=document.getElementById('pyqXlsImportBtn'); if(b){ b.disabled=true; b.style.opacity='0.5'; }
+  var c=document.getElementById('pyqXlsCancelBtn'); if(c) c.style.display='none';
+  var f=document.getElementById('pyqXlsFile'); if(f) f.value='';
+}
+
+function downloadPYQSampleTemplate(){
+  if(!window.XLSX){ alert('SheetJS not loaded. Refresh page.'); return; }
+  var wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet([
+    ['Subject','Topic','Exam','Year','Question','OptionA','OptionB','OptionC','OptionD','Answer','Explanation','Difficulty'],
+    ['Agronomy','Crop Science','CUET PG / ICAR AIEEA','2024','Which is a Kharif crop?','Rice','Wheat','Barley','Mustard','A','Rice is Kharif crop.','easy'],
+    ['Soil Science','Soil Fertility','IBPS AFO','2023','pH of neutral soil:','6','7','8','5','B','Neutral pH is 7.','medium']
+  ]);
+  XLSX.utils.book_append_sheet(wb,ws,'PYQ_MCQs');
+  XLSX.writeFile(wb,'KrishiGyan_PYQ_Import_Template.xlsx');
+}
+
+var _mcqXlsValid=[],_mcqXlsErrors=[];
+function handleMCQExcelImport(input){
+  var file=input.files[0];
+  if(!file) return;
+  var labelEl=document.getElementById('mcqXlsLabel'),statusEl=document.getElementById('mcqXlsStatus'),importBtn=document.getElementById('mcqXlsImportBtn');
+  if(labelEl) labelEl.textContent='Parsing '+file.name+'...';
+  if(statusEl){ statusEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;">Parsing file...</div>'; statusEl.style.display='block'; }
+  parseExcelOrCSV(file).then(function(rows){
+    if(!rows||!rows.length){ if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">No data found.</div>'; return; }
+    var headers=Object.keys(rows[0]);
+    var colMap={
+      subject: _xlsFindCol(headers,['subject','sub']),
+      topic: _xlsFindCol(headers,['topic','chapter','unit']),
+      exam: _xlsFindCol(headers,['exam','examination','test']),
+      year: _xlsFindCol(headers,['year','yr']),
+      question: _xlsFindCol(headers,['question','q','ques']),
+      a: _xlsFindCol(headers,['optiona','option a','opt a','opta','a']),
+      b: _xlsFindCol(headers,['optionb','option b','opt b','optb','b']),
+      c: _xlsFindCol(headers,['optionc','option c','opt c','optc','c']),
+      d: _xlsFindCol(headers,['optiond','option d','opt d','optd','d']),
+      answer: _xlsFindCol(headers,['answer','ans','correct']),
+      explanation: _xlsFindCol(headers,['explanation','exp','expl','reason']),
+      difficulty: _xlsFindCol(headers,['difficulty','level','diff'])
+    };
+    var subj=document.getElementById('mcqXlsSubject')?document.getElementById('mcqXlsSubject').value:'General Agriculture';
+    var exam=document.getElementById('mcqXlsExam')?document.getElementById('mcqXlsExam').value:'General';
+    var diff=document.getElementById('mcqXlsDifficulty')?document.getElementById('mcqXlsDifficulty').value:'medium';
+    var defaults={subject:subj,exam:exam,difficulty:diff};
+    _mcqXlsValid=[]; _mcqXlsErrors=[];
+    rows.forEach(function(row,i){
+      var mapped=_mapMCQRow(row,colMap,defaults),errs=_validateMCQRow(mapped,i+2);
+      if(errs.length) _mcqXlsErrors.push({row:i+2,errors:errs}); else _mcqXlsValid.push(mapped);
+    });
+    _renderXlsPreviewTable(_mcqXlsValid,_mcqXlsErrors,20,'mcqXlsPreview');
+    if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#EDE7F6;border-radius:6px;font-size:12px;color:#1a0533;">Parsed <strong>'+rows.length+'</strong> rows: <strong>'+_mcqXlsValid.length+'</strong> valid, <strong>'+_mcqXlsErrors.length+'</strong> errors.</div>';
+    if(labelEl) labelEl.textContent=file.name+' ('+rows.length+' rows)';
+    if(importBtn){ importBtn.disabled=!_mcqXlsValid.length; importBtn.style.opacity=_mcqXlsValid.length?'1':'0.5'; }
+    var cb=document.getElementById('mcqXlsCancelBtn'); if(cb) cb.style.display='inline-block';
+  }).catch(function(err){
+    if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">Error: '+(err.message||err)+'</div>';
+  });
+}
+
+function commitMCQExcelImport(){
+  if(!_mcqXlsValid.length){ alert('No valid rows!'); return; }
+  var p=document.getElementById('mcqXlsProgress'); if(p) p.style.display='block';
+  var b=document.getElementById('mcqXlsImportBtn'); if(b){ b.disabled=true; b.style.opacity='0.5'; }
+  _commitMCQBatch(_mcqXlsValid,'mcqXlsProgress','customQuizBank',true);
+}
+
+function cancelMCQExcelImport(){
+  _mcqXlsValid=[]; _mcqXlsErrors=[];
+  ['mcqXlsStatus','mcqXlsPreview','mcqXlsProgress'].forEach(function(id){ var el=document.getElementById(id); if(el){ el.innerHTML=''; el.style.display='none'; } });
+  var l=document.getElementById('mcqXlsLabel'); if(l) l.textContent='Click to upload Excel (.xlsx) or CSV file';
+  var b=document.getElementById('mcqXlsImportBtn'); if(b){ b.disabled=true; b.style.opacity='0.5'; }
+  var c=document.getElementById('mcqXlsCancelBtn'); if(c) c.style.display='none';
+  var f=document.getElementById('mcqXlsFile'); if(f) f.value='';
+}
+
+function downloadMCQSampleTemplate(){
+  if(!window.XLSX){ alert('SheetJS not loaded. Refresh page.'); return; }
+  var wb=XLSX.utils.book_new(),ws=XLSX.utils.aoa_to_sheet([
+    ['Subject','Topic','Exam','Year','Question','OptionA','OptionB','OptionC','OptionD','Answer','Explanation','Difficulty'],
+    ['Agronomy','Crop Science','CUET PG / ICAR AIEEA','2024','Which is a Kharif crop?','Rice','Wheat','Barley','Mustard','A','Rice is Kharif crop.','easy'],
+    ['Soil Science','Soil Fertility','IBPS AFO','2023','pH of neutral soil:','6','7','8','5','B','Neutral pH is 7.','medium'],
+    ['Horticulture','Fruits','ICAR JRF','2022','King of fruits:','Mango','Banana','Apple','Guava','A','Mango is King of fruits.','easy']
+  ]);
+  XLSX.utils.book_append_sheet(wb,ws,'MCQ_Bank');
+  XLSX.writeFile(wb,'KrishiGyan_MCQ_Import_Template.xlsx');
+}
 
 </script>
 </body>
