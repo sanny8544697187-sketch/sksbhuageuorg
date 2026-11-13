@@ -11766,7 +11766,79 @@ async function deleteNotice(id) {
 <!-- Play Store Banner -->
 <!-- Play Store Banner Removed -->
   <script src="./agri-exams-db.js"></script>
-  <script src="./agri-harvester.js"></script>
+  <script src="./agri-harvester.js">
+// ═══════════════════════════════════════════════════════════════
+// FORCE CLOUD SYNC: Re-fetches all Resources, eBooks, and Quizzes from Firebase
+// ═══════════════════════════════════════════════════════════════
+async function forceSyncAllFromFirebase() {
+  toast("Syncing all data from Firebase...", "s");
+  console.log("[KG] Initiating comprehensive cloud sync...");
+  try {
+    // 1. Force sync Notes / Resources (Target: 150+ resources)
+    const n = await sGet("bhu:notes");
+    if (n && Array.isArray(n) && n.length > 0) {
+      notes = n;
+      try {
+        localStorage.setItem("bhu:notes", JSON.stringify(n));
+        localStorage.setItem("bhu:notes__backup", JSON.stringify(n));
+      } catch(e) {}
+      console.log("[KG] Synced notes/resources:", n.length);
+    }
+
+    // 2. Force sync Admin eBooks (Target: 32+ ebooks)
+    const eb = await sGet("bhu:adminebooks");
+    if (eb && Array.isArray(eb) && eb.length > 0) {
+      adminEbooks = eb;
+      try {
+        localStorage.setItem("bhu:adminebooks", JSON.stringify(eb));
+        localStorage.setItem("bhu:adminebooks__backup", JSON.stringify(eb));
+      } catch(e) {}
+      console.log("[KG] Synced admin ebooks:", eb.length);
+    }
+
+    // 3. Force sync PYQ Papers & PYQ Data
+    const pyq = await sGet("bhu:pyqdata");
+    if (pyq && Array.isArray(pyq) && pyq.length > 0) {
+      const _seen = new Set();
+      pyqData = pyq.filter(q => { const k = q.q || q.id; if(_seen.has(k)) return false; _seen.add(k); return true; });
+      try { localStorage.setItem("bhu:pyqdata", JSON.stringify(pyqData)); } catch(e) {}
+      console.log("[KG] Synced pyqData:", pyqData.length);
+    }
+
+    const pdfs = await sGet("bhu:pyqpdfs");
+    if (pdfs && Array.isArray(pdfs) && pdfs.length > 0) {
+      pyqPdfs = pdfs;
+      try { localStorage.setItem("bhu:pyqpdfs", JSON.stringify(pdfs)); } catch(e) {}
+      console.log("[KG] Synced pyqPdfs:", pyqPdfs.length);
+    }
+
+    // 4. Force sync Custom Quiz Bank (Target: 486+ questions)
+    const cqb = await loadCustomQuizBank();
+    if (cqb) {
+      customQuizBank = cqb;
+      console.log("[KG] Synced customQuizBank:", Object.keys(cqb));
+    }
+
+    // Rebuild, tally, and re-render the whole app
+    rebuildQuizBank();
+    updateQuizCount();
+    renderAll();
+    initAndroidDashboard();
+    if (typeof renderCustomQList === "function") renderCustomQList();
+    if (typeof renderPYQPdfLibrary === "function") renderPYQPdfLibrary();
+    if (typeof renderEbooksLibrary === "function") renderEbooksLibrary();
+
+    const countQ = (typeof QUIZ_BANK !== "undefined") ? Object.values(QUIZ_BANK).reduce((s,a)=>s+a.length,0) : 0;
+    const totalEB = (typeof EBOOKS_LIBRARY !== "undefined" ? EBOOKS_LIBRARY.length : 0) + (adminEbooks || []).length;
+    toast("Synced: " + notes.length + " resources, " + totalEB + " ebooks, " + (countQ + pyqData.length) + " questions!", "s");
+  } catch(err) {
+    console.error("[KG] Force sync error:", err);
+    toast("Sync failed: " + (err.message || err), "e");
+  }
+}
+window.forceSyncAllFromFirebase = forceSyncAllFromFirebase;
+
+</script>
 </body>
 </html>
 
