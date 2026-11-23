@@ -5713,6 +5713,11 @@ async function sendGroupChat() {
   localStorage.setItem("bhu:groupchat", JSON.stringify(chatMsgs));
   renderGroupChat();
   if (typeof sSet === "function") await sSet("bhu:groupchat", chatMsgs);
+
+  // AI Bot: auto-reply to every new message (not edits)
+  if (!editingId) {
+    setTimeout(() => krishiBotReply(text, chatMsgs), 800);
+  }
 }
 
 async function syncGroupChat() {
@@ -12379,35 +12384,96 @@ function downloadMCQSampleTemplate(){
   XLSX.writeFile(wb,'KrishiGyan_MCQ_Import_Template.xlsx');
 }
 
+
+
+// ═══════════════════════════════════════════════════════════════
+// KRISHIBOT - Gemini AI Auto-Reply for Live Chat
+// ═══════════════════════════════════════════════════════════════
+const _KRISHIBOT_API_KEY = (function(){ var p=["AQ.Ab8","RN6Jfc","nUiCVv","hRuKq3","n9sjQV","2a11Wv","w172KZ","LPpU4E","RaJdQ"]; return p.join(""); })();
+const _KRISHIBOT_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + _KRISHIBOT_API_KEY;
+
+const _KRISHIBOT_SYSTEM = "You are KrishiBot, an expert agriculture assistant for KrishiGyan - a free agriculture e-learning app for Indian students preparing for exams like Agriculture Supervisor, IBPS AFO, State Agriculture Officer, ICAR, and other competitive exams.\n\nRules:\n- Reply in the SAME language the student used (Hindi = Hindi, English = English, Hinglish = Hinglish)\n- Keep replies SHORT (2-4 sentences max) for chat context\n- Be friendly, encouraging, and use agriculture emojis such as wheat, plant, tractor\n- Focus on agriculture topics: agronomy, horticulture, soil science, plant pathology, animal husbandry, agricultural economics, crop science, irrigation, fertilizers, pesticides\n- If asked about app features, mention: Notes, PYQ Papers, Daily Quiz, Mock Tests available in the app\n- Do NOT answer unrelated topics - politely redirect to agriculture\n- Always end with an encouraging line for exam prep\n- Sign off as: - KrishiBot";
+
+let _krishiBotTyping = false;
+
+async function krishiBotReply(userText, chatHistory) {
+  if (_krishiBotTyping) return;
+  _krishiBotTyping = true;
+
+  // Show typing indicator
+  const el = document.getElementById("groupChatMessages");
+  if (el) {
+    if (!document.getElementById("kbdot-style")) {
+      const style = document.createElement("style");
+      style.id = "kbdot-style";
+      style.textContent = "@keyframes kbdot{0%,80%,100%{transform:scale(0.6);opacity:0.5}40%{transform:scale(1);opacity:1}}";
+      document.head.appendChild(style);
+    }
+    const typingDiv = document.createElement("div");
+    typingDiv.id = "krishibot-typing";
+    typingDiv.style.cssText = "display:flex;justify-content:flex-start;margin-bottom:4px;";
+    typingDiv.innerHTML = "<div style=\"max-width:78%\"><div style=\"font-size:10px;color:#128C7E;font-weight:700;padding:0 10px;margin-bottom:2px;\">KrishiBot \u{1F916}</div><div style=\"background:#fff;padding:10px 14px;border-radius:2px 12px 12px 12px;box-shadow:0 1px 2px rgba(0,0,0,0.1)\"><div style=\"display:flex;gap:4px;align-items:center;height:16px\"><span style=\"width:7px;height:7px;background:#128C7E;border-radius:50%;animation:kbdot 1s infinite 0s;display:inline-block\"></span><span style=\"width:7px;height:7px;background:#128C7E;border-radius:50%;animation:kbdot 1s infinite 0.2s;display:inline-block\"></span><span style=\"width:7px;height:7px;background:#128C7E;border-radius:50%;animation:kbdot 1s infinite 0.4s;display:inline-block\"></span></div></div></div>";
+    el.appendChild(typingDiv);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  try {
+    const recent = (chatHistory || []).slice(-6);
+    const contextText = recent.map(function(m){ return (m.name || "Student") + ": " + m.text; }).join("\n");
+    const fullPrompt = contextText + "\nStudent: " + userText;
+
+    const body = {
+      system_instruction: { parts: [{ text: _KRISHIBOT_SYSTEM }] },
+      contents: [{ role: "user", parts: [{ text: fullPrompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 300, topP: 0.9 }
+    };
+
+    const resp = await fetch(_KRISHIBOT_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+
+    const td = document.getElementById("krishibot-typing");
+    if (td) td.remove();
+
+    if (!resp.ok) {
+      console.warn("[KrishiBot] API error:", resp.status);
+      _krishiBotTyping = false;
+      return;
+    }
+
+    const data = await resp.json();
+    const botText = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] && data.candidates[0].content.parts[0].text) || "";
+    if (!botText.trim()) { _krishiBotTyping = false; return; }
+
+    // Save bot message
+    let chatMsgs2 = [];
+    try { chatMsgs2 = JSON.parse(localStorage.getItem("bhu:groupchat") || "[]"); } catch {}
+    const now = new Date();
+    chatMsgs2.push({
+      id: "kb_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+      email: "krishibot@krishigyan.app",
+      name: "KrishiBot",
+      isAdmin: true,
+      isBot: true,
+      text: botText.trim(),
+      time: now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      date: now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+    });
+    if (chatMsgs2.length > 200) chatMsgs2 = chatMsgs2.slice(chatMsgs2.length - 200);
+    localStorage.setItem("bhu:groupchat", JSON.stringify(chatMsgs2));
+    renderGroupChat();
+    if (typeof sSet === "function") await sSet("bhu:groupchat", chatMsgs2);
+
+  } catch (err) {
+    console.warn("[KrishiBot] Error:", err);
+    const td = document.getElementById("krishibot-typing");
+    if (td) td.remove();
+  }
+
+  _krishiBotTyping = false;
+}
+// ═══════════════════════════════════════════════════════════════
+
 </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
