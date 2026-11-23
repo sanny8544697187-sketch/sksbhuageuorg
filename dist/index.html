@@ -5619,6 +5619,26 @@ document.addEventListener("click", (e) => {
   if (menu && menu.style.display === "block" && !menu.contains(e.target)) gcCloseMenu();
 });
 
+
+function formatChatText(t) {
+  if (!t) return "";
+  let s = escapeHTML(t);
+  // Bold **text**
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong style="color:#0f5132;">$1</strong>');
+  // Italic *text*
+  s = s.replace(/\*([^*]+?)\*/g, '<em>$1</em>');
+  // Clean latex artifacts like ($P_2O_5$)
+  s = s.replace(/\(\$([^$]+)\$\)/g, '$2');
+  s = s.replace(/\$([^$]+)\$/g, '$1');
+  // Bullet points
+  s = s.replace(/^[-•*]\s+(.+)$/gm, '<div style="margin:2px 0 2px 8px;display:flex;align-items:flex-start;"><span style="color:#198754;margin-right:6px;">•</span><span>$1</span></div>');
+  // Numbered lists 1. 2.
+  s = s.replace(/^(\d+)\.\s+(.+)$/gm, '<div style="margin:2px 0 2px 8px;display:flex;align-items:flex-start;"><span style="color:#198754;font-weight:600;margin-right:6px;">$1.</span><span>$2</span></div>');
+  // Line breaks
+  s = s.replace(/\n/g, '<br>');
+  return s;
+}
+
 function renderGroupChat() {
   const el = document.getElementById("groupChatMessages");
   if (!el) return;
@@ -5649,7 +5669,7 @@ function renderGroupChat() {
       dateDivider = `<div style="text-align:center;margin:10px 0;"><span style="background:rgba(255,255,255,0.8);padding:4px 12px;border-radius:12px;font-size:11px;color:#666;">${escapeHTML(msgDate)}</span></div>`;
     }
 
-    const bubbleBg = isMe ? "#DCF8C6" : "#FFFFFF";
+    const bubbleBg = isMe ? "#DCF8C6" : (m.isBot ? "#F4FBF7" : "#FFFFFF");
     const bubbleAlign = isMe ? "flex-end" : "flex-start";
     const bubbleRadius = isMe ? "12px 2px 12px 12px" : "2px 12px 12px 12px";
     const edited = m.edited ? ` <span style="font-size:9px;color:#888;font-style:italic;">edited</span>` : "";
@@ -5661,7 +5681,14 @@ function renderGroupChat() {
         <div ${menuAttr} style="max-width:78%;min-width:80px;">
           ${!isMe ? `<div style="font-size:10px;color:${isAdmin?"#128C7E":"#9C27B0"};font-weight:700;padding:0 10px;margin-bottom:2px;">${escapeHTML(m.name || "Student")}${isAdmin ? " 👑" : ""}</div>` : ""}
           <div style="background:${bubbleBg};padding:8px 10px 6px;border-radius:${bubbleRadius};box-shadow:0 1px 2px rgba(0,0,0,0.1);word-wrap:break-word;">
+            ${m.isBot ? `
+            <div style="font-size:10px;display:inline-flex;align-items:center;gap:4px;background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:10px;font-weight:700;margin-bottom:6px;letter-spacing:0.3px;">
+              <span>⚡</span> AI ASSISTANT
+            </div>
+            <div style="font-size:13px;line-height:1.6;color:#212529;">${formatChatText(m.text)}${edited}</div>
+          ` : `
             <div style="font-size:13px;line-height:1.5;color:#111;">${escapeHTML(m.text)}${edited}</div>
+          `}
             <div style="font-size:10px;color:#888;text-align:right;margin-top:2px;">${escapeHTML(m.time || "")}${isMe ? " ✓✓" : ""}</div>
           </div>
         </div>
@@ -12392,7 +12419,7 @@ function downloadMCQSampleTemplate(){
 const _KRISHIBOT_API_KEY = (function(){ var p=["AQ.Ab8","RN6Jbj","QcgXVE","mZuezp","dNx_qY","Q9nLlX","BjRlfo","NSiLeG","Pwbig"]; return p.join(""); })();
 const _KRISHIBOT_MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.8-flash"];
 
-const _KRISHIBOT_SYSTEM = "You are KrishiBot, an expert agriculture assistant for KrishiGyan - a free agriculture e-learning app for Indian students preparing for exams like Agriculture Supervisor, IBPS AFO, State Agriculture Officer, ICAR, and other competitive exams.\n\nRules:\n- Reply in the SAME language the student used (Hindi = Hindi, English = English, Hinglish = Hinglish)\n- Keep replies SHORT (2-4 sentences max) for chat context\n- Be friendly, encouraging, and use agriculture emojis such as wheat, plant, tractor\n- Focus on agriculture topics: agronomy, horticulture, soil science, plant pathology, animal husbandry, agricultural economics, crop science, irrigation, fertilizers, pesticides\n- If asked about app features, mention: Notes, PYQ Papers, Daily Quiz, Mock Tests available in the app\n- Do NOT answer unrelated topics - politely redirect to agriculture\n- Always end with an encouraging line for exam prep\n- Sign off as: - KrishiBot";
+const _KRISHIBOT_SYSTEM = "You are KrishiBot AI, an elite AI Agriculture Expert and Academic Counselor built for KrishiGyan - India's leading digital learning platform for competitive agriculture exams (ICAR, IBPS AFO, State Agriculture Supervisor, ADO, BHU/CUET Agriculture).\n\nResponse Guidelines (CRITICAL FOR PROFESSIONALISM):\n1. FORMAT & STRUCTURE: Write well-structured, clear, professional answers. Use bold text for key terms, numbers, scientific names, or percentages (e.g. **18% Nitrogen (N)**, **46% Phosphorus (P₂O₅)**).\n2. LANGUAGE: Reply fluently in the same language the student asks (Natural Hinglish for Hindi questions, Professional English for English questions).\n3. TONE: Confident, scholarly, polite, and authoritative yet encouraging.\n4. SCIENTIFIC ACCURACY: Give precise facts, formulas, nutrient ratios, botanical names, and exam-relevant insights.\n5. BREVITY: Keep answers concise (2 to 4 bullet points or 1-2 well-organized paragraphs). Avoid unnecessary chit-chat, overly generic pleasantries, or fake signatures.\n6. APP INTEGRATION: If relevant to the topic, concisely recommend checking relevant **Notes** or **Daily Quiz / PYQ** sections on KrishiGyan.\n7. SCOPE: Stick strictly to agriculture, competitive exam topics, and KrishiGyan features. If non-agriculture query, courteously say you are dedicated to agriculture studies.\n8. Do NOT use LaTeX math code like \$ or \$. Use plain text Unicode like P₂O₅ or simple text.";
 
 let _krishiBotTyping = false;
 
