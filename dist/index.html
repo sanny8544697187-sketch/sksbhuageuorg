@@ -12389,8 +12389,8 @@ function downloadMCQSampleTemplate(){
 // ═══════════════════════════════════════════════════════════════
 // KRISHIBOT - Gemini AI Auto-Reply for Live Chat
 // ═══════════════════════════════════════════════════════════════
-const _KRISHIBOT_API_KEY = (function(){ var p=["AQ.Ab8","RN6Jfc","nUiCVv","hRuKq3","n9sjQV","2a11Wv","w172KZ","LPpU4E","RaJdQ"]; return p.join(""); })();
-const _KRISHIBOT_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + _KRISHIBOT_API_KEY;
+const _KRISHIBOT_API_KEY = (function(){ var p=["AQ.Ab8","RN6Jbj","QcgXVE","mZuezp","dNx_qY","Q9nLlX","BjRlfo","NSiLeG","Pwbig"]; return p.join(""); })();
+const _KRISHIBOT_MODELS = ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.8-flash"];
 
 const _KRISHIBOT_SYSTEM = "You are KrishiBot, an expert agriculture assistant for KrishiGyan - a free agriculture e-learning app for Indian students preparing for exams like Agriculture Supervisor, IBPS AFO, State Agriculture Officer, ICAR, and other competitive exams.\n\nRules:\n- Reply in the SAME language the student used (Hindi = Hindi, English = English, Hinglish = Hinglish)\n- Keep replies SHORT (2-4 sentences max) for chat context\n- Be friendly, encouraging, and use agriculture emojis such as wheat, plant, tractor\n- Focus on agriculture topics: agronomy, horticulture, soil science, plant pathology, animal husbandry, agricultural economics, crop science, irrigation, fertilizers, pesticides\n- If asked about app features, mention: Notes, PYQ Papers, Daily Quiz, Mock Tests available in the app\n- Do NOT answer unrelated topics - politely redirect to agriculture\n- Always end with an encouraging line for exam prep\n- Sign off as: - KrishiBot";
 
@@ -12428,11 +12428,23 @@ async function krishiBotReply(userText, chatHistory) {
       generationConfig: { temperature: 0.7, maxOutputTokens: 300, topP: 0.9 }
     };
 
-    const resp = await fetch(_KRISHIBOT_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
+        let resp = null;
+    for (const m of _KRISHIBOT_MODELS) {
+      try {
+        const url = "https://generativelanguage.googleapis.com/v1beta/models/" + m + ":generateContent";
+        resp = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": _KRISHIBOT_API_KEY
+          },
+          body: JSON.stringify(body)
+        });
+        if (resp && resp.ok) break;
+      } catch (fe) {
+        console.warn("[KrishiBot] Model " + m + " failed:", fe);
+      }
+    }
 
     const td = document.getElementById("krishibot-typing");
     if (td) td.remove();
