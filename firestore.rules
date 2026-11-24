@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == "sanny8544697187@gmail.com" ||
+        request.auth.uid == "UuAxmSKoqtXZbqOT0e4xCqB6TRH3"
+      );
+    }
+    
+    // Notes & Educational Resources
+    // Read: Public (students need access offline/online)
+    // Write: Authenticated Admin only
+    match /bhu_notes/{noteId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Questions Bank & PYQs
+    // Read: Public
+    // Write: Authenticated Admin only (protects against unauthorized bulk wipe/overwrite)
+    match /bhu_questions/{questionId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Custom Quiz Bank Documents
+    match /bhu_customquizbank/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Admin eBooks Library
+    match /bhu_adminebooks/{bookId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // User Profiles & Progress Tracking
+    // Each student can read/write their own profile and test history
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      allow read: if isAdmin();
+    }
+    
+    // KV Stores / Configs (bhu:*)
+    match /{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
