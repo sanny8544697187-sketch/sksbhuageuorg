@@ -3303,8 +3303,12 @@ function updateQuizCount() {
       ? pyqData.length
       : 0;
     const total = mcqBankCount + quizBankCount;
+    // OFFLINE FIX: persist & use cached max so we never show a low number offline
+    const _cachedQuiz = parseInt(localStorage.getItem("bhu:quiz_count_cache")) || 0;
+    const _displayTotal = Math.max(total, _cachedQuiz);
+    if (total > _cachedQuiz) { try { localStorage.setItem("bhu:quiz_count_cache", String(total)); } catch(_){} }
     var el = document.getElementById('statQuizCount');
-    if (el) el.textContent = total + '+';
+    if (el) el.textContent = (_displayTotal > 0 ? _displayTotal : 486) + '+';
   } catch(e) {
     console.warn('updateQuizCount error (non-critical):', e);
   }
@@ -3584,6 +3588,10 @@ window.addEventListener("DOMContentLoaded", async () => {
       const cn = localStorage.getItem("bhu:notes") || localStorage.getItem("bhu:notes__backup");
       if(cn) { const _parsedN = JSON.parse(cn); if(Array.isArray(_parsedN) && _parsedN.length) notes = _parsedN; }
     } catch(_){}
+    // OFFLINE FIX: Seed from built-in notes if localStorage had nothing
+    if (!notes || notes.length === 0) {
+      notes = (typeof BUILTIN_NOTES !== 'undefined' && Array.isArray(BUILTIN_NOTES)) ? [...BUILTIN_NOTES] : [];
+    }
     try {
       const cp = localStorage.getItem("bhu:pyqdata");
       if(cp){
@@ -4163,7 +4171,11 @@ function closeMobileDrawer(){
 
 function renderHome(){
   const approved=getApproved();
-  document.getElementById("statResources").textContent=approved.length;
+  // OFFLINE FIX: never show 0 — fall back to cached count or 151
+  const _approvedCount = approved.length > 0 ? approved.length : (parseInt(localStorage.getItem("bhu:res_count")) || 151);
+  document.getElementById("statResources").textContent = _approvedCount;
+  // Persist latest count so next offline load can use it
+  if (approved.length > 0) { try { localStorage.setItem("bhu:res_count", String(approved.length)); } catch(_){} }
   document.getElementById("statBooks").textContent = (EBOOKS_LIBRARY.length + (adminEbooks||[]).length);
   document.getElementById("statSubjects").textContent=getSubjects().length;
   updateQuizCount(); // MCQ Bank + Quiz Bank
@@ -12046,6 +12058,8 @@ async function forceSyncAllFromFirebase() {
         localStorage.setItem("bhu:notes__backup", JSON.stringify(n));
       } catch(e) {}
       console.log("[KG] Synced notes/resources:", n.length);
+      // Persist latest resource count for offline fallback
+      try { localStorage.setItem("bhu:res_count", String(n.length)); } catch(_){}
     }
 
     // 2. Force sync Admin eBooks (Target: 32+ ebooks)
