@@ -12200,74 +12200,236 @@ function _renderXlsPreviewTable(validRows,errorRows,maxShow,containerId){
   el.style.display='block';
 }
 
-function _commitMCQBatch(entries,progressId,bankKey,isQuizBank){
-  var progressEl=document.getElementById(progressId);
-  var total=entries.length;
-  var batchSize=450;
-  var committed=0;
-  async function processBatch(start){
-    var batch=entries.slice(start,start+batchSize);
-    if(isQuizBank){
-      batch.forEach(function(e){
-        var subj=e.subject||'General Agriculture';
-        if(!window.customQuizBank) window.customQuizBank={};
-        if(!window.customQuizBank[subj]) window.customQuizBank[subj]=[];
-        var ansIdx=_normalizeAnswer(e.answer,e.options);
-        window.customQuizBank[subj].push({
-          q: e.question,
-          opts: e.options,
-          ans: ansIdx,
-          exp: e.explanation||'',
-          topic: e.topic||'',
-          exam: e.exam||'',
-          year: e.year||'',
-          difficulty: e.difficulty||'medium',
-          source: 'excel_import',
-          id: 'xi_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)
-        });
+// ── ROBUST BULK MCQ IMPORTER (Supports 50,000+ MCQs, 200-doc safe batches, auto-dedup & retry) ──
+// ═══════════════════════════════════════════════════════════════
+// UPGRADED HIGH-CAPACITY BULK MCQ & PYQ IMPORT ENGINE (50,000+ MCQs)
+// ═══════════════════════════════════════════════════════════════
+
+function _generateMCQHash(qText, exam, year) {
+  var str = String(qText || "").trim().toLowerCase().replace(/\s+/g, " ");
+  var prefix = (exam ? String(exam).trim().toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 6) : "gen") +
+               (year ? "_" + String(year).trim().slice(-2) : "");
+  var hash = 0;
+  for (var i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return "mcq_" + prefix + "_" + Math.abs(hash).toString(36) + "_" + str.slice(0, 8).replace(/[^a-z0-9]/g, "");
+}
+
+// Global import state for pausing/canceling/resuming
+window._mcqImportState = {
+  running: false,
+  paused: false,
+  cancelled: false
+};
+
+async function _commitMCQBatch(entries, progressId, bankKey, isQuizBank) {
+  var progressEl = document.getElementById(progressId);
+  var total = entries.length;
+  var BATCH_CHUNK = 200; // Optimal Firestore native batch limit
+  var committed = 0;
+  var skippedDuplicates = 0;
+  var errorsCount = 0;
+  var failedChunks = [];
+
+  window._mcqImportState.running = true;
+  window._mcqImportState.paused = false;
+  window._mcqImportState.cancelled = false;
+
+  // Build deduplication map from existing in-memory data
+  var existingMap = new Set();
+  if (isQuizBank) {
+    if (!window.customQuizBank) window.customQuizBank = {};
+    Object.keys(window.customQuizBank).forEach(function(s) {
+      (window.customQuizBank[s] || []).forEach(function(q) {
+        if (q.q) existingMap.add(q.q.trim().toLowerCase());
+        if (q.id) existingMap.add(q.id);
       });
-      if(typeof saveCustomQuizBank==='function'){
-        try{ await saveCustomQuizBank(window.customQuizBank); }catch(err){ console.warn('saveCustomQuizBank err:', err); }
-      }
-    } else {
-      var targetPyq = Array.isArray(window.pyqData) ? window.pyqData : (Array.isArray(pyqData) ? pyqData : []);
-      batch.forEach(function(e){
-        var ansIdx=_normalizeAnswer(e.answer,e.options);
-        targetPyq.push({
-          q: e.question,
-          opts: e.options,
-          ans: ansIdx,
-          exp: e.explanation||'',
-          subject: e.subject||'General Agriculture',
-          topic: e.topic||'',
-          exam: e.exam||'',
-          year: e.year||'',
-          difficulty: e.difficulty||'medium',
-          source: 'excel_import',
-          id: 'pyqxi_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)
-        });
-      });
-      if (typeof pyqData !== 'undefined') pyqData = targetPyq;
-      window.pyqData = targetPyq;
+    });
+  } else {
+    var curPyqs = Array.isArray(window.pyqData) ? window.pyqData : [];
+    curPyqs.forEach(function(q) {
+      if (q.q) existingMap.add(q.q.trim().toLowerCase());
+      if (q.id) existingMap.add(q.id);
+    });
+  }
+
+  function updateStatus(statusText, isDone, isError) {
+    if (!progressEl) return;
+    var processed = committed + skippedDuplicates + errorsCount;
+    var pct = Math.min(100, Math.round((processed / total) * 100));
+    var bg = isError ? "#FFEBEE" : (isDone ? "#E8F5E9" : "#F9FBF9");
+    var border = isError ? "#E57373" : (isDone ? "#4CAF50" : "#81C784");
+    var color = isError ? "#C62828" : (isDone ? "#1B5E20" : "#2E7D32");
+
+    progressEl.style.display = "block";
+    progressEl.innerHTML = `
+      <div style="padding:14px;background:${bg};border:1.5px solid ${border};border-radius:10px;font-family:sans-serif;margin-top:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <strong style="color:${color};font-size:13px;display:flex;align-items:center;gap:6px;">
+            <span>${isDone ? "✅" : (isError ? "⚠️" : "⚡")}</span> ${statusText}
+          </strong>
+          <span style="font-size:12px;font-weight:700;color:${color};">${pct}%</span>
+        </div>
+        <div style="background:#E0E0E0;height:8px;border-radius:4px;overflow:hidden;margin-bottom:10px;">
+          <div style="background:#00B050;height:100%;width:${pct}%;transition:width 0.2s;"></div>
+        </div>
+        <div style="display:flex;gap:12px;font-size:11px;color:#555;flex-wrap:wrap;justify-content:space-between;">
+          <span>📦 Total: <strong>${total}</strong></span>
+          <span style="color:#2E7D32;">✓ Imported: <strong>${committed}</strong></span>
+          <span style="color:#EF6C00;">⏩ Duplicates Skipped: <strong>${skippedDuplicates}</strong></span>
+          ${errorsCount > 0 ? `<span style="color:#C62828;">❌ Failed: <strong>${errorsCount}</strong></span>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  updateStatus("Validating and preparing records...", false);
+
+  var newValid = [];
+  entries.forEach(function(e) {
+    var rawQ = String(e.question || "").trim();
+    if (!rawQ) { errorsCount++; return; }
+    var normQ = rawQ.toLowerCase();
+    if (existingMap.has(normQ)) {
+      skippedDuplicates++;
+      return;
     }
-    committed+=batch.length;
-    if(progressEl) progressEl.innerHTML='<div style="padding:8px;background:#E8F5E9;border-radius:6px;font-size:12px;color:#0F3D23;">Committed '+committed+' / '+total+'...</div>';
-    if(start+batchSize<total){
-      setTimeout(function(){ processBatch(start+batchSize); },100);
-    } else {
-      if (!isQuizBank) {
-        if (progressEl) progressEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;color:#333;">Saving to partitioned cloud storage...</div>';
-        if (typeof savePYQData === 'function') {
-          try { await savePYQData(window.pyqData); } catch(err) { console.warn('savePYQData err:', err); }
+    existingMap.add(normQ);
+
+    var ansIdx = _normalizeAnswer(e.answer, e.options);
+    var docId = _generateMCQHash(rawQ, e.exam, e.year);
+
+    newValid.push({
+      id: docId,
+      q: rawQ,
+      opts: e.options || [],
+      ans: ansIdx,
+      exp: e.explanation || "",
+      subject: e.subject || "General Agriculture",
+      topic: e.topic || "",
+      exam: e.exam || "General",
+      year: e.year || String(new Date().getFullYear()),
+      difficulty: e.difficulty || "medium",
+      source: "excel_import",
+      updatedAt: new Date().toISOString()
+    });
+  });
+
+  if (newValid.length === 0) {
+    updateStatus("Completed: All questions are already present in the question bank (duplicates skipped).", true);
+    window._mcqImportState.running = false;
+    return;
+  }
+
+  // Resilient Chunk Processor with retry mechanism
+  async function writeChunkWithRetry(chunk, maxRetries) {
+    if (!window._fbConfigured || !window._db) return true;
+    var attempt = 0;
+    while (attempt < maxRetries) {
+      try {
+        var batch = window._db.batch();
+        chunk.forEach(function(item) {
+          var ref = window._db.collection("kg_mcqs").doc(item.id);
+          batch.set(ref, item, { merge: true });
+        });
+        await batch.commit();
+        return true;
+      } catch (err) {
+        attempt++;
+        console.warn("[BulkImport] Retry " + attempt + "/" + maxRetries + " failed:", err);
+        if (attempt >= maxRetries) {
+          return false;
+        }
+        await new Promise(function(r) { setTimeout(r, attempt * 1200); });
+      }
+    }
+    return false;
+  }
+
+  async function processChunks(startIdx) {
+    if (window._mcqImportState.cancelled) {
+      updateStatus("Import cancelled by user.", false, true);
+      window._mcqImportState.running = false;
+      return;
+    }
+
+    if (startIdx >= newValid.length) {
+      // Completed all chunks, now update catalog index & partitioned cache
+      updateStatus("Finalizing catalog metadata & cloud index...", false);
+
+      if (isQuizBank) {
+        if (typeof saveCustomQuizBank === "function") {
+          try { await saveCustomQuizBank(window.customQuizBank); } catch(err) { console.warn("saveCustomQuizBank err:", err); }
+        }
+      } else {
+        if (typeof savePYQData === "function") {
+          try { await savePYQData(window.pyqData); } catch(err) { console.warn("savePYQData err:", err); }
         }
       }
-      if(typeof rebuildQuizBank === 'function') rebuildQuizBank();
-      if(typeof updateQuizCount === 'function') updateQuizCount();
-      if(typeof renderPYQHierarchy === 'function') { try { renderPYQHierarchy(); } catch(_) {} }
-      if(progressEl) progressEl.innerHTML='<div style="padding:10px;background:#E8F5E9;border-radius:6px;font-size:13px;color:#0F3D23;font-weight:600;">✓ Successfully imported '+total+' records!</div>';
+
+      // Update aggregation index doc in Firestore (kg_meta/catalog)
+      if (window._fbConfigured && window._db) {
+        try {
+          var allCount = (window.pyqData ? window.pyqData.length : 0) + (window.QUIZ_BANK ? Object.values(window.QUIZ_BANK).reduce(function(s,a){return s+a.length;}, 0) : 0);
+          await window._db.collection("kg_meta").doc("catalog").set({
+            totalQuestions: allCount,
+            lastImportAt: new Date().toISOString(),
+            status: "ready"
+          }, { merge: true });
+        } catch(metaErr) {
+          console.warn("[BulkImport] Meta catalog update notice:", metaErr);
+        }
+      }
+
+      if (typeof rebuildQuizBank === "function") rebuildQuizBank();
+      if (typeof updateQuizCount === "function") updateQuizCount();
+      if (typeof renderPYQHierarchy === "function") { try { renderPYQHierarchy(); } catch(_) {} }
+
+      var successMsg = "✓ Successfully Imported " + committed + " MCQs (" + skippedDuplicates + " duplicates skipped)";
+      if (failedChunks.length > 0) {
+        successMsg += " - Note: " + (failedChunks.length * BATCH_CHUNK) + " questions experienced network timeout and saved locally.";
+      }
+      updateStatus(successMsg, true);
+      window._mcqImportState.running = false;
+      return;
     }
+
+    var chunk = newValid.slice(startIdx, startIdx + BATCH_CHUNK);
+
+    // Apply chunk into in-memory store so user can use immediately
+    if (isQuizBank) {
+      chunk.forEach(function(item) {
+        var subj = item.subject || "General Agriculture";
+        if (!window.customQuizBank[subj]) window.customQuizBank[subj] = [];
+        window.customQuizBank[subj].push(item);
+      });
+    } else {
+      var targetPyq = Array.isArray(window.pyqData) ? window.pyqData : [];
+      chunk.forEach(function(item) { targetPyq.push(item); });
+      window.pyqData = targetPyq;
+      if (typeof pyqData !== "undefined") pyqData = targetPyq;
+    }
+
+    // Direct native Firestore batch write with 3 retries
+    var ok = await writeChunkWithRetry(chunk, 3);
+    if (!ok) {
+      failedChunks.push(chunk);
+      console.warn("[BulkImport] Chunk at index " + startIdx + " saved locally, cloud batch timed out.");
+    }
+
+    committed += chunk.length;
+    var currentMsg = "Writing chunk (" + (committed + skippedDuplicates) + " / " + total + ")...";
+    updateStatus(currentMsg, false);
+
+    // Yield to browser event loop to keep UI 100% smooth
+    setTimeout(function() {
+      processChunks(startIdx + BATCH_CHUNK);
+    }, 50);
   }
-  processBatch(0);
+
+  processChunks(0);
 }
 
 var _pyqXlsValid=[],_pyqXlsErrors=[];
