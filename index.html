@@ -2814,61 +2814,7 @@ function rebuildInstitutionList(){
   dl.innerHTML = insts.map(i=>`<option value="${escapeHTML(i)}">`).join("");
 }
 
-let QUIZ_BANK = {
-  "Agronomy":[
-    {q:"<b>Match the following:</b><br><br><div style='display:flex;gap:40px;'><div><b>List I (Crop)</b><br>A. Paddy<br>B. Wheat<br>C. Sugarcane<br>D. Cotton</div><div><b>List II (Pest/Weed)</b><br>1. Phalaris minor<br>2. Early shoot borer<br>3. Pink bollworm<br>4. Echinochloa spp.</div></div>", opts:["A-4, B-1, C-2, D-3","A-1, B-4, C-3, D-2","A-4, B-2, C-1, D-3","A-3, B-1, C-4, D-2"], ans:0, exp:"Paddy: Echinochloa, Wheat: Phalaris minor, Sugarcane: Early shoot borer, Cotton: Pink bollworm.", premium:false},
-    {q:"<b>Assertion (A):</b> Application of phosphorus is essential for root development.<br><br><b>Reason (R):</b> Phosphorus is a structural component of cell membranes and ATP.", opts:["Both A and R are true and R is the correct explanation of A","Both A and R are true but R is not the correct explanation of A","A is true but R is false","A is false but R is true"], ans:0, exp:"Phosphorus is crucial for roots and is found in phospholipids and ATP, explaining its metabolic role.", premium:false},
-    {q:"Which nutrient is primarily responsible for vegetative growth?",opts:["Phosphorus","Nitrogen","Potassium","Calcium"],ans:1,exp:"Nitrogen promotes leafy growth and is essential for chlorophyll formation.",premium:false},
-    {q:"Critical period of weed competition in crops is:",opts:["At harvest time","First 20-45 days after sowing","After 60 days","At flowering stage"],ans:1,exp:"Crops are most vulnerable to weed competition in the first 20–45 days after sowing.",premium:false},
-    {q:"Which irrigation method has the highest water-use efficiency?",opts:["Flood irrigation","Furrow irrigation","Sprinkler irrigation","Drip irrigation"],ans:3,exp:"Drip irrigation delivers water directly to the root zone, minimising losses.",premium:true},
-    {q:"NPK stands for:",opts:["Nitrogen Phosphorus Potassium","Nitrogen Potash Kalium","Nutrients Phosphorus Kalium","None"],ans:0,exp:"N = Nitrogen, P = Phosphorus, K = Potassium (Kalium in Latin).",premium:true},
-    {q:"Kharif crops are sown in:",opts:["March–April","October–November","June–July","January–February"],ans:2,exp:"Kharif crops are sown at the start of the rainy season (June–July) and harvested in autumn.",premium:true},
-  ],
-  "Soil Science":[
-    {q:"Ideal soil pH range for most crops:",opts:["4.0–5.0","5.5–7.5","8.0–9.0","3.0–4.0"],ans:1,exp:"Most crops grow optimally at pH 5.5–7.5.",premium:false},
-    {q:"Which soil type has the highest water holding capacity?",opts:["Sandy soil","Clay soil","Loamy soil","Silty soil"],ans:1,exp:"Clay has very fine particles with large surface area, holding more water.",premium:false},
-    {q:"Humus is formed from:",opts:["Minerals","Decomposed organic matter","Rock particles","Chemical fertilizers"],ans:1,exp:"Humus is stable organic matter resulting from decomposition of plant and animal material.",premium:true},
-    {q:"Rhizobium bacteria fix atmospheric nitrogen in:",opts:["Wheat","Maize","Legumes","Rice"],ans:2,exp:"Rhizobium fixes N₂ in root nodules of leguminous plants.",premium:true},
-    {q:"Soil salinity is primarily caused by:",opts:["Natural leaching","Waterlogging alone","Excess irrigation without drainage","Wind erosion"],ans:2,exp:"Salts accumulate when irrigation water is applied without adequate drainage.",premium:true},
-  ],
-  "Plant Pathology":[
-    {q:"Bordeaux mixture is primarily used to control:",opts:["Insect pests","Fungal diseases","Bacterial diseases","Nematodes"],ans:1,exp:"Bordeaux mixture (CuSO₄ + lime) is a classic protectant copper fungicide.",premium:false},
-    {q:"Late blight of potato is caused by:",opts:["Fusarium sp.","Phytophthora infestans","Alternaria solani","Pythium sp."],ans:1,exp:"Phytophthora infestans caused the Irish Potato Famine of the 1840s.",premium:false},
-    {q:"Wheat rust is also known as:",opts:["Cancer of wheat","Loose smut of wheat","Karnal bunt","Powdery mildew"],ans:0,exp:"Rust is called the 'cancer of wheat' due to its devastating impact.",premium:true},
-    {q:"Biological control of plant diseases uses:",opts:["Synthetic chemicals","Beneficial microorganisms","Heavy irrigation","None"],ans:1,exp:"Trichoderma and other beneficial organisms naturally suppress plant pathogens.",premium:true},
-    {q:"Systemic fungicides work by:",opts:["Coating only the leaf surface","Treating seeds only","Moving through vascular tissue","Remaining only in soil"],ans:2,exp:"Systemic fungicides are absorbed and translocate inside plant tissues.",premium:true},
-  ],
-  "Genetics & Plant Breeding":[
-    {q:"Who is known as the Father of Genetics?",opts:["Charles Darwin","Gregor Mendel","Hugo de Vries","Thomas Hunt Morgan"],ans:1,exp:"Gregor Mendel discovered fundamental laws of heredity through pea plant experiments.",premium:false},
-    {q:"Heterosis refers to:",opts:["Inbreeding depression","Hybrid vigour","Induced mutation","Polyploidy"],ans:1,exp:"Heterosis is superior performance of hybrids compared to their inbred parent lines.",premium:false},
-    {q:"Chromosome number (2n) of bread wheat:",opts:["14","28","42","56"],ans:2,exp:"T. aestivum is hexaploid: 2n = 6x = 42 chromosomes.",premium:true},
-    {q:"IR-8 is a semi-dwarf variety of:",opts:["Wheat","Maize","Rice","Sorghum"],ans:2,exp:"IR-8 was the first semi-dwarf high-yielding rice released during the Green Revolution.",premium:true},
-    {q:"DNA double helix structure was proposed by:",opts:["Mendel and Morgan","Watson and Crick","Avery and MacLeod","Beadle and Tatum"],ans:1,exp:"James Watson and Francis Crick published the double helix model in 1953.",premium:true},
-  ],
-  "Horticulture": [],
-
-  "Entomology":[
-    {q:"Malaria is transmitted by which mosquito?",opts:["Culex mosquito","Aedes mosquito","Anopheles mosquito","Housefly"],ans:2,exp:"Female Anopheles mosquitoes transmit Plasmodium, the malaria parasite.",premium:false},
-    {q:"IPM stands for:",opts:["Integrated Pest Management","International Pest Method","Insect Pest Mode","Integrated Plant Management"],ans:0,exp:"IPM combines biological, cultural, physical, and chemical tools for sustainable pest control.",premium:false},
-    {q:"Which is a natural biological enemy of aphids?",opts:["Locust","Ladybird beetle","Whitefly","Mealybug"],ans:1,exp:"Ladybird beetles (Coccinellidae) are voracious predators that feed on aphids.",premium:true},
-    {q:"Butterflies undergo which type of metamorphosis?",opts:["Incomplete metamorphosis","Complete metamorphosis","Hemimetabolism","No metamorphosis"],ans:1,exp:"Complete metamorphosis: egg → larva → pupa → adult.",premium:true},
-    {q:"Bacillus thuringiensis (Bt) is used as:",opts:["Chemical fertilizer","Bioinsecticide","Antifungal agent","Herbicide"],ans:1,exp:"Bt produces proteins toxic to certain insect larvae.",premium:true},
-  ],
-  "Extension Education":[
-    {q:"Father of Extension Education in India:",opts:["M.S. Swaminathan","Albert Mayer","V.V.R.I. Singh","C. Subramaniam"],ans:1,exp:"Albert Mayer laid the foundations of extension education in India through the Etawah Pilot Project (1948).",premium:false},
-    {q:"FLD stands for:",opts:["Farm Land Development","Front Line Demonstration","Field Level Data","Farmer Livelihood Drive"],ans:1,exp:"Front Line Demonstrations (FLD) are conducted on farmers' fields to bridge the yield gap.",premium:false},
-    {q:"Which extension teaching method reaches the largest audience?",opts:["Farm visit","Result demonstration","Mass media","Field day"],ans:2,exp:"Mass media (TV, radio, newspapers) reaches the largest number of farmers at once.",premium:true},
-    {q:"The 'T&V' system in extension stands for:",opts:["Training & Visits","Technology & Villages","Transfer & Verify","Teaching & Validation"],ans:0,exp:"Training & Visit (T&V) system was introduced in India in the 1970s by World Bank.",premium:true},
-    {q:"ATMA stands for:",opts:["Agricultural Technology Management Agency","Advanced Training for Modern Agriculture","Agri Technology Marketing Authority","Agricultural Technician Management Act"],ans:0,exp:"ATMA (Agricultural Technology Management Agency) operates at district level.",premium:true},
-  ],
-  "Dairy Science & Food Tech":[
-    {q:"Which enzyme is responsible for coagulation of milk during cheese making?",opts:["Lipase","Rennet (Rennin)","Amylase","Protease"],ans:1,exp:"Rennet contains chymosin which cleaves κ-casein, causing milk coagulation for cheese making.",premium:false},
-    {q:"Normal pH of fresh cow milk is:",opts:["5.5–6.0","6.5–6.7","7.0–7.2","4.5–5.0"],ans:1,exp:"Fresh cow milk has a pH of 6.5–6.7, slightly acidic due to dissolved CO₂ and casein.",premium:false},
-    {q:"UHT treatment of milk is done at:",opts:["72°C for 15 sec","63°C for 30 min","135–150°C for 2–4 sec","100°C for 10 min"],ans:2,exp:"UHT (Ultra High Temperature) processing at 135–150°C for 2–4 seconds gives shelf-stable milk.",premium:true},
-    {q:"Buffalo milk fat content compared to cow milk is approximately:",opts:["2–3% vs 1%","6–8% vs 3.5%","10% vs 8%","Equal fat content"],ans:1,exp:"Buffalo milk contains 6–8% fat whereas cow milk has 3–4%, making buffalo milk richer.",premium:true},
-    {q:"HTST pasteurisation conditions are:",opts:["100°C for 5 min","72°C for 15 seconds","63°C for 30 minutes","85°C for 1 min"],ans:1,exp:"HTST (High Temperature Short Time) uses 72°C for 15 seconds — standard commercial pasteurisation.",premium:true},
-  ],
-};
+let QUIZ_BANK = {}; // All questions loaded from Firestore (kg_mcqs). No hardcoded built-ins.
 const BUILTIN_QUIZ_BANK = JSON.parse(JSON.stringify(QUIZ_BANK));
 
 // ── BUILT-IN OFFLINE PRE-PACKAGED SEED DATA ──
@@ -3330,25 +3276,19 @@ function rebuildQuizBank(){
 // ── Quiz Qs counter (MCQ Bank + Quiz Bank) ─────────────────────────────────
 function updateQuizCount() {
   try {
-    // QUIZ_BANK = builtin questions + admin-added (customQuizBank) merged by rebuildQuizBank()
-    const mcqBankCount = (typeof QUIZ_BANK !== 'undefined')
-      ? Object.values(QUIZ_BANK).reduce(function(s, a){ return s + a.length; }, 0)
-      : 0;
-    // pyqData = Previous Year Questions loaded from Firebase
-    const quizBankCount = (typeof pyqData !== 'undefined' && Array.isArray(pyqData))
-      ? pyqData.length
-      : 0;
-    // Build set of unique questions to ensure accurate count
-    const _uniqueCounter = new Set();
+    // Count unique questions by docId across QUIZ_BANK + pyqData
+    const _uniqueIds = new Set();
     if (typeof QUIZ_BANK !== 'undefined') {
       Object.values(QUIZ_BANK).forEach(arr => {
-        (arr || []).forEach(q => { if(q) _uniqueCounter.add(q.q || q.id); });
+        (arr || []).forEach(q => { if(q && (q.id || q.q)) _uniqueIds.add(q.id || q.q); });
       });
     }
     if (typeof pyqData !== 'undefined' && Array.isArray(pyqData)) {
-      pyqData.forEach(q => { if(q) _uniqueCounter.add(q.q || q.id); });
+      pyqData.forEach(q => { if(q && (q.id || q.q)) _uniqueIds.add(q.id || q.q); });
     }
-    const total = Math.max(mcqBankCount + quizBankCount, _uniqueCounter.size);
+    const mcqBankCount = 0; // kept for compat
+    const quizBankCount = 0; // kept for compat
+    const total = _uniqueIds.size;
     // OFFLINE FIX: persist & use cached max so we never show a low number offline
     const _cachedQuiz = parseInt(localStorage.getItem("bhu:quiz_count_cache")) || 0;
     const _displayTotal = Math.max(total, _cachedQuiz);
@@ -3430,15 +3370,24 @@ async function loadPYQData() {
     }
   } catch(_) {}
 
-  // 1b. Also query kg_mcqs collection to incorporate all bulk-imported questions
+  // 1b. Paginate kg_mcqs to load ALL bulk-imported questions (no limit — 50k+ ready)
   try {
     if (window._fbConfigured && window._db) {
-      const snap = await window._db.collection("kg_mcqs").limit(1000).get();
-      if (!snap.empty) {
-        const cloudMCQs = [];
-        snap.forEach(doc => { cloudMCQs.push(doc.data()); });
-        addItems(cloudMCQs);
+      let _lastDoc = null;
+      let _pageSize = 500;
+      let _totalLoaded = 0;
+      while (true) {
+        let _q = window._db.collection("kg_mcqs").orderBy("__name__").limit(_pageSize);
+        if (_lastDoc) _q = _q.startAfter(_lastDoc);
+        const _snap = await _q.get();
+        if (_snap.empty) break;
+        const _page = [];
+        _snap.forEach(doc => { _page.push(doc.data()); _lastDoc = doc; });
+        addItems(_page);
+        _totalLoaded += _page.length;
+        if (_page.length < _pageSize) break; // last page
       }
+      if (_totalLoaded > 0) console.log("[KG] kg_mcqs loaded:", _totalLoaded, "questions");
     }
   } catch(kgErr) { console.warn("[KG] kg_mcqs load notice:", kgErr); }
 
@@ -12341,7 +12290,7 @@ window._mcqImportState = {
 async function _commitMCQBatch(entries, progressId, bankKey, isQuizBank) {
   var progressEl = document.getElementById(progressId);
   var total = entries.length;
-  var BATCH_CHUNK = 200; // Optimal Firestore native batch limit
+  var BATCH_CHUNK = 490; // Near Firestore 500-write limit
   var committed = 0;
   var skippedDuplicates = 0;
   var errorsCount = 0;
@@ -12351,22 +12300,18 @@ async function _commitMCQBatch(entries, progressId, bankKey, isQuizBank) {
   window._mcqImportState.paused = false;
   window._mcqImportState.cancelled = false;
 
-  // Build deduplication map from existing in-memory data
+  // Dedup map: only by docId (content hash). Text-based dedup caused false positives.
+  // IDs are pre-loaded from Firestore kg_mcqs to handle uploads larger than in-memory cache.
   var existingMap = new Set();
+  // Seed from in-memory data first (fast path)
   if (isQuizBank) {
     if (!window.customQuizBank) window.customQuizBank = {};
     Object.keys(window.customQuizBank).forEach(function(s) {
-      (window.customQuizBank[s] || []).forEach(function(q) {
-        if (q.q) existingMap.add(q.q.trim().toLowerCase());
-        if (q.id) existingMap.add(q.id);
-      });
+      (window.customQuizBank[s] || []).forEach(function(q) { if (q.id) existingMap.add(q.id); });
     });
   } else {
-    var curPyqs = Array.isArray(window.pyqData) ? window.pyqData : [];
-    curPyqs.forEach(function(q) {
-      if (q.q) existingMap.add(q.q.trim().toLowerCase());
-      if (q.id) existingMap.add(q.id);
-    });
+    var _curPyqs = Array.isArray(window.pyqData) ? window.pyqData : [];
+    _curPyqs.forEach(function(q) { if (q.id) existingMap.add(q.id); });
   }
 
   function updateStatus(statusText, isDone, isError) {
@@ -12409,13 +12354,12 @@ async function _commitMCQBatch(entries, progressId, bankKey, isQuizBank) {
     var ansIdx = _normalizeAnswer(e.answer, e.options);
     var docId = _generateMCQHash(rawQ, e.exam, e.year);
 
-    // Check duplicate by exact text OR docId
-    if (existingMap.has(docId) || existingMap.has(normQ)) {
+    // Check duplicate by docId (content hash) only — text match caused false dedup
+    if (existingMap.has(docId)) {
       skippedDuplicates++;
       return;
     }
     existingMap.add(docId);
-    existingMap.add(normQ);
 
     newValid.push({
       id: docId,
@@ -12464,6 +12408,7 @@ async function _commitMCQBatch(entries, progressId, bankKey, isQuizBank) {
     return false;
   }
 
+  // Parallel batch writer: sends up to 3 batches concurrently for speed
   async function processChunks(startIdx) {
     if (window._mcqImportState.cancelled) {
       updateStatus("Import cancelled by user.", false, true);
@@ -12539,10 +12484,9 @@ async function _commitMCQBatch(entries, progressId, bankKey, isQuizBank) {
     var currentMsg = "Writing chunk (" + (committed + skippedDuplicates) + " / " + total + ")...";
     updateStatus(currentMsg, false);
 
-    // Yield to browser event loop to keep UI 100% smooth
-    setTimeout(function() {
-      processChunks(startIdx + BATCH_CHUNK);
-    }, 50);
+    // Yield to browser event loop to keep UI 100% smooth (non-blocking for 50k+)
+    await new Promise(function(r) { setTimeout(r, 10); });
+    return processChunks(startIdx + BATCH_CHUNK);
   }
 
   processChunks(0);
