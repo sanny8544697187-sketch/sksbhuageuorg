@@ -6346,9 +6346,9 @@ async function renderAdmin(){
           </div>
         </div>
         <div class="drop-zone" id="mcqXlsDropZone" onclick="document.getElementById('mcqXlsFile').click()" style="margin-bottom:12px;border:2px dashed #5E35B1;border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:#fff;">
-          <input id="mcqXlsFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleMCQExcelImport(this)">
+          <input id="mcqXlsFile" type="file" accept=".xlsx,.xls,.csv" multiple style="display:none;" onchange="handleMCQExcelImport(this)">
           <div style="font-size:32px;margin-bottom:6px;">📊</div>
-          <div id="mcqXlsLabel" style="font-size:13px;color:#333;font-weight:600;">Click to upload Excel (.xlsx) or CSV file</div>
+          <div id="mcqXlsLabel" style="font-size:13px;color:#333;font-weight:600;">Click to upload Excel (.xlsx) or CSV files (supports multiple files & all sheets)</div>
           <div style="font-size:11px;color:#777;margin-top:4px;">Max 20 MB · Supports thousands of MCQs · Columns auto-mapped</div>
         </div>
         <div id="mcqXlsStatus" style="display:none;margin-bottom:12px;"></div>
@@ -6475,9 +6475,9 @@ async function renderAdmin(){
           </div>
         </div>
         <div class="drop-zone" id="pyqXlsDropZone" onclick="document.getElementById('pyqXlsFile').click()" style="margin-bottom:12px;border:2px dashed #00B050;border-radius:12px;padding:20px;text-align:center;cursor:pointer;background:#fff;">
-          <input id="pyqXlsFile" type="file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handlePYQExcelImport(this)">
+          <input id="pyqXlsFile" type="file" accept=".xlsx,.xls,.csv" multiple style="display:none;" onchange="handlePYQExcelImport(this)">
           <div style="font-size:32px;margin-bottom:6px;">📊</div>
-          <div id="pyqXlsLabel" style="font-size:13px;color:#333;font-weight:600;">Click to upload Excel (.xlsx) or CSV file</div>
+          <div id="pyqXlsLabel" style="font-size:13px;color:#333;font-weight:600;">Click to upload Excel (.xlsx) or CSV files (supports multiple files & all sheets)</div>
           <div style="font-size:11px;color:#777;margin-top:4px;">Max 20 MB · Supports thousands of MCQs · Columns auto-mapped</div>
         </div>
         <div id="pyqXlsStatus" style="display:none;margin-bottom:12px;"></div>
@@ -12180,19 +12180,31 @@ window.forceSyncAllFromFirebase = forceSyncAllFromFirebase;
 // ═══════════════════════════════════════════════════════════════
 // Excel / CSV Bulk MCQ Import Functions
 // ═══════════════════════════════════════════════════════════════
-function parseExcelOrCSV(file){
-  return new Promise(function(resolve,reject){
-    var reader=new FileReader();
-    reader.onload=function(e){
-      try{
-        var data=new Uint8Array(e.target.result);
-        var wb=XLSX.read(data,{type:'array'});
-        var ws=wb.Sheets[wb.SheetNames[0]];
-        resolve(XLSX.utils.sheet_to_json(ws,{defval:''}));
-      }catch(err){ reject(err); }
-    };
-    reader.onerror=function(){ reject(new Error('File read error')); };
-    reader.readAsArrayBuffer(file);
+function parseExcelOrCSV(filesOrFile){
+  var fileList = (filesOrFile instanceof FileList || Array.isArray(filesOrFile)) ? Array.from(filesOrFile) : [filesOrFile];
+  return Promise.all(fileList.map(function(file){
+    return new Promise(function(resolve,reject){
+      var reader=new FileReader();
+      reader.onload=function(e){
+        try{
+          var data=new Uint8Array(e.target.result);
+          var wb=XLSX.read(data,{type:'array'});
+          var allRows = [];
+          wb.SheetNames.forEach(function(sName){
+            var ws=wb.Sheets[sName];
+            var rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+            if(Array.isArray(rows)) allRows.push.apply(allRows, rows);
+          });
+          resolve(allRows);
+        }catch(err){ reject(err); }
+      };
+      reader.onerror=function(){ reject(new Error('File read error')); };
+      reader.readAsArrayBuffer(file);
+    });
+  })).then(function(results){
+    var combined = [];
+    results.forEach(function(r){ combined.push.apply(combined, r); });
+    return combined;
   });
 }
 
@@ -12494,12 +12506,13 @@ async function _commitMCQBatch(entries, progressId, bankKey, isQuizBank) {
 
 var _pyqXlsValid=[],_pyqXlsErrors=[];
 function handlePYQExcelImport(input){
-  var file=input.files[0];
-  if(!file) return;
+  var files=input.files;
+  if(!files || !files.length) return;
+  var count=files.length;
   var labelEl=document.getElementById('pyqXlsLabel'),statusEl=document.getElementById('pyqXlsStatus'),importBtn=document.getElementById('pyqXlsImportBtn');
-  if(labelEl) labelEl.textContent='Parsing '+file.name+'...';
-  if(statusEl){ statusEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;">Parsing file...</div>'; statusEl.style.display='block'; }
-  parseExcelOrCSV(file).then(function(rows){
+  if(labelEl) labelEl.textContent='Parsing '+(count===1 ? files[0].name : count+' files...')+'...';
+  if(statusEl){ statusEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;">Parsing '+(count===1?'file':count+' files')+'...</div>'; statusEl.style.display='block'; }
+  parseExcelOrCSV(files).then(function(rows){
     if(!rows||!rows.length){ if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">No data found.</div>'; return; }
     var headers=Object.keys(rows[0]);
     var colMap={
@@ -12545,7 +12558,7 @@ function commitPYQExcelImport(){
 function cancelPYQExcelImport(){
   _pyqXlsValid=[]; _pyqXlsErrors=[];
   ['pyqXlsStatus','pyqXlsPreview','pyqXlsProgress'].forEach(function(id){ var el=document.getElementById(id); if(el){ el.innerHTML=''; el.style.display='none'; } });
-  var l=document.getElementById('pyqXlsLabel'); if(l) l.textContent='Click to upload Excel (.xlsx) or CSV file';
+  var l=document.getElementById('pyqXlsLabel'); if(l) l.textContent='Click to upload Excel (.xlsx) or CSV files (supports multiple files & all sheets)';
   var b=document.getElementById('pyqXlsImportBtn'); if(b){ b.disabled=true; b.style.opacity='0.5'; }
   var c=document.getElementById('pyqXlsCancelBtn'); if(c) c.style.display='none';
   var f=document.getElementById('pyqXlsFile'); if(f) f.value='';
@@ -12564,12 +12577,13 @@ function downloadPYQSampleTemplate(){
 
 var _mcqXlsValid=[],_mcqXlsErrors=[];
 function handleMCQExcelImport(input){
-  var file=input.files[0];
-  if(!file) return;
+  var files=input.files;
+  if(!files || !files.length) return;
+  var count=files.length;
   var labelEl=document.getElementById('mcqXlsLabel'),statusEl=document.getElementById('mcqXlsStatus'),importBtn=document.getElementById('mcqXlsImportBtn');
-  if(labelEl) labelEl.textContent='Parsing '+file.name+'...';
-  if(statusEl){ statusEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;">Parsing file...</div>'; statusEl.style.display='block'; }
-  parseExcelOrCSV(file).then(function(rows){
+  if(labelEl) labelEl.textContent='Parsing '+(count===1 ? files[0].name : count+' files...')+'...';
+  if(statusEl){ statusEl.innerHTML='<div style="padding:8px;background:#FFF9C4;border-radius:6px;font-size:12px;">Parsing '+(count===1?'file':count+' files')+'...</div>'; statusEl.style.display='block'; }
+  parseExcelOrCSV(files).then(function(rows){
     if(!rows||!rows.length){ if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#FFEBEE;border-radius:6px;font-size:12px;color:#c62828;">No data found.</div>'; return; }
     var headers=Object.keys(rows[0]);
     var colMap={
@@ -12615,7 +12629,7 @@ function commitMCQExcelImport(){
 function cancelMCQExcelImport(){
   _mcqXlsValid=[]; _mcqXlsErrors=[];
   ['mcqXlsStatus','mcqXlsPreview','mcqXlsProgress'].forEach(function(id){ var el=document.getElementById(id); if(el){ el.innerHTML=''; el.style.display='none'; } });
-  var l=document.getElementById('mcqXlsLabel'); if(l) l.textContent='Click to upload Excel (.xlsx) or CSV file';
+  var l=document.getElementById('mcqXlsLabel'); if(l) l.textContent='Click to upload Excel (.xlsx) or CSV files (supports multiple files & all sheets)';
   var b=document.getElementById('mcqXlsImportBtn'); if(b){ b.disabled=true; b.style.opacity='0.5'; }
   var c=document.getElementById('mcqXlsCancelBtn'); if(c) c.style.display='none';
   var f=document.getElementById('mcqXlsFile'); if(f) f.value='';
