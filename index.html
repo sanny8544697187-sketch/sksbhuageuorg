@@ -12540,7 +12540,7 @@ function handlePYQExcelImport(input){
     });
     _renderXlsPreviewTable(_pyqXlsValid,_pyqXlsErrors,20,'pyqXlsPreview');
     if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#E8F5E9;border-radius:6px;font-size:12px;color:#0F3D23;">Parsed <strong>'+rows.length+'</strong> rows: <strong>'+_pyqXlsValid.length+'</strong> valid, <strong>'+_pyqXlsErrors.length+'</strong> errors.</div>';
-    if(labelEl) labelEl.textContent=file.name+' ('+rows.length+' rows)';
+    if(labelEl) labelEl.textContent=(count===1 ? files[0].name : count+' files')+' ('+rows.length+' rows)';
     if(importBtn){ importBtn.disabled=!_pyqXlsValid.length; importBtn.style.opacity=_pyqXlsValid.length?'1':'0.5'; }
     var cb=document.getElementById('pyqXlsCancelBtn'); if(cb) cb.style.display='inline-block';
   }).catch(function(err){
@@ -12611,7 +12611,7 @@ function handleMCQExcelImport(input){
     });
     _renderXlsPreviewTable(_mcqXlsValid,_mcqXlsErrors,20,'mcqXlsPreview');
     if(statusEl) statusEl.innerHTML='<div style="padding:8px;background:#EDE7F6;border-radius:6px;font-size:12px;color:#1a0533;">Parsed <strong>'+rows.length+'</strong> rows: <strong>'+_mcqXlsValid.length+'</strong> valid, <strong>'+_mcqXlsErrors.length+'</strong> errors.</div>';
-    if(labelEl) labelEl.textContent=file.name+' ('+rows.length+' rows)';
+    if(labelEl) labelEl.textContent=(count===1 ? files[0].name : count+' files')+' ('+rows.length+' rows)';
     if(importBtn){ importBtn.disabled=!_mcqXlsValid.length; importBtn.style.opacity=_mcqXlsValid.length?'1':'0.5'; }
     var cb=document.getElementById('mcqXlsCancelBtn'); if(cb) cb.style.display='inline-block';
   }).catch(function(err){
