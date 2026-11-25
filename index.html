@@ -3338,7 +3338,17 @@ function updateQuizCount() {
     const quizBankCount = (typeof pyqData !== 'undefined' && Array.isArray(pyqData))
       ? pyqData.length
       : 0;
-    const total = mcqBankCount + quizBankCount;
+    // Build set of unique questions to ensure accurate count
+    const _uniqueCounter = new Set();
+    if (typeof QUIZ_BANK !== 'undefined') {
+      Object.values(QUIZ_BANK).forEach(arr => {
+        (arr || []).forEach(q => { if(q) _uniqueCounter.add(q.q || q.id); });
+      });
+    }
+    if (typeof pyqData !== 'undefined' && Array.isArray(pyqData)) {
+      pyqData.forEach(q => { if(q) _uniqueCounter.add(q.q || q.id); });
+    }
+    const total = Math.max(mcqBankCount + quizBankCount, _uniqueCounter.size);
     // OFFLINE FIX: persist & use cached max so we never show a low number offline
     const _cachedQuiz = parseInt(localStorage.getItem("bhu:quiz_count_cache")) || 0;
     const _displayTotal = Math.max(total, _cachedQuiz);
@@ -3419,6 +3429,18 @@ async function loadPYQData() {
       }
     }
   } catch(_) {}
+
+  // 1b. Also query kg_mcqs collection to incorporate all bulk-imported questions
+  try {
+    if (window._fbConfigured && window._db) {
+      const snap = await window._db.collection("kg_mcqs").limit(1000).get();
+      if (!snap.empty) {
+        const cloudMCQs = [];
+        snap.forEach(doc => { cloudMCQs.push(doc.data()); });
+        addItems(cloudMCQs);
+      }
+    }
+  } catch(kgErr) { console.warn("[KG] kg_mcqs load notice:", kgErr); }
 
   // 2. Also try reading legacy combined document if split returned nothing
   if (result.length === 0) {
@@ -12384,14 +12406,16 @@ async function _commitMCQBatch(entries, progressId, bankKey, isQuizBank) {
     var rawQ = String(e.question || "").trim();
     if (!rawQ) { errorsCount++; return; }
     var normQ = rawQ.toLowerCase();
-    if (existingMap.has(normQ)) {
+    var ansIdx = _normalizeAnswer(e.answer, e.options);
+    var docId = _generateMCQHash(rawQ, e.exam, e.year);
+
+    // Check duplicate by exact text OR docId
+    if (existingMap.has(docId) || existingMap.has(normQ)) {
       skippedDuplicates++;
       return;
     }
+    existingMap.add(docId);
     existingMap.add(normQ);
-
-    var ansIdx = _normalizeAnswer(e.answer, e.options);
-    var docId = _generateMCQHash(rawQ, e.exam, e.year);
 
     newValid.push({
       id: docId,
